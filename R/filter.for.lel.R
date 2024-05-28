@@ -1,15 +1,27 @@
-library(digest)
 #-----------------------------------------------------------------------------------
-#' Filter the exported records for redundancy
+#' @#' Filter the exported records for redundancy
 #'
 #' `filter.for.lel` Filters LEL, NEL values wihere a LOAEL/NOAEL value exists
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+#' @rdname filter.for.lel
+#' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
 filter.for.lel <- function(toxval.db="res_toxval_v95",sys.date="2024-04-10") {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/"
   file = paste0(dir,"results/ToxValDB for BMDh filtered ",toxval.db," ",sys.date,".xlsx")
   print(file)

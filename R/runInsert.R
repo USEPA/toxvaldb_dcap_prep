@@ -1,8 +1,5 @@
-library(RMySQL)
-library(DBI)
-
 #--------------------------------------------------------------------------------------
-#' Insert a record into a database. if auto.increment=TRUE, return the auto incremented
+#' @#' Insert a record into a database. if auto.increment=TRUE, return the auto incremented
 #' primary key of the record. otherwise, return -1
 #' @param query a properly formatted SQL query as a string
 #' @param db the name of the database
@@ -10,7 +7,21 @@ library(DBI)
 #' @param verbose if TRUE, print diagnostic information
 #' @param auto.increment if TRUE, add the auto increment primary key even if not part of the query
 #' @return Returns the database table auto incremented primary key ID
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @param auto.increment.id PARAM_DESCRIPTION, Default: F
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[RMySQL]{character(0)}}, \code{\link[RMySQL]{MySQLDriver-class}}
+#' @rdname runInsert
+#' @importFrom RMySQL dbConnect MySQL dbSendQuery dbHasCompleted dbClearResult dbFetch dbDisconnect
 #--------------------------------------------------------------------------------------
 runInsert <- function(query,db,do.halt=F,verbose=F,auto.increment.id=F) {
 
@@ -27,7 +38,7 @@ runInsert <- function(query,db,do.halt=F,verbose=F,auto.increment.id=F) {
     return(NULL)
   }
   if(verbose) {
-    toxvaldbBMDh::printCurrentFunction()
+    printCurrentFunction()
     cat("query: ",query,"\n")
     cat("db: ",db,"\n")
   }

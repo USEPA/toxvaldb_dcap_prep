@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------------------
-#' Summarize the filtering steps
+#' @#' Summarize the filtering steps
 #'
 #' `filter.for.multi.noel` Filters where multiple NOEL/NOEL etc. exist. For each study_group
 #' this will select the highest NO(A)EL below the lowest LO(A)EL and the lowest LO(A)EL.
@@ -8,10 +8,24 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @param do.load PARAM_DESCRIPTION, Default: T
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+#' @rdname filter.summary
+#' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
 filter.summary <- function(toxval.db="res_toxval_v95",sys.date="2024-04-10",do.load=T) {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/"
 
   if(do.load) {

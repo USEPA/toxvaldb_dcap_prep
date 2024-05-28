@@ -1,7 +1,5 @@
-library(ggplot2)
-library(ggpubr)
 #-------------------------------------------------------------------------------
-#' Plot the cumulative distribution of number of studies
+#' @#' Plot the cumulative distribution of number of studies
 #'
 #' `bmdh.cumdist.plot` plots the cumulative distribution of number of studies
 #'
@@ -9,10 +7,29 @@ library(ggpubr)
 #' @param toxval.db Database version
 #' @param sys.date The date of the database export
 #' @return writes a plot to a file
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[openxlsx]{read.xlsx}}
+#'  \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{aes}}, \code{\link[ggplot2]{labs}}, \code{\link[ggplot2]{stat_ecdf}}, \code{\link[ggplot2]{ggtheme}}, \code{\link[ggplot2]{lims}}, \code{\link[ggplot2]{ggsave}}
+#'  \code{\link[ggpubr]{ggarrange}}
+#'  \code{\link[grDevices]{dev}}
+#' @rdname bmdh.cumdist.plot
+#' @importFrom openxlsx read.xlsx
+#' @importFrom ggplot2 ggplot aes ggtitle stat_ecdf theme_bw xlim xlab ylab ggsave
+#' @importFrom ggpubr ggarrange
+#' @importFrom grDevices dev.off
 #-------------------------------------------------------------------------------
 bmdh.cumdist.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date="2024-02-28") {
-  toxvaldbBMDh::printCurrentFunction()
+  printCurrentFunction()
   dir = "data/"
   file = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".xlsx")
   print(file)
@@ -38,13 +55,11 @@ bmdh.cumdist.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date="202
     ggplot2::xlab("Number of Studies") +
     ggplot2::ylab("Cumulative Fraction of Chemicals")
 
-
   p3 =  ggpubr::ggarrange(p1, p2,
             labels = c("", ""),
             ncol = 2, nrow = 1)
 
   print(p3)
-  if(!to.file) browser()
 
   if(to.file) {
     fname = paste0(dir,"results/Percentile x number of studies.pdf")

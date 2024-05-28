@@ -1,28 +1,38 @@
-library(openxlsx)
-library(digest)
 #-----------------------------------------------------------------------------------
-#' Export records required for managing the critical effect categories for the BMD calculations.
+#' @#' Export records required for managing the critical effect categories for the BMD calculations.
 #'
 #' `export.for.critical_effect_mapping` Exports all of the data required for
 #' performing teh criticla effect mapping for the BMDh calculations
 #'
 #' @param toxval.db Database version
-#' @param user The username for the MySQL database. The database instance is
-#' hard-coded in the function setDBConn().
+#' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+#' @rdname export.for.critical_effect_mapping
+#' @importFrom openxlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
 export.for.critical_effect_mapping <- function(toxval.db="res_toxval_v95",user="rjudson",password) {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/"
-  toxvaldbBMDh::setDBConn(user=user,password=password)
-  slist = toxvaldbBMDh::runQuery("select distinct source from toxval",toxval.db)[,1]
+  setDBConn(user=user,password=password)
+  slist = runQuery("select distinct source from toxval",toxval.db)[,1]
   exclude.sources = c("COSMOS","EFSA","PPRTV (NCEA)","ECHA IUCLID")
   slist = slist[!is.element(slist,exclude.sources)]
   res = NULL
   for(src in slist) {
-    n = toxvaldbBMDh::runQuery(paste0("select count(*) from toxval where source='",src,"'"),toxval.db)[1,1]
+    n = runQuery(paste0("select count(*) from toxval where source='",src,"'"),toxval.db)[1,1]
     cat(src,":",n,"\n")
     query = paste0("SELECT
                       a.dtxsid,a.casrn,a.name,
@@ -47,7 +57,7 @@ export.for.critical_effect_mapping <- function(toxval.db="res_toxval_v95",user="
                       and b.exposure_route='oral'
                      ")
 
-    mat = toxvaldbBMDh::runQuery(query,toxval.db,T,F)
+    mat = runQuery(query,toxval.db,T,F)
     mat = unique(mat)
 
     ttlist = c( "NOAEL (HED)","NOAEL (HEC)","NOAEL","NOEL",

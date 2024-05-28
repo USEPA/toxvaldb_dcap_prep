@@ -1,7 +1,5 @@
-library(openxlsx)
-library(digest)
 #-----------------------------------------------------------------------------------
-#' Count proerties of records
+#' @#' Count proerties of records
 #'
 #' `export.for.bmdh` Exports all of the data required for the BMDh calculations.
 #' The main query may need to be modified to extract more columns if needed for
@@ -11,14 +9,27 @@ library(digest)
 #' scaling factors for those need to added to the function bmd.per.study().
 #'
 #' @param toxval.db Database version
-#' @param user The username for the MySQL database. The database instance is
-#' hard-coded in the function setDBConn().
+#' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @param sys.date PARAM_DESCRIPTION, Default: '2024-03-26'
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}, \code{\link[openxlsx]{createStyle}}
+#' @rdname property.counter
+#' @importFrom openxlsx read.xlsx write.xlsx createStyle
 #-----------------------------------------------------------------------------------
 property.counter <- function(toxval.db="res_toxval_v95",sys.date="2024-03-26") {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/"
 
   file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," ",Sys.Date(),".xlsx")

@@ -1,7 +1,5 @@
-library(openxlsx)
-library(digest)
 #-----------------------------------------------------------------------------------
-#' Export records required for calculating BMDh values.
+#' @#' Export records required for calculating BMDh values.
 #'
 #' `export.for.bmdh` Exports all of the data required for the BMDh calculations.
 #' The main query may need to be modified to extract more columns if needed for
@@ -11,20 +9,34 @@ library(digest)
 #' scaling factors for those need to added to the function bmd.per.study().
 #'
 #' @param toxval.db Database version
-#' @param user The username for the MySQL database. The database instance is
-#' hard-coded in the function setDBConn().
+#' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[dplyr]{distinct}}
+#'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+#' @rdname export.efsa
+#' @importFrom dplyr distinct
+#' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
-export.efsa <- function(toxval.db="res_toxval_v95",user="rjudson",password) {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+export.efsa <- function(toxval.db="res_toxval_v95",user="user",password) {
+  printCurrentFunction(toxval.db)
   dir = "data/"
-  toxvaldbBMDh::setDBConn(user=user,password=password)
+  setDBConn(user=user,password=password)
 
   res = NULL
   src = "EFSA"
-  n = toxvaldbBMDh::runQuery(paste0("select count(*) from toxval where source='",src,"'"),toxval.db)[1,1]
+  n = runQuery(paste0("select count(*) from toxval where source='",src,"'"),toxval.db)[1,1]
   cat(src,":",n,"\n")
   query = paste0("SELECT
                     a.dtxsid,a.casrn,a.name,
@@ -67,8 +79,8 @@ export.efsa <- function(toxval.db="res_toxval_v95",user="rjudson",password) {
                    ")
 
 
-  mat = toxvaldbBMDh::runQuery(query,toxval.db,T,F)
-  mat = unique(mat)
+  mat = runQuery(query,toxval.db,T,F)
+  mat = dplyr::distinct(mat)
   mat[is.na(mat$toxval_numeric_qualifier),"toxval_numeric_qualifier"] = "="
   mat[is.element(mat$toxval_numeric_qualifier,c("~","<","<=")),"toxval_numeric_qualifier"] = "="
   mat = mat[mat$toxval_numeric_qualifier=="=",]

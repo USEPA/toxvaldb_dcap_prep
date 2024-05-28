@@ -1,6 +1,5 @@
-library(ggplot2)
 #-------------------------------------------------------------------------------
-#' Plot the BMDs vs the regulatory values for different percentiles and determine the best fit
+#' @#' Plot the BMDs vs the regulatory values for different percentiles and determine the best fit
 #'
 #' `bmdh.percentile.plot` Helps determine the optimal percentile. The output file shows the
 #' fit statistics for different percentiles, and one should select the one with the lowest RMSE and highest R2.
@@ -11,10 +10,31 @@ library(ggplot2)
 #' @param minstudies - only chemicals with this minimum number of studies will be used in the calculation
 #' @param cutoff.logsd Only chemicals with their log SD of BMDh values will be used in the calculation
 #' @return Write a file with the results: toxval_PODs_for_BMDh chemical level {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
+#'  \code{\link[stats]{lm}}
+#'  \code{\link[RMySQL]{character(0)}}
+#'  \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{aes}}, \code{\link[ggplot2]{labs}}, \code{\link[ggplot2]{geom_point}}, \code{\link[ggplot2]{ggtheme}}, \code{\link[ggplot2]{facet_grid}}, \code{\link[ggplot2]{lims}}, \code{\link[ggplot2]{geom_segment}}, \code{\link[ggplot2]{ggsave}}
+#'  \code{\link[grDevices]{dev}}
+#' @rdname bmdh.percentile.plot
+#' @importFrom openxlsx read.xlsx write.xlsx
+#' @importFrom stats lm
+#' @importFrom RMySQL summary
+#' @importFrom ggplot2 ggplot aes ggtitle geom_point theme_bw facet_grid xlim ylim xlab ylab geom_segment ggsave
+#' @importFrom grDevices dev.off
 #-------------------------------------------------------------------------------
 bmdh.percentile.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date="2024-02-28",minstudies=3,cutoff.logsd=2) {
-  toxvaldbBMDh::printCurrentFunction()
+  printCurrentFunction()
   dir = "data/"
   file = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".xlsx")
   print(file)

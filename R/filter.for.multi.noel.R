@@ -1,6 +1,5 @@
-library(digest)
 #-----------------------------------------------------------------------------------
-#' Filter the exported records for redundancy of NO(A)EL / LO(A)EL PODs in a study group
+#' @#' Filter the exported records for redundancy of NO(A)EL / LO(A)EL PODs in a study group
 #'
 #' `filter.for.multi.noel` Filters where multiple NOEL/NOEL etc. exist. For each study_group
 #' this will select the highest NO(A)EL below the lowest LO(A)EL and the lowest LO(A)EL.
@@ -9,10 +8,23 @@ library(digest)
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+#' @rdname filter.for.multi.noel
+#' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
 filter.for.multi.noel <- function(toxval.db="res_toxval_v95",sys.date="2024-05-20") {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/"
   file = paste0(dir,"results/ToxValDB for BMDh LEL NEL filtered ",toxval.db," ",sys.date,".xlsx")
   print(file)

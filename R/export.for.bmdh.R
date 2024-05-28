@@ -1,7 +1,5 @@
-library(openxlsx)
-library(digest)
 #-----------------------------------------------------------------------------------
-#' Export records required for calculating BMDh values.
+#' @#' Export records required for calculating BMDh values.
 #'
 #' `export.for.bmdh` Exports all of the data required for the BMDh calculations.
 #' The main query may need to be modified to extract more columns if needed for
@@ -11,16 +9,28 @@ library(digest)
 #' scaling factors for those need to added to the function bmd.per.study().
 #'
 #' @param toxval.db Database version
-#' @param user The username for the MySQL database. The database instance is
-#' hard-coded in the function setDBConn().
+#' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+#' @rdname export.for.bmdh
+#' @importFrom openxlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
 export.for.bmdh <- function(toxval.db="res_toxval_v95",user="_dataminer",password="pass") {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/"
-  toxvaldbBMDh::setDBConn(user=user,password=password)
+  setDBConn(user=user,password=password)
 
   slist = c("ATSDR PFAS 2021","ATSDR MRLs","Copper Manufacturers",
            "ECHA IUCLID","ECOTOX","EFSA","HAWC PFAS 430",
@@ -34,7 +44,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95",user="_dataminer",passwor
   for(i in 1:length(slist)) {
     src = slist[i]
     query = paste0("select distinct priority from record_source where source='",src,"' and long_ref!='-'")
-    vals = toxvaldbBMDh::runQuery(query,toxval.db)[,1]
+    vals = runQuery(query,toxval.db)[,1]
     cat(src,paste(vals,collapse="|"),"\n")
     if(length(vals)>0) plist[i] = vals[1]
     else {
@@ -99,7 +109,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95",user="_dataminer",passwor
                      ")
 
 
-    mat = toxvaldbBMDh::runQuery(query,toxval.db,T,F)
+    mat = runQuery(query,toxval.db,T,F)
     mat = unique(mat)
     cat("[1]",src,":",nrow(mat),"\n")
     mat[is.na(mat$toxval_numeric_qualifier),"toxval_numeric_qualifier"] = "ns"

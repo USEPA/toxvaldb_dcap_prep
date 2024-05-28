@@ -1,28 +1,38 @@
-library(openxlsx)
-library(digest)
 #-----------------------------------------------------------------------------------
-#' Export records required for performing QC on the ToxValDB DCAP sources.
+#' @#' Export records required for performing QC on the ToxValDB DCAP sources.
 #'
 #' `export.for.dcap.qc` Exports all of the data required for the doing DCAP QC calculations.
 #'
 #' @param toxval.db Database version
-#' @param user The username for the MySQL database. The database instance is
-#' hard-coded in the function setDBConn().
+#' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+#' @rdname export.for.dcap.qc
+#' @importFrom openxlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
 export.for.dcap.qc <- function(toxval.db="res_toxval_v95",user="_dataminer",password="pass") {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/"
-  toxvaldbBMDh::setDBConn(user=user,password=password)
+  setDBConn(user=user,password=password)
   slist = c("ATSDR MRLs","ATSDR PFAS 2021","Copper Manufacturers",
             "ECHA IUCLID","ECOTOX","EFSA","HAWC PFAS 150","HAWC PFAS 430",
             "HAWC Project","HEAST","HESS","HPVIS","IRIS","NTP PFAS",
             "PFAS 150 SEM v2","PPRTV (CPHEA)","ToxRefDB","WHO JECFA Tox Studies")
   res = NULL
   for(src in slist) {
-    n = toxvaldbBMDh::runQuery(paste0("select count(*) from toxval where source='",src,"'"),toxval.db)[1,1]
+    n = runQuery(paste0("select count(*) from toxval where source='",src,"'"),toxval.db)[1,1]
     cat(src,":",n,"\n")
     query = paste0("SELECT
                       a.dtxsid,a.casrn,a.name,
@@ -71,7 +81,7 @@ export.for.dcap.qc <- function(toxval.db="res_toxval_v95",user="_dataminer",pass
                      ")
 
 
-    mat = toxvaldbBMDh::runQuery(query,toxval.db,T,F)
+    mat = runQuery(query,toxval.db,T,F)
     if(src!="ECOTOX") mat = mat[mat$priority==1,]
     mat = unique(mat)
     #cat("[1]",nrow(mat),"\n")

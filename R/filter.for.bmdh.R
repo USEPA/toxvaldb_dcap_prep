@@ -1,6 +1,5 @@
-library(digest)
 #-----------------------------------------------------------------------------------
-#' Filter the exported records for redundancy
+#' @#' Filter the exported records for redundancy
 #'
 #' `filter.for.bmdh` Filters redundant rows in the raw database export. There are
 #' two kinds of redundancy. The first filters extra reference rows from the record_source table.
@@ -11,14 +10,29 @@ library(digest)
 #' processing issues. These will be solved there, but the filtering
 #' in this function takes care of this issue
 #' for the moment.
-
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+#'  \code{\link[digest]{digest}}
+#' @rdname filter.for.bmdh
+#' @importFrom openxlsx read.xlsx createStyle write.xlsx
+#' @importFrom digest digest
+
 #-----------------------------------------------------------------------------------
 filter.for.bmdh <- function(toxval.db="res_toxval_v95",sys.date="2024-05-20") {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/"
   file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," ",sys.date,".xlsx")
   print(file)

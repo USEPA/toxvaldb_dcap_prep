@@ -1,16 +1,29 @@
 #-----------------------------------------------------------------------------------
-#' Find the source for odfd critical effect chunks.
+#' @#' Find the source for odfd critical effect chunks.
 #'
 #' @param toxval.db Database version
-#' @param user The username for the MySQL database. The database instance is
-#' hard-coded in the function setDBConn().
+#' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @return OUTPUT_DESCRIPTION
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
+#' @rdname critical_effect_source
+#' @importFrom openxlsx read.xlsx write.xlsx
 #-----------------------------------------------------------------------------------
 critical_effect_source <- function(toxval.db="res_toxval_v95",user="_dataminer",password="pass") {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/critical_effects/"
-  toxvaldbBMDh::setDBConn(user=user,password=password)
+  setDBConn(user=user,password=password)
   file = paste0(dir,"devito other calls with comments.xlsx")
   print(file)
   input = openxlsx::read.xlsx(file)
@@ -36,7 +49,7 @@ critical_effect_source <- function(toxval.db="res_toxval_v95",user="_dataminer",
                     INNER JOIN record_source f on b.toxval_id=f.toxval_id
                     WHERE
                     b.critical_effect_original like '%",term,"%'")
-    temp = toxvaldbBMDh::runQuery(query,toxval.db)
+    temp = runQuery(query,toxval.db)
     if(nrow(temp)>0) {
       temp$term = term
       temp$comment = comment

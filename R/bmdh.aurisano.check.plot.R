@@ -1,13 +1,31 @@
 #-------------------------------------------------------------------------------
-#' Plot the different between the Aurisano and current BMDh values
+#' @#' Plot the difference between the Aurisano and current BMDh values
 #'
-#' `bmdh.per.study` plots the different between the Aurisano and current BMDh values
+#' `bmdh.aurisano.check.plot` plots the different between the Aurisano and current BMDh values
 #' @param to.file If TRUE, send the plot to a file
 #' @param toxval.db Database version
 #' @param sys.date The date of the database export
-#' @export
+#' @export 
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @return OUTPUT_DESCRIPTION
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[openxlsx]{read.xlsx}}
+#'  \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{aes}}, \code{\link[ggplot2]{labs}}, \code{\link[ggplot2]{geom_point}}, \code{\link[ggplot2]{ggtheme}}, \code{\link[ggplot2]{scale_continuous}}, \code{\link[ggplot2]{ggsave}}
+#'  \code{\link[grDevices]{dev}}
+#' @rdname bmdh.aurisano.check.plot
+#' @importFrom openxlsx read.xlsx
+#' @importFrom ggplot2 ggplot aes ggtitle geom_point theme_bw xlab ylab scale_x_continuous scale_y_continuous ggsave
+#' @importFrom grDevices dev.off
 #-------------------------------------------------------------------------------
-bmdh.aurisano.check.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date="2024-02-28") {
+bmdh.aurisano.check.plot <- function(to.file=FALSE,toxval.db="res_toxval_v95",sys.date="2024-02-28") {
   printCurrentFunction()
   dir = "data/"
   file = paste0(dir,"results/ToxValDB BMDh per study ",toxval.db," ",sys.date,".xlsx")
