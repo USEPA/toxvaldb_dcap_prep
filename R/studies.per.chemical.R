@@ -1,0 +1,45 @@
+library(digest)
+#-----------------------------------------------------------------------------------
+#' Calculate some stats for DCAP
+#'
+#' `studies.per.chemical` Gets teh number of studies per chemical from the current
+#' ToxValDB export
+
+#' @param toxval.db Database version
+#' @param sys.date The date of the export
+#' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
+#' @export
+#-----------------------------------------------------------------------------------
+studies.per.chemical <- function(toxval.db="res_toxval_v95",sys.date="2024-04-03") {
+  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  dir = "data/"
+  file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
+  print(file)
+  res = openxlsx::read.xlsx(file)
+
+  dlist = unique(res$dtxsid)
+  nlist = c("dtxsid","casrn","name","records","studies")
+  mat = as.data.frame(matrix(nrow=length(dlist),ncol=length(nlist)))
+  names(mat) = nlist
+  for(i in 1:length(dlist)) {
+    dtxsid = dlist[i]
+    t1 = res[is.element(res$dtxsid,dtxsid),]
+    mat[i,"dtxsid"] = dtxsid
+    mat[i,"casrn"] = t1[1,"casrn"]
+    mat[i,"name"] = t1[1,"name"]
+    mat[i,"records"] = nrow(t1)
+    mat[i,"studies"] = length(unique(t1$study_group))
+  }
+
+  file = paste0(dir,"DCAP/study_x_chemical.xlsx")
+  openxlsx::write.xlsx(mat,file)
+
+  t2 = as.data.frame(table(mat$records))
+  names(t2) = c("records","chemicals")
+  file = paste0(dir,"DCAP/record count table.xlsx")
+  openxlsx::write.xlsx(t2,file)
+  t2 = as.data.frame(table(mat$studies))
+  names(t2) = c("studies","chemicals")
+  file = paste0(dir,"results/study count table.xlsx")
+  openxlsx::write.xlsx(t2,file)
+}

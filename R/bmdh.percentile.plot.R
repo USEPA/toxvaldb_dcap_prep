@@ -1,0 +1,88 @@
+library(ggplot2)
+#-------------------------------------------------------------------------------
+#' Plot the BMDs vs the regulatory values for different percentiles and determine the best fit
+#'
+#' `bmdh.percentile.plot` Helps determine the optimal percentile. The output file shows the
+#' fit statistics for different percentiles, and one should select the one with the lowest RMSE and highest R2.
+#'
+#' @param to.file If TRUE, send the plot to a file
+#' @param toxval.db Database version
+#' @param sys.date The date of the database export
+#' @param minstudies - only chemicals with this minimum number of studies will be used in the calculation
+#' @param cutoff.logsd Only chemicals with their log SD of BMDh values will be used in the calculation
+#' @return Write a file with the results: toxval_PODs_for_BMDh chemical level {toxval.db} {sys.date}.xlsx
+#' @export
+#-------------------------------------------------------------------------------
+bmdh.percentile.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date="2024-02-28",minstudies=3,cutoff.logsd=2) {
+  toxvaldbBMDh::printCurrentFunction()
+  dir = "data/"
+  file = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".xlsx")
+  print(file)
+  mat = openxlsx::read.xlsx(file)
+  mat = mat[mat$studies>=minstudies,]
+  mat$highsd = "N"
+  mat[mat$log.sd>cutoff.logsd,"highsd"] = "Y"
+  #mat = mat[mat$log.sd<cutoff.logsd,]
+  plist = c(5,10,15,20,25,30,35)
+  clist = c("pod_05","pod_10","pod_15","pod_20","pod_25","pod_30","pod_35")
+  hlist = c(" 5th percentile","10th percentile","15th percentile","20th percentile","25th percentile","30th percentile","35th percentile")
+  nlist = c("percentile","column","abserr","rmse","r2","slope","pval","chemicals")
+  res = as.data.frame(matrix(nrow=length(plist),ncol=length(nlist)))
+  names(res) = nlist
+  pdata = NULL
+  tmat = mat[mat$studies>=minstudies,]
+  tmat = tmat[!is.na(tmat$pod_hra),]
+  for(i in 1:length(plist)) {
+    col = clist[i]
+    res[i,"percentile"] = plist[i]
+    res[i,"column"] = col
+
+    x = log10(tmat[,col])
+    y = log10(tmat[,"pod_hra"])
+
+    ptemp = tmat[,c(col,"pod_hra","log.sd")]
+    ptemp[,1] = log10(ptemp[,1])
+    ptemp[,2] = log10(ptemp[,2])
+    names(ptemp) = c("experiment","RA","log.sd")
+    ptemp$col = hlist[i]
+    ptemp$highsd = "N"
+    ptemp[ptemp$log.sd>cutoff.logsd,"highsd"] = "Y"
+    pdata = rbind(pdata,ptemp)
+    temp = stats::lm(y~x+0)
+    stemp = RMySQL::summary(temp)
+    slope = stemp$coefficients[1,1]
+    p = stemp$coefficients[1,4]
+    r2 = stemp$adj.r.squared
+    rmse = stemp$sigma
+
+    res[i,"abserr"] = mean(x-y,na.rm=T)
+    res[i,"rmse"] = rmse
+    res[i,"r2"] = r2
+    res[i,"slope"] = slope
+    res[i,"pval"] = p
+    res[i,"chemicals"] = length(y)
+  }
+  pdata = pdata[!is.na(pdata$RA),]
+  print(res)
+  p = ggplot2::ggplot(data=pdata,ggplot2::aes(x=experiment,y=RA))  +
+    ggplot2::ggtitle(paste0("BMDh Percentiles")) +
+    ggplot2::geom_point(size=0.1) +
+    ggplot2::theme_bw() +
+    ggplot2::facet_grid(~col) +
+    ggplot2::xlim(-4,4) + ggplot2::ylim(-4,4) +
+    ggplot2::xlab("Experimental") +
+    ggplot2::ylab("Human RA") +
+    ggplot2::geom_segment(ggplot2::aes(x=-4,xend=4,y=-4,yend=4))
+  print(p)
+
+  file = paste0(dir,"results/ToxValDB BMDh per chemical percentiles ",toxval.db," ",sys.date,".xlsx")
+  openxlsx::write.xlsx(res,file)
+
+  if(to.file) {
+    fname = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".pdf")
+    #fname = paste0(dir,"bmdh.percentile.plot.pdf")
+    ggplot2::ggsave(plot = p, width = 8, height = 2.5, dpi = 300, filename =fname)
+    grDevices::dev.off()
+  }
+  else browser()
+}
