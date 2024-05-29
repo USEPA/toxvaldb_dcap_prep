@@ -1,23 +1,19 @@
 #-----------------------------------------------------------------------------------
-#' @#' Export records required for performing QC on the ToxValDB DCAP sources.
-#'
-#' `export.for.dcap.qc` Exports all of the data required for the doing DCAP QC calculations.
-#'
 #' @param toxval.db Database version
 #' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
-#' @export 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @details DETAILS
-#' @examples 
+#' @export
+#' @title export.for.dcap.qc
+#' @description Export records required for performing QC on the ToxValDB DCAP sources.
+#' @details Exports all of the data required for the doing DCAP QC calculations.
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname export.for.dcap.qc
 #' @importFrom openxlsx createStyle write.xlsx

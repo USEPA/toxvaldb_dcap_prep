@@ -1,6 +1,4 @@
 #--------------------------------------------------------------------------------------
-#' @#' Inserts multiple rows into a database table
-#'
 #' @param mat data frame containing the data, with the column names corresponding
 #' @param table name of the database table to which data will be inserted
 #' @param db the name of the database
@@ -9,7 +7,7 @@
 #' @title runInsertTable
 #' @description Inserts multiple rows into a database table
 #' @param get.id PARAM_DESCRIPTION, Default: T
-#' @return OUTPUT_DESCRIPTION
+#' @return None; inserts data into DB
 #' @details DETAILS
 #' @examples
 #' \dontrun{

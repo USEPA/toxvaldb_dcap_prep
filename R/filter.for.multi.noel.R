@@ -1,17 +1,13 @@
 #-----------------------------------------------------------------------------------
-#' @#' Filter the exported records for redundancy of NO(A)EL / LO(A)EL PODs in a study group
-#'
-#' `filter.for.multi.noel` Filters where multiple NOEL/NOEL etc. exist. For each study_group
-#' this will select the highest NO(A)EL below the lowest LO(A)EL and the lowest LO(A)EL.
-#' In all cases, all BMDx values are included
-#'
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx
 #' @export
 #' @title filter.for.multi.noel
 #' @description Filter the exported records for redundancy of NO(A)EL / LO(A)EL PODs in a study group
-#' @details DETAILS
+#' @details Filters where multiple NOEL/NOEL etc. exist. For each study_group
+#' this will select the highest NO(A)EL below the lowest LO(A)EL and the lowest LO(A)EL.
+#' In all cases, all BMDx values are included
 #' @examples
 #' \dontrun{
 #' if(interactive()){

@@ -1,24 +1,21 @@
 #-----------------------------------------------------------------------------------
-#' @#' Build a data frame of the data for the toxval manuscript
-#'
 #' @param toxval.db Database version
 #' @param source The source to be updated
 #' @return Write a file with the results
-#'
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @title export.for.eco.qsar
+#' @description Build a data frame of the data for the toxval manuscript
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[utils]{write.table}}
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname export.for.eco.qsar
-#' @export 
+#' @export
 #' @importFrom utils write.csv
 #' @importFrom openxlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------

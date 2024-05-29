@@ -1,15 +1,11 @@
 #-----------------------------------------------------------------------------------
-#' @#' Calculate some stats for DCAP
-#'
-#' `dcap.counts` Gets some statistics for the DCAP project off of the current
-#' ToxValDB export
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
 #' @export
 #' @title dcap.counts
-#' @description Gets some statistics for the DCAP project off of the current ToxValDB export
-#' @details DETAILS
+#' @description Calculate some stats for DCAP
+#' @details Gets some statistics for the DCAP project off of the current ToxValDB export
 #' @examples
 #' \dontrun{
 #' if(interactive()){
@@ -20,7 +16,6 @@
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname dcap.counts
 #' @importFrom openxlsx read.xlsx write.xlsx
-
 #-----------------------------------------------------------------------------------
 dcap.counts <- function(toxval.db="res_toxval_v95",sys.date="2024-04-09") {
   printCurrentFunction(toxval.db)

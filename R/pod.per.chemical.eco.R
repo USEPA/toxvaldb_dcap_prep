@@ -1,12 +1,9 @@
 #-------------------------------------------------------------------------------
-#' @#' Calculate the eco PODs
-#'
-#' @param toxvaldb The version fo the ToxValDB to use
+#' @param toxval.db The version fo the ToxValDB to use
 #' @param sys.date The date of the database export
 #' @title pod.per.chemical.eco
 #' @description Calculate the eco PODs
-#' @param toxval.db PARAM_DESCRIPTION, Default: 'res_toxval_v95'
-#' @return OUTPUT_DESCRIPTION
+#' @return Writes output to file
 #' @details DETAILS
 #' @examples
 #' \dontrun{

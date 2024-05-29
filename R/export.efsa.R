@@ -1,28 +1,24 @@
 #-----------------------------------------------------------------------------------
-#' @#' Export records required for calculating BMDh values.
-#'
-#' `export.for.bmdh` Exports all of the data required for the BMDh calculations.
+#' @param toxval.db Database version
+#' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
+#' @param password The user's MySQL database password.
+#' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
+#' @export
+#' @title export.efsa
+#' @description Export records required for calculating BMDh values.
+#' @details Exports all of the data required for the BMDh calculations.
 #' The main query may need to be modified to extract more columns if needed for
 #' the final application. Certain sources have been excluded because they have a high
 #' percentage of read-across values. Species are filtered to only include Human,
 #' Dog, Mouse, Rat and Rabbit. If more species are to be included, then allometric
 #' scaling factors for those need to added to the function bmd.per.study().
-#'
-#' @param toxval.db Database version
-#' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
-#' @param password The user's MySQL database password.
-#' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
-#' @export 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[dplyr]{distinct}}
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname export.efsa

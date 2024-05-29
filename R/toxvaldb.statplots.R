@@ -1,20 +1,19 @@
 #-------------------------------------------------------------------------------
-#' @#' Plot statistics for ToxValDB for DCAP sources
 #' @param dir The directory where the lists are stored
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param to.file PARAM_DESCRIPTION, Default: F
-#' @param toxval.db PARAM_DESCRIPTION, Default: 'res_toxval_v95'
-#' @param sys.date PARAM_DESCRIPTION, Default: '2024-04-16'
-#' @return OUTPUT_DESCRIPTION
+#' @title toxvaldb.statplots
+#' @description Plot statistics for ToxValDB for DCAP sources
+#' @param to.file Whether to write plots to file or simply view them, Default: F
+#' @param toxval.db Database version
+#' @param sys.date The date of the database export
+#' @return None; plots are generated
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}
 #'  \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{aes}}, \code{\link[ggplot2]{labs}}, \code{\link[ggplot2]{geom_boxplot}}, \code{\link[ggplot2]{scale_continuous}}, \code{\link[ggplot2]{scale_manual}}, \code{\link[ggplot2]{coord_flip}}, \code{\link[ggplot2]{ggtheme}}, \code{\link[ggplot2]{theme}}, \code{\link[ggplot2]{element}}, \code{\link[ggplot2]{geom_jitter}}, \code{\link[ggplot2]{geom_freqpoly}}, \code{\link[ggplot2]{facet_wrap}}, \code{\link[ggplot2]{lims}}, \code{\link[ggplot2]{ggsave}}
 #'  \code{\link[forcats]{fct_rev}}
@@ -22,7 +21,7 @@
 #'  \code{\link[gridExtra]{arrangeGrob}}
 #'  \code{\link[grDevices]{dev}}
 #' @rdname toxvaldb.statplots
-#' @export 
+#' @export
 #' @importFrom openxlsx read.xlsx
 #' @importFrom ggplot2 ggplot aes ggtitle geom_boxplot scale_y_continuous scale_fill_manual coord_flip theme_bw ylab xlab theme element_text margin geom_jitter geom_histogram facet_wrap scale_x_continuous ylim element_rect ggsave
 #' @importFrom forcats fct_rev

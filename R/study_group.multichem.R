@@ -1,6 +1,4 @@
 #-----------------------------------------------------------------------------------
-#' @#' Find study groups that span multiple chemicals
-#'
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx

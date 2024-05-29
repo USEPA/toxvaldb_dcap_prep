@@ -1,24 +1,19 @@
 #-----------------------------------------------------------------------------------
-#' @#' Get the unique HEAST chemicals
-#'
-#' `heast.only.chemicals` Exports The unique chemicals in HEAST that are not
-#' in IRIS or PPRTV
-#'
 #' @param toxval.db Database version
 #' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @return Write a file with the results: HEAST/HEAST unique chemicals.xlsx
-#' @export 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @details DETAILS
-#' @examples 
+#' @export
+#' @title heast.only.chemicals
+#' @description Get the unique HEAST chemicals
+#' @details Exports The unique chemicals in HEAST that are not in IRIS or PPRTV
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{write.xlsx}}
 #' @rdname heast.only.chemicals
 #' @importFrom openxlsx write.xlsx

@@ -1,21 +1,17 @@
 #-----------------------------------------------------------------------------------
-#' @#' Calculate the BMDh values per study
-#'
-#' `bmdh.per.study` Calculates one BMDh value per study using the Aurisano algorithm.
-#' Because EPA has not fully developed the mapping from critical effects in ToxValDB
-#' to standardized effects, teh values from Aurisano are used where records match.
-#' Aurisano used ToxValDB 9.1, whereas 9.5 is used here. There is also code here to do the other
-#' required mappings, and thos may need to be updated.For records in both the old and new
-#' databases, an on-the-fly plot is produced to show the corresponded between study-level
-#' BMDh values.
-#'
 #' @param toxval.db Database version
 #' @param sys.date The date of the database export
 #' @return Write a file with the results: toxval_PODs_for_BMDh {toxval.db} {sys.date}.xlsx
 #' @export
 #' @title bmdh.per.study
 #' @description Calculate the BMDh values per study
-#' @details DETAILS
+#' @details Calculates one BMDh value per study using the Aurisano algorithm.
+#' Because EPA has not fully developed the mapping from critical effects in ToxValDB
+#' to standardized effects, teh values from Aurisano are used where records match.
+#' Aurisano used ToxValDB 9.1, whereas 9.5 is used here. There is also code here to do the other
+#' required mappings, and thos may need to be updated.For records in both the old and new
+#' databases, an on-the-fly plot is produced to show the corresponded between study-level
+#' BMDh values.
 #' @examples
 #' \dontrun{
 #' if(interactive()){

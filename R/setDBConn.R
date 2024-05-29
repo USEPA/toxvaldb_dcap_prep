@@ -1,21 +1,20 @@
 #--------------------------------------------------------------------------------------
-#' @#' set SQL connection to the database
 #' @param server SQL server on which relevant database lives
 #' @param user SQL username to access database
 #' @param password SQL password corresponding to username
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param port PARAM_DESCRIPTION, Default: -1
-#' @return OUTPUT_DESCRIPTION
+#' @title setDBConn
+#' @description set SQL connection to the database
+#' @param port Port to be used for connection, Default: -1
+#' @return None
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
 #' @rdname setDBConn
-#' @export 
+#' @export
 #--------------------------------------------------------------------------------------
 setDBConn <- function(server="ccte-mysql-res.epa.gov",user="user",password=NA,port=-1) {
   printCurrentFunction()

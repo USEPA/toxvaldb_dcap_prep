@@ -1,28 +1,24 @@
 #-----------------------------------------------------------------------------------
-#' @#' Export records required for calculating POD values for ecotox QSAR models.
-#' The data is exported as a xlsx and csv file because some records may cause the Excel format
-#' to break. You can then open the csv (always works) and save as Excel
-#'
 #' @param toxval.db Database version
 #' @param do.load If TRUE, read from the database into a global
 #' @return Write a file with the results
-#'
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param user PARAM_DESCRIPTION, Default: 'rjudson'
-#' @param password PARAM_DESCRIPTION
-#' @details DETAILS
-#' @examples 
+#' @title export.for.ecopods
+#' @description Export records required for calculating POD values for ecotox QSAR models.
+#' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
+#' @param password The user's MySQL database password.
+#' @details The data is exported as a xlsx and csv file because some records may cause the Excel format
+#' to break. You can then open the csv (always works) and save as Excel
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #'  \code{\link[utils]{write.table}}
 #' @rdname export.for.ecopods
-#' @export 
+#' @export
 #' @importFrom openxlsx createStyle write.xlsx
 #' @importFrom utils write.csv
 #-----------------------------------------------------------------------------------

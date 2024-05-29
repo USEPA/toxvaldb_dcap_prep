@@ -1,7 +1,11 @@
 #-----------------------------------------------------------------------------------
-#' @#' Filter the exported records for redundancy
-#'
-#' `filter.for.bmdh` Filters redundant rows in the raw database export. There are
+#' @param toxval.db Database version
+#' @param sys.date The date of the export
+#' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
+#' @export
+#' @title filter.for.bmdh
+#' @description Filter the exported records for redundancy
+#' @details Filters redundant rows in the raw database export. There are
 #' two kinds of redundancy. The first filters extra reference rows from the record_source table.
 #' The main data is in the toxval tables, and references are linked through the toxval_id to
 #' the record_source table. During the curation process, these references get
@@ -10,13 +14,6 @@
 #' processing issues. These will be solved there, but the filtering
 #' in this function takes care of this issue
 #' for the moment.
-#' @param toxval.db Database version
-#' @param sys.date The date of the export
-#' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
-#' @export
-#' @title filter.for.bmdh
-#' @description Filter the exported records for redundancy
-#' @details DETAILS
 #' @examples
 #' \dontrun{
 #' if(interactive()){

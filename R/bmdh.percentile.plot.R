@@ -1,9 +1,4 @@
 #-------------------------------------------------------------------------------
-#' @#' Plot the BMDs vs the regulatory values for different percentiles and determine the best fit
-#'
-#' `bmdh.percentile.plot` Helps determine the optimal percentile. The output file shows the
-#' fit statistics for different percentiles, and one should select the one with the lowest RMSE and highest R2.
-#'
 #' @param to.file If TRUE, send the plot to a file
 #' @param toxval.db Database version
 #' @param sys.date The date of the database export
@@ -13,7 +8,8 @@
 #' @export
 #' @title bmdh.percentile.plot
 #' @description Plot the BMDs vs the regulatory values for different percentiles and determine the best fit
-#' @details DETAILS
+#' @details Helps determine the optimal percentile. The output file shows the
+#' fit statistics for different percentiles, and one should select the one with the lowest RMSE and highest R2.
 #' @examples
 #' \dontrun{
 #' if(interactive()){

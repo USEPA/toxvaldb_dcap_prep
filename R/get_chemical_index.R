@@ -1,17 +1,18 @@
+#-----------------------------------------------------------------------------------
 #' @title get_chemical_index
 #' @param input_toxval_file Filepath to input ToxVal file with DTXSID values.
 #' @param input_qsar_file Filepath to input QSAR Ready Smiles file with DTXSID values.
-#' @export 
+#' @export
 #' @return Combined chemical index dataframe. A CSV file is also written to the input subfolder.
 #' @description Generate a chemical index based on ToxVal DTXSID list and QSAR Ready Smiles.
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[readr]{read_delim}}, \code{\link[readr]{cols}}, \code{\link[readr]{write_delim}}
 #'  \code{\link[dplyr]{select}}, \code{\link[dplyr]{mutate-joins}}, \code{\link[dplyr]{distinct}}, \code{\link[dplyr]{c("rowwise", "rowwise")}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{group_by}}
 #'  \code{\link[purrr]{map}}
@@ -21,6 +22,7 @@
 #' @importFrom dplyr select left_join distinct rowwise mutate ungroup
 #' @importFrom purrr map_chr
 #' @importFrom digest digest
+#-----------------------------------------------------------------------------------
 get_chemcial_index <- function(input_toxval_file, input_qsar_file){
 
   if(is.null(input_toxval_file) || input_toxval_file %in% c(NA, "NA", "")) stop("input_toxval_file must be a file path string...")

@@ -1,13 +1,11 @@
 #-----------------------------------------------------------------------------------
-#' @#' Find the source for odd critical effect chunks.
-#'
 #' @param toxval.db Database version
 #' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @export
 #' @title critical_effect_source
 #' @description Find the source for odd critical effect chunks.
-#' @return OUTPUT_DESCRIPTION
+#' @return Writes output to file
 #' @details DETAILS
 #' @examples
 #' \dontrun{

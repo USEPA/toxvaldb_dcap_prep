@@ -1,13 +1,4 @@
 #-----------------------------------------------------------------------------------
-#' @#' Export records required for calculating BMDh values.
-#'
-#' `export.for.bmdh` Exports all of the data required for the BMDh calculations.
-#' The main query may need to be modified to extract more columns if needed for
-#' the final application. Certain sources have been excluded because they have a high
-#' percentage of read-across values. Species are filtered to only include Human,
-#' Dog, Mouse, Rat and Rabbit. If more species are to be included, then allometric
-#' scaling factors for those need to added to the function bmd.per.study().
-#'
 #' @param toxval.db Database version
 #' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
@@ -15,7 +6,12 @@
 #' @export
 #' @title export.for.bmdh.ecotox
 #' @description Export records required for calculating BMDh values.
-#' @details DETAILS
+#' @details Exports all of the data required for the BMDh calculations.
+#' The main query may need to be modified to extract more columns if needed for
+#' the final application. Certain sources have been excluded because they have a high
+#' percentage of read-across values. Species are filtered to only include Human,
+#' Dog, Mouse, Rat and Rabbit. If more species are to be included, then allometric
+#' scaling factors for those need to added to the function bmd.per.study().
 #' @examples
 #' \dontrun{
 #' if(interactive()){
