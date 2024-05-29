@@ -8,18 +8,18 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx
-#' @export 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @export
+#' @title filter.summary
+#' @description Summarize the filtering steps
 #' @param do.load PARAM_DESCRIPTION, Default: T
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname filter.summary
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
@@ -61,7 +61,7 @@ filter.summary <- function(toxval.db="res_toxval_v95",sys.date="2024-04-10",do.l
   chems$pod1 = NA
   chems$pod1 = NA
 
-  for(i in 1:nrow(chems)) {
+  for(i in seq_len(nrow(chems))) {
     dtxsid = chems[i,"dtxsid"]
     t1 = T1[is.element(T1$dtxsid,dtxsid),]
     chems[i,"sg1"] = length(unique(t1$study_group))

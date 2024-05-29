@@ -3,20 +3,20 @@
 #' This uses the same input as the function bmdh.perstudy / bmdh.per.chemical
 #' @param toxval.db The version of ToxValDB to use
 #' @param sys.date Date of the most recent data export #' Make the rule #' filter LOELs when NOELs are present for the same study #' filter out redundant values for the same study group #' Perform the allometric scaling
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @title pod.per.chemical
+#' @description Explore different methods for calculating PODs
 #' @param t2 PARAM_DESCRIPTION
 #' @param scale.mat PARAM_DESCRIPTION
 #' @return OUTPUT_DESCRIPTION
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
 #' @rdname pod.per.chemical
-#' @export 
+#' @export
 #-------------------------------------------------------------------------------
 pod.per.chemical <- function(toxval.db="res_toxval_v95",sys.date="2024-03-05") {
   printCurrentFunction()
@@ -159,7 +159,7 @@ rule.maker <- function(toxval,hra.sources,
 
   res1$pod_hra = NA
   res1$pod_hra_source = NA
-  for(i in 1:nrow(res1)) {
+  for(i in seq_len(nrow(res1))) {
     dtxsid = res1[i,"dtxsid"]
     t2 = t1[t1$dtxsid==dtxsid,]
     t3 = filter.vals(t2)
@@ -234,7 +234,7 @@ filter.vals <- function(t2) {
 #-------------------------------------------------------------------------------
 allometric.scaling <- function(t2,scale.mat) {
   t2$scaled_pod = NA
-  for(j in 1:nrow(t2)) {
+  for(j in seq_len(nrow(t2))) {
     species = t2[j,"common_name"]
     tv = t2[j,"toxval_numeric"]
     tv = tv * scale.mat[species,"factor"]

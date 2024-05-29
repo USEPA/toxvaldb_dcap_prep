@@ -11,17 +11,17 @@
 #' @param sys.date The date of the database export
 #' @param regulatory.sources This is the list of sources that will be used to select the #' optimal quantile to use for selecting the final chemical-level BMDh.
 #' @return Write a file with the results: toxval_PODs_for_BMDh chemical level {toxval.db} {sys.date}.xlsx
-#' @export 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @export
+#' @title bmdh.per.chemical
+#' @description Calculate BMDh values one per chemical
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #'  \code{\link[stats]{sd}}, \code{\link[stats]{quantile}}
 #' @rdname bmdh.per.chemical
@@ -67,7 +67,7 @@ bmdh.per.chemical <- function(toxval.db="res_toxval_v95",sys.date="2024-02-28",
   res$range = NA
   res$variance = NA
 
-  for(i in 1:nrow(res)) {
+  for(i in seq_len(nrow(res))) {
     dtxsid = res[i,"dtxsid"]
     temp0 = mat[is.element(mat$dtxsid,dtxsid),c("dtxsid","casrn","name","bmdh","study_group","source","common_name")]
     temp = NULL

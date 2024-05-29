@@ -12,17 +12,17 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the database export
 #' @return Write a file with the results: toxval_PODs_for_BMDh {toxval.db} {sys.date}.xlsx
-#' @export 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @export
+#' @title bmdh.per.study
+#' @description Calculate the BMDh values per study
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #'  \code{\link[graphics]{plot.default}}
 #' @rdname bmdh.per.study
@@ -125,7 +125,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date="2024-04-10") {
   res = res[,nlist]
 
   res[res$critical_effect=="-","effect_category_standard"] = "none"
-  for(i in 1:nrow(res)) {
+  for(i in seq_len(nrow(res))) {
     x = res[i,"toxval_type"]
     if(is.element(res[i,"study_type"],sdict$study_type_original)) {
       st = sdict[res[i,"study_type"],"study_type"]

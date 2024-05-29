@@ -12,17 +12,17 @@
 #' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
-#' @export 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @export
+#' @title export.for.bmdh.ecotox
+#' @description Export records required for calculating BMDh values.
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname export.for.bmdh.ecotox
 #' @importFrom openxlsx createStyle write.xlsx
@@ -41,7 +41,7 @@ export.for.bmdh.ecotox <- function(toxval.db="res_toxval_v95",user="_dataminer",
   slist = "ECOTOX"
   plist = vector(mode="integer",length=length(slist))
   plist[] = 1
-  for(i in 1:length(slist)) {
+  for(i in seq_len(length(slist))) {
     src = slist[i]
     query = paste0("select distinct priority from record_source where source='",src,"' and long_ref!='-'")
     vals = runQuery(query,toxval.db)[,1]
@@ -54,7 +54,7 @@ export.for.bmdh.ecotox <- function(toxval.db="res_toxval_v95",user="_dataminer",
     }
   }
   res = NULL
-  for(i in 1:length(slist)) {
+  for(i in seq_len(length(slist))) {
     src = slist[i]
     priority = plist[i]
     query = paste0("SELECT

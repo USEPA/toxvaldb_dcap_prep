@@ -1,22 +1,22 @@
 #-----------------------------------------------------------------------------------
 #' @#' Calculate some stats for DCAP
 #'
-#' `studies.per.chemical` Gets teh number of studies per chemical from the current
+#' `studies.per.chemical` Gets the number of studies per chemical from the current
 #' ToxValDB export
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
-#' @export 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @export
+#' @title studies.per.chemical
+#' @description Gets the number of studies per chemical from the current ToxValDB export
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname studies.per.chemical
 #' @importFrom openxlsx read.xlsx write.xlsx
@@ -33,7 +33,7 @@ studies.per.chemical <- function(toxval.db="res_toxval_v95",sys.date="2024-04-03
   nlist = c("dtxsid","casrn","name","records","studies")
   mat = as.data.frame(matrix(nrow=length(dlist),ncol=length(nlist)))
   names(mat) = nlist
-  for(i in 1:length(dlist)) {
+  for(i in seq_len(length(dlist))) {
     dtxsid = dlist[i]
     t1 = res[is.element(res$dtxsid,dtxsid),]
     mat[i,"dtxsid"] = dtxsid

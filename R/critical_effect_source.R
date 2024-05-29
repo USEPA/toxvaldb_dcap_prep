@@ -1,21 +1,21 @@
 #-----------------------------------------------------------------------------------
-#' @#' Find the source for odfd critical effect chunks.
+#' @#' Find the source for odd critical effect chunks.
 #'
 #' @param toxval.db Database version
 #' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
-#' @export 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @export
+#' @title critical_effect_source
+#' @description Find the source for odd critical effect chunks.
 #' @return OUTPUT_DESCRIPTION
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname critical_effect_source
 #' @importFrom openxlsx read.xlsx write.xlsx
@@ -28,7 +28,7 @@ critical_effect_source <- function(toxval.db="res_toxval_v95",user="_dataminer",
   print(file)
   input = openxlsx::read.xlsx(file)
   res = NULL
-  for(i in 1:nrow(input)) {
+  for(i in seq_len(nrow(input))) {
     term = input[i,"term"]
     comment = input[i,"comment"]
     cat(i,term,"\n")

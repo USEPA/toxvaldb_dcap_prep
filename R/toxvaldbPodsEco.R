@@ -3,22 +3,22 @@
 #'
 #' @param toxvaldb The version fo the ToxValDB to use
 #' @param sys.date The date of the database export
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @title pod.per.chemical.eco
+#' @description Calculate the eco PODs
 #' @param toxval.db PARAM_DESCRIPTION, Default: 'res_toxval_v95'
 #' @return OUTPUT_DESCRIPTION
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 #'  \code{\link[stats]{quantile}}, \code{\link[stats]{sd}}
 #' @rdname toxvaldbPodsEco
-#' @export 
+#' @export
 #' @importFrom openxlsx read.xlsx write.xlsx
 #' @importFrom stats quantile sd
 #-------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ pod.per.chemical.eco <- function(toxval.db="res_toxval_v95",sys.date="2024-03-05
   res$plant_range = NA
   res$plant_source = NA
 
-  for(i in 1:nrow(res)) {
+  for(i in seq_len(nrow(res))) {
     dtxsid = res[i,"dtxsid"]
     t1 = toxval[toxval$dtxsid==dtxsid,]
     # vertebrate

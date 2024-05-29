@@ -10,17 +10,17 @@
 #' @param minstudies - only chemicals with this minimum number of studies will be used in the calculation
 #' @param cutoff.logsd Only chemicals with their log SD of BMDh values will be used in the calculation
 #' @return Write a file with the results: toxval_PODs_for_BMDh chemical level {toxval.db} {sys.date}.xlsx
-#' @export 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @export
+#' @title bmdh.percentile.plot
+#' @description Plot the BMDs vs the regulatory values for different percentiles and determine the best fit
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 #'  \code{\link[stats]{lm}}
 #'  \code{\link[RMySQL]{character(0)}}
@@ -52,7 +52,7 @@ bmdh.percentile.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date="
   pdata = NULL
   tmat = mat[mat$studies>=minstudies,]
   tmat = tmat[!is.na(tmat$pod_hra),]
-  for(i in 1:length(plist)) {
+  for(i in seq_len(length(plist))) {
     col = clist[i]
     res[i,"percentile"] = plist[i]
     res[i,"column"] = col

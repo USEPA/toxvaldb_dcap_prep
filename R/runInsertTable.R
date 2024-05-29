@@ -6,21 +6,21 @@
 #' @param db the name of the database
 #' @param do.halt if TRUE, halt on errors or warnings
 #' @param verbose if TRUE, print diagnostic information
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @title runInsertTable
+#' @description Inserts multiple rows into a database table
 #' @param get.id PARAM_DESCRIPTION, Default: T
 #' @return OUTPUT_DESCRIPTION
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[RMySQL]{character(0)}}, \code{\link[RMySQL]{MySQLDriver-class}}
 #' @rdname runInsertTable
-#' @export 
+#' @export
 #' @importFrom RMySQL dbConnect MySQL dbWriteTable dbSendQuery dbFetch dbHasCompleted dbClearResult dbDisconnect
 #--------------------------------------------------------------------------------------
 runInsertTable <- function(mat,table,db,do.halt=T,verbose=F,get.id=T) {
@@ -48,7 +48,7 @@ runInsertTable <- function(mat,table,db,do.halt=T,verbose=F,get.id=T) {
     #
     desc <- runQuery(paste0("desc ",table),db)
     desc <- desc[is.element(desc[,"Field"],names(mat)),]
-    for(i in 1:dim(desc)[1]) {
+    for(i in seq_len(dim(desc)[1])) {
       col <- desc[i,"Field"]
       type <- desc[i,"Type"]
       if(grepl("varchar|text", type)) {

@@ -13,17 +13,17 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
-#' @export 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @export
+#' @title filter.for.bmdh
+#' @description Filter the exported records for redundancy
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #'  \code{\link[digest]{digest}}
 #' @rdname filter.for.bmdh
@@ -58,7 +58,7 @@ filter.for.bmdh <- function(toxval.db="res_toxval_v95",sys.date="2024-05-20") {
     cat(source,nrow(t2),"\n")
     exclude = c("long_ref","url","record_source_level","record_source_type","level","source_hash")
     t3 = t2[,!(names(t2) %in% exclude)]
-    for(i in 1:nrow(t2)) t2[i,"hashkey"] = digest::digest(paste0(t3[i,],collapse=""), serialize = FALSE)
+    for(i in seq_len(nrow(t2))) t2[i,"hashkey"] = digest::digest(paste0(t3[i,],collapse=""), serialize = FALSE)
     if(length(unique(t2$hashkey))<nrow(t2)) {
       cat(">>>>>>> ",source," has redundancies <<<<<<<<<: ")
       t4 = NULL
