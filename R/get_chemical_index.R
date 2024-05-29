@@ -1,3 +1,4 @@
+#-----------------------------------------------------------------------------------
 #' @title get_chemical_index
 #' @param input_toxval_file Filepath to input ToxVal file with DTXSID values.
 #' @param input_qsar_file Filepath to input QSAR Ready Smiles file with DTXSID values.
@@ -21,6 +22,7 @@
 #' @importFrom dplyr select left_join distinct rowwise mutate ungroup
 #' @importFrom purrr map_chr
 #' @importFrom digest digest
+#-----------------------------------------------------------------------------------
 get_chemcial_index <- function(input_toxval_file, input_qsar_file){
 
   if(is.null(input_toxval_file) || input_toxval_file %in% c(NA, "NA", "")) stop("input_toxval_file must be a file path string...")

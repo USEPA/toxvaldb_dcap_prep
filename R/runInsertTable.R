@@ -1,13 +1,25 @@
-library(RMySQL)
-library(DBI)
 #--------------------------------------------------------------------------------------
-#' Inserts multiple rows into a database table
-#'
 #' @param mat data frame containing the data, with the column names corresponding
 #' @param table name of the database table to which data will be inserted
 #' @param db the name of the database
 #' @param do.halt if TRUE, halt on errors or warnings
 #' @param verbose if TRUE, print diagnostic information
+#' @title runInsertTable
+#' @description Inserts multiple rows into a database table
+#' @param get.id PARAM_DESCRIPTION, Default: T
+#' @return None; inserts data into DB
+#' @details DETAILS
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso
+#'  \code{\link[RMySQL]{character(0)}}, \code{\link[RMySQL]{MySQLDriver-class}}
+#' @rdname runInsertTable
+#' @export
+#' @importFrom RMySQL dbConnect MySQL dbWriteTable dbSendQuery dbFetch dbHasCompleted dbClearResult dbDisconnect
 #--------------------------------------------------------------------------------------
 runInsertTable <- function(mat,table,db,do.halt=T,verbose=F,get.id=T) {
   if(!exists("DB.SERVER")) {
@@ -23,7 +35,7 @@ runInsertTable <- function(mat,table,db,do.halt=T,verbose=F,get.id=T) {
     return(NULL)
   }
   if(verbose) {
-    toxvaldbBMDh::printCurrentFunction()
+    printCurrentFunction()
     cat("mat: ",dim(mat),"\n")
     cat("table: ",table,"\n")
     cat("db: ",db,"\n")
@@ -32,12 +44,12 @@ runInsertTable <- function(mat,table,db,do.halt=T,verbose=F,get.id=T) {
     #
     # make sure all charactersc are in UTF8
     #
-    desc <- toxvaldbBMDh::runQuery(paste0("desc ",table),db)
+    desc <- runQuery(paste0("desc ",table),db)
     desc <- desc[is.element(desc[,"Field"],names(mat)),]
-    for(i in 1:dim(desc)[1]) {
+    for(i in seq_len(dim(desc)[1])) {
       col <- desc[i,"Field"]
       type <- desc[i,"Type"]
-      if(dplyr::contains(type,"varchar") || dplyr::contains(type,"text")) {
+      if(grepl("varchar|text", type)) {
         if(verbose) cat("   enc2utf8:",col,"\n")
         x <- as.character(mat[,col])
         x[is.na(x)] <- "-"

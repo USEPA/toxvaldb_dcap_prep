@@ -1,17 +1,24 @@
-library(digest)
 #-----------------------------------------------------------------------------------
-#' Calculate some stats for DCAP
-#'
-#' `dcap.counts` Gets some statistics for the DCAP project off of the current
-#' ToxValDB export
-
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
 #' @export
+#' @title dcap.counts
+#' @description Calculate some stats for DCAP
+#' @details Gets some statistics for the DCAP project off of the current ToxValDB export
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso
+#'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
+#' @rdname dcap.counts
+#' @importFrom openxlsx read.xlsx write.xlsx
 #-----------------------------------------------------------------------------------
 dcap.counts <- function(toxval.db="res_toxval_v95",sys.date="2024-04-09") {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/"
   file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
   print(file)
@@ -26,7 +33,7 @@ dcap.counts <- function(toxval.db="res_toxval_v95",sys.date="2024-04-09") {
   t2 = t2[,c("dtxsid","name","source","study_group","count")]
   t2 = t2[t2$count>2,]
   t2 = t2[order(t2$count,decreasing=T),]
-  for(i in 1:nrow(t2)) {
+  for(i in seq_len(nrow(t2))) {
     sg = t2[i,"study_group"]
     x = res[is.element(res$study_group,sg),]
     t2[i,"source"] = x[1,"source"]

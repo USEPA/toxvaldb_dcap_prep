@@ -1,11 +1,26 @@
 #-------------------------------------------------------------------------------
-#' Calculate the eco PODs
-#'
-#' @param toxvaldb The version fo the ToxValDB to use
+#' @param toxval.db The version fo the ToxValDB to use
 #' @param sys.date The date of the database export
+#' @title pod.per.chemical.eco
+#' @description Calculate the eco PODs
+#' @return Writes output to file
+#' @details DETAILS
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso
+#'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
+#'  \code{\link[stats]{quantile}}, \code{\link[stats]{sd}}
+#' @rdname toxvaldbPodsEco
+#' @export
+#' @importFrom openxlsx read.xlsx write.xlsx
+#' @importFrom stats quantile sd
 #-------------------------------------------------------------------------------
 pod.per.chemical.eco <- function(toxval.db="res_toxval_v95",sys.date="2024-03-05") {
-  toxvaldbBMDh::printCurrentFunction()
+  printCurrentFunction()
   dir = "data/ecoqsarpods/"
   if(!exists("TOXVALECO")) {
     cat("read in ToxValDB data\n")
@@ -17,7 +32,6 @@ pod.per.chemical.eco <- function(toxval.db="res_toxval_v95",sys.date="2024-03-05
   toxval = TOXVALECO
 
   chems = unique(toxval[,c("dtxsid","casrn","name")])
-
 
   print(nrow(toxval))
   nlist = c("dtxsid","casrn","name","source","toxval_type","toxval_numeric","toxval_units","study_type",
@@ -57,7 +71,7 @@ pod.per.chemical.eco <- function(toxval.db="res_toxval_v95",sys.date="2024-03-05
   res$plant_range = NA
   res$plant_source = NA
 
-  for(i in 1:nrow(res)) {
+  for(i in seq_len(nrow(res))) {
     dtxsid = res[i,"dtxsid"]
     t1 = toxval[toxval$dtxsid==dtxsid,]
     # vertebrate

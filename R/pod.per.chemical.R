@@ -1,12 +1,24 @@
-library(openxlsx)
 #-------------------------------------------------------------------------------
-#' Explore different methods for calculating PODs
-#' This uses the same input as the function bmdh.perstudy / bmdh.per.chemical
 #' @param toxval.db The version of ToxValDB to use
-#' @param sys.date Date of the most recent data export
+#' @param sys.date Date of the most recent data export #' Make the rule #' filter LOELs when NOELs are present for the same study #' filter out redundant values for the same study group #' Perform the allometric scaling
+#' @title pod.per.chemical
+#' @description Explore different methods for calculating PODs
+#' @param toxval.db Database version
+#' @param sys.date The date of the database export
+#' @return Writes output to file
+#' @details Explore different methods for calculating PODs
+#' This uses the same input as the function bmdh.perstudy / bmdh.per.chemical
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @rdname pod.per.chemical
+#' @export
 #-------------------------------------------------------------------------------
 pod.per.chemical <- function(toxval.db="res_toxval_v95",sys.date="2024-03-05") {
-  toxvaldbBMDh::printCurrentFunction()
+  printCurrentFunction()
 
   cat("read in ToxValDB data\n")
    dir = "data/results/"
@@ -36,7 +48,7 @@ pod.per.chemical <- function(toxval.db="res_toxval_v95",sys.date="2024-03-05") {
   humanized.pod.types = NULL
   tlist = unique(toxval$toxval_type)
   for(tt in tlist) {
-    if(dplyr::contains(tt,"HED") || dplyr::contains(tt,"HEC")) humanized.pod.types = c(humanized.pod.types,tt)
+    if(grepl("HED|HEC", tt)) humanized.pod.types = c(humanized.pod.types,tt)
   }
   toxval[is.element(toxval$toxval_type,humanized.pod.types),"common_name"] = "Human"
 
@@ -56,7 +68,7 @@ pod.per.chemical <- function(toxval.db="res_toxval_v95",sys.date="2024-03-05") {
   bmdl.types = NULL
   tlist = unique(toxval$toxval_type)
   for(tt in tlist) {
-    if(dplyr::contains(tt,"BMD") || dplyr::contains(tt,"BMC")) bmdl.types = c(bmdl.types,tt)
+    if(grepl("BMD|BMC", tt)) bmdl.types = c(bmdl.types,tt)
   }
   bmdl.types <<- bmdl.types
   repdose = c("chronic","developmental","neurotoxicity chronic","neurotoxicity subchronic",
@@ -101,7 +113,7 @@ pod.per.chemical <- function(toxval.db="res_toxval_v95",sys.date="2024-03-05") {
   #                   stype.list=repdose,
   #                   ttype.list=c(loel.types,noel.types,bmdl.types))
   # res = rbind(res,res1)
-  res1 = toxvaldbBMDh::rule.maker(toxval,hra.sources,
+  res1 = rule.maker(toxval,hra.sources,
                     rule.name="Rule 5",rule.stype="repeat dose+28 day",
                     rule.ttype ="LO(A)EL, NO(A)EL, BMD",
                     stype.list=repdose_plus,
@@ -113,7 +125,6 @@ pod.per.chemical <- function(toxval.db="res_toxval_v95",sys.date="2024-03-05") {
   openxlsx::write.xlsx(res,file,firstRow=T,headerStyle=sty)
 }
 #-------------------------------------------------------------------------------
-#' Make the rule
 #-------------------------------------------------------------------------------
 rule.maker <- function(toxval,hra.sources,
                        rule.name="Rule 3",
@@ -121,7 +132,7 @@ rule.maker <- function(toxval,hra.sources,
                        rule.ttype ="LO(A)EL, NO(A)EL, BMD",
                        stype.list=c("chronic"),
                        ttype.list=c(loel.types,noel.types,bmdl.types)) {
-  toxvaldbBMDh::printCurrentFunction(rule.name)
+  printCurrentFunction(rule.name)
   t1 = toxval[is.element(toxval$study_type,stype.list),]
   t1 = t1[is.element(t1$toxval_type,ttype.list),]
 
@@ -147,12 +158,12 @@ rule.maker <- function(toxval,hra.sources,
 
   res1$pod_hra = NA
   res1$pod_hra_source = NA
-  for(i in 1:nrow(res1)) {
+  for(i in seq_len(nrow(res1))) {
     dtxsid = res1[i,"dtxsid"]
     t2 = t1[t1$dtxsid==dtxsid,]
-    t3 = toxvaldbBMDh::filter.vals(t2)
+    t3 = filter.vals(t2)
     if(nrow(t3)>0) {
-      t3 = toxvaldbBMDh::allometric.scaling(t3,scale.mat)
+      t3 = allometric.scaling(t3,scale.mat)
       vals = log10(t3$scaled_pod)
       qv = stats::quantile(vals,probs=seq(0,1,0.1))[2]
       t3$delta = abs(log10(t3$scaled_pod)-qv)
@@ -183,8 +194,6 @@ rule.maker <- function(toxval,hra.sources,
   return(res1)
 }
 #-------------------------------------------------------------------------------
-#' filter LOELs when NOELs are present for the same study
-#' filter out redundant values for the same study group
 #-------------------------------------------------------------------------------
 filter.vals <- function(t2) {
   t3 = NULL
@@ -221,11 +230,10 @@ filter.vals <- function(t2) {
   return(t3)
 }
 #-------------------------------------------------------------------------------
-#' Perform the allometric scaling
 #-------------------------------------------------------------------------------
 allometric.scaling <- function(t2,scale.mat) {
   t2$scaled_pod = NA
-  for(j in 1:nrow(t2)) {
+  for(j in seq_len(nrow(t2))) {
     species = t2[j,"common_name"]
     tv = t2[j,"toxval_numeric"]
     tv = tv * scale.mat[species,"factor"]
