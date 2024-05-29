@@ -28,10 +28,14 @@ bmdh.aurisano.check.plot <- function(to.file=FALSE,toxval.db="res_toxval_v95",sy
   file = paste0(dir,"results/ToxValDB BMDh per study ",toxval.db," ",sys.date,".xlsx")
   print(file)
   res = openxlsx::read.xlsx(file)
+
+  # Get bmdh and aurisano values where aurisano is not NA
   x = res$bmdh
   y = res$bmdh_aurisano
   x = x[!is.na(y)]
   y = y[!is.na(y)]
+
+  # Generate plot
   p = ggplot2::ggplot(data=res,ggplot2::aes(x=bmdh,y=bmdh_aurisano))  +
     ggplot2::ggtitle(paste0("Check BMDh values")) +
     ggplot2::geom_point(size=0.1) +
@@ -45,6 +49,8 @@ bmdh.aurisano.check.plot <- function(to.file=FALSE,toxval.db="res_toxval_v95",sy
     #ylim(1E-4,1E4)
     #geom_segment(aes(x=-3,xend=3,y=-3,yend=3))
   print(p)
+
+  # Write plot to file if specified, or display in browser
   if(to.file) {
     fname = paste0(dir,"results/bmdh.aurisano.check.plot.pdf")
     ggplot2::ggsave(plot = p, width = 5, height = 5, dpi = 300, filename =fname)

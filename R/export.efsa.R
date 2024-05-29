@@ -34,6 +34,7 @@ export.efsa <- function(toxval.db="res_toxval_v95",user="user",password) {
   src = "EFSA"
   n = runQuery(paste0("select count(*) from toxval where source='",src,"'"),toxval.db)[1,1]
   cat(src,":",n,"\n")
+  # Query to get relevant EFSA data
   query = paste0("SELECT
                     a.dtxsid,a.casrn,a.name,
                     b.source,
@@ -74,7 +75,7 @@ export.efsa <- function(toxval.db="res_toxval_v95",user="user",password) {
                     and b.exposure_route='oral'
                    ")
 
-
+  # Get/prep EFSA data
   mat = runQuery(query,toxval.db,T,F)
   mat = dplyr::distinct(mat)
   mat[is.na(mat$toxval_numeric_qualifier),"toxval_numeric_qualifier"] = "="
@@ -122,6 +123,8 @@ export.efsa <- function(toxval.db="res_toxval_v95",user="user",password) {
             "long_ref")
   res = res[,nlist]
   res = unique(res)
+
+  # Record cleaned EFSA data
   sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
   file = paste0(dir,"results/ToxValDB for EFSA ",toxval.db," ",Sys.Date(),".xlsx")
   openxlsx::write.xlsx(res,file,firstRow=T,headerStyle=sty)

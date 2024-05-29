@@ -30,6 +30,8 @@ export.for.dcap.qc <- function(toxval.db="res_toxval_v95",user="_dataminer",pass
   for(src in slist) {
     n = runQuery(paste0("select count(*) from toxval where source='",src,"'"),toxval.db)[1,1]
     cat(src,":",n,"\n")
+
+    # Query for source data from ToxVal
     query = paste0("SELECT
                       a.dtxsid,a.casrn,a.name,
                       b.source,
@@ -78,6 +80,8 @@ export.for.dcap.qc <- function(toxval.db="res_toxval_v95",user="_dataminer",pass
 
 
     mat = runQuery(query,toxval.db,T,F)
+
+    # Prepare data
     if(src!="ECOTOX") mat = mat[mat$priority==1,]
     mat = unique(mat)
     #cat("[1]",nrow(mat),"\n")
@@ -109,6 +113,7 @@ export.for.dcap.qc <- function(toxval.db="res_toxval_v95",user="_dataminer",pass
     mat = mat[ , !(names(mat) %in% cremove)]
     res = rbind(res,mat)
   }
+  # Write data to file
   sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
   file = paste0(dir,"DCAP/ToxValDB DCAP QC ",toxval.db," ",Sys.Date(),".xlsx")
   openxlsx::write.xlsx(res,file,firstRow=T,headerStyle=sty)

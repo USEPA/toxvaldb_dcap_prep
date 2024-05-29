@@ -35,6 +35,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95",user="_dataminer",passwor
             "ToxRefDB","WHO JECFA Tox Studies")
 
   #slist = "ECOTOX"
+
+  # Get priority values for each specified source
   plist = vector(mode="integer",length=length(slist))
   plist[] = 1
   for(i in seq_len(length(slist))) {
@@ -49,6 +51,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95",user="_dataminer",passwor
       if(src=="ECHA IUCLID") plist[i] = 1
     }
   }
+
+  # Query ToxVal for source data
   res = NULL
   for(i in seq_len(length(slist))) {
     src = slist[i]
@@ -108,6 +112,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95",user="_dataminer",passwor
     mat = runQuery(query,toxval.db,T,F)
     mat = unique(mat)
     cat("[1]",src,":",nrow(mat),"\n")
+
+    # Prepare source data
     mat[is.na(mat$toxval_numeric_qualifier),"toxval_numeric_qualifier"] = "ns"
     #mat[is.element(mat$toxval_numeric_qualifier,c("~","<","<=")),"toxval_numeric_qualifier"] = "="
     #mat = mat[mat$toxval_numeric_qualifier=="=",]
@@ -158,6 +164,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95",user="_dataminer",passwor
     cat("[4]",src,":",nrow(mat),"\n\n")
     res = rbind(res,mat)
   }
+
+  # Write data to file
   sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
   file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," ",Sys.Date(),".xlsx")
   openxlsx::write.xlsx(res,file,firstRow=T,headerStyle=sty)
