@@ -1,11 +1,25 @@
 #--------------------------------------------------------------------------------------
-#' Runs a database query and returns a result set
-#'
 #' @param query a properly formatted SQL query as a string
 #' @param db the name of the database
 #' @param do.halt if TRUE, halt on errors or warnings
 #' @param verbose if TRUE, print diagnostic information
 #' @export
+#' @title runQuery
+#' @description Runs a database query and returns a result set
+#' @return Result set from query
+#' @details DETAILS
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso
+#'  \code{\link[RMySQL]{character(0)}}, \code{\link[RMySQL]{MySQLDriver-class}}
+#'  \code{\link[utils]{flush.console}}
+#' @rdname runQuery
+#' @importFrom RMySQL dbConnect MySQL dbSendQuery dbFetch dbHasCompleted dbClearResult dbDisconnect
+#' @importFrom utils flush.console
 #------------------------------------------Q--------------------------------------------
 runQuery <- function(query,db,do.halt=T,verbose=F) {
 
@@ -22,7 +36,7 @@ runQuery <- function(query,db,do.halt=T,verbose=F) {
     return(NULL)
   }
   if(verbose) {
-    toxvaldbBMDh::printCurrentFunction()
+    printCurrentFunction()
     cat("query: ",query,"\n")
     cat("db: ",db,"\n")
   }

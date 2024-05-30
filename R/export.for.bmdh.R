@@ -122,6 +122,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
     # Get unique entries using query
     mat = runQuery(query, toxval.db) %>%
       dplyr::distinct()
+
     cat("[1]",src,":",nrow(mat),"\n")
 
     # Initialize list of toxval_type values to exclude

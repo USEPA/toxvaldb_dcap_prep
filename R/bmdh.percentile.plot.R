@@ -1,10 +1,4 @@
-library(ggplot2)
 #-------------------------------------------------------------------------------
-#' Plot the BMDs vs the regulatory values for different percentiles and determine the best fit
-#'
-#' `bmdh.percentile.plot` Helps determine the optimal percentile. The output file shows the
-#' fit statistics for different percentiles, and one should select the one with the lowest RMSE and highest R2.
-#'
 #' @param to.file If TRUE, send the plot to a file
 #' @param toxval.db Database version
 #' @param sys.date The date of the database export
@@ -12,9 +6,31 @@ library(ggplot2)
 #' @param cutoff.logsd Only chemicals with their log SD of BMDh values will be used in the calculation
 #' @return Write a file with the results: toxval_PODs_for_BMDh chemical level {toxval.db} {sys.date}.xlsx
 #' @export
+#' @title bmdh.percentile.plot
+#' @description Plot the BMDs vs the regulatory values for different percentiles and determine the best fit
+#' @details Helps determine the optimal percentile. The output file shows the
+#' fit statistics for different percentiles, and one should select the one with the lowest RMSE and highest R2.
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso
+#'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
+#'  \code{\link[stats]{lm}}
+#'  \code{\link[RMySQL]{character(0)}}
+#'  \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{aes}}, \code{\link[ggplot2]{labs}}, \code{\link[ggplot2]{geom_point}}, \code{\link[ggplot2]{ggtheme}}, \code{\link[ggplot2]{facet_grid}}, \code{\link[ggplot2]{lims}}, \code{\link[ggplot2]{geom_segment}}, \code{\link[ggplot2]{ggsave}}
+#'  \code{\link[grDevices]{dev}}
+#' @rdname bmdh.percentile.plot
+#' @importFrom openxlsx read.xlsx write.xlsx
+#' @importFrom stats lm
+#' @importFrom RMySQL summary
+#' @importFrom ggplot2 ggplot aes ggtitle geom_point theme_bw facet_grid xlim ylim xlab ylab geom_segment ggsave
+#' @importFrom grDevices dev.off
 #-------------------------------------------------------------------------------
 bmdh.percentile.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date="2024-02-28",minstudies=3,cutoff.logsd=2) {
-  toxvaldbBMDh::printCurrentFunction()
+  printCurrentFunction()
   dir = "data/"
   file = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".xlsx")
   print(file)
@@ -32,7 +48,7 @@ bmdh.percentile.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date="
   pdata = NULL
   tmat = mat[mat$studies>=minstudies,]
   tmat = tmat[!is.na(tmat$pod_hra),]
-  for(i in 1:length(plist)) {
+  for(i in seq_len(length(plist))) {
     col = clist[i]
     res[i,"percentile"] = plist[i]
     res[i,"column"] = col

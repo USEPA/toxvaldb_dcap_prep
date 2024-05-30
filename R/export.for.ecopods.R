@@ -1,25 +1,38 @@
-library(digest)
 #-----------------------------------------------------------------------------------
-#' Export records required for calculating POD values for ecotox QSAR models.
-#' The data is exported as a xlsx and csv file because some records may cause the Excel format
-#' to break. You can then open the csv (always works) and save as Excel
-#'
 #' @param toxval.db Database version
 #' @param do.load If TRUE, read from the database into a global
 #' @return Write a file with the results
-#'
+#' @title export.for.ecopods
+#' @description Export records required for calculating POD values for ecotox QSAR models.
+#' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
+#' @param password The user's MySQL database password.
+#' @details The data is exported as a xlsx and csv file because some records may cause the Excel format
+#' to break. You can then open the csv (always works) and save as Excel
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso
+#'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+#'  \code{\link[utils]{write.table}}
+#' @rdname export.for.ecopods
+#' @export
+#' @importFrom openxlsx createStyle write.xlsx
+#' @importFrom utils write.csv
 #-----------------------------------------------------------------------------------
 export.for.ecopods <- function(toxval.db="res_toxval_v95",do.load=T,user="rjudson",password) {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/ecoqsarpods/"
-  toxvaldbBMDh::setDBConn(user=user,password=password)
+  setDBConn(user=user,password=password)
   if(do.load) {
-    slist = toxvaldbBMDh::runQuery("select distinct source from toxval",toxval.db)[,1]
+    slist = runQuery("select distinct source from toxval",toxval.db)[,1]
     exclude.list = c("COSMOS","EFSA","PPRTV (NCEA)","Chiu","DOE Wildlife Benchmarks")
     slist = slist[!is.element(slist,exclude.list)]
     res = NULL
     for(src in slist) {
-      n = toxvaldbBMDh::runQuery(paste0("select count(*) from toxval where source='",src,"'"),toxval.db)[1,1]
+      n = runQuery(paste0("select count(*) from toxval where source='",src,"'"),toxval.db)[1,1]
       cat(src,":",n,"\n")
       query = paste0("SELECT
                       a.dtxsid,a.casrn,a.name,
@@ -57,7 +70,7 @@ export.for.ecopods <- function(toxval.db="res_toxval_v95",do.load=T,user="rjudso
                     ")
       #and e.toxval_type_supercategory in ('Point of Departure')
 
-      mat = toxvaldbBMDh::runQuery(query,toxval.db,T,F)
+      mat = runQuery(query,toxval.db,T,F)
       mat = unique(mat)
       mat[is.na(mat$toxval_numeric_qualifier),"toxval_numeric_qualifier"] = "="
       mat[is.element(mat$toxval_numeric_qualifier,c("~","<","<=")),"toxval_numeric_qualifier"] = "="

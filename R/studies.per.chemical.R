@@ -1,17 +1,24 @@
-library(digest)
 #-----------------------------------------------------------------------------------
-#' Calculate some stats for DCAP
-#'
-#' `studies.per.chemical` Gets teh number of studies per chemical from the current
-#' ToxValDB export
-
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
 #' @export
+#' @title studies.per.chemical
+#' @description Calculate some stats for DCAP
+#' @details Gets the number of studies per chemical from the current ToxValDB export
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso
+#'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
+#' @rdname studies.per.chemical
+#' @importFrom openxlsx read.xlsx write.xlsx
 #-----------------------------------------------------------------------------------
 studies.per.chemical <- function(toxval.db="res_toxval_v95",sys.date="2024-04-03") {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/"
   file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
   print(file)
@@ -21,7 +28,7 @@ studies.per.chemical <- function(toxval.db="res_toxval_v95",sys.date="2024-04-03
   nlist = c("dtxsid","casrn","name","records","studies")
   mat = as.data.frame(matrix(nrow=length(dlist),ncol=length(nlist)))
   names(mat) = nlist
-  for(i in 1:length(dlist)) {
+  for(i in seq_len(length(dlist))) {
     dtxsid = dlist[i]
     t1 = res[is.element(res$dtxsid,dtxsid),]
     mat[i,"dtxsid"] = dtxsid

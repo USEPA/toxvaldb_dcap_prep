@@ -1,21 +1,32 @@
 #-----------------------------------------------------------------------------------
-#' Calculate the BMDh values per study
-#'
-#' `bmdh.per.study` Calculates one BMDh value per study using the Aurisano algorithm.
+#' @param toxval.db Database version
+#' @param sys.date The date of the database export
+#' @return Write a file with the results: toxval_PODs_for_BMDh {toxval.db} {sys.date}.xlsx
+#' @export
+#' @title bmdh.per.study
+#' @description Calculate the BMDh values per study
+#' @details Calculates one BMDh value per study using the Aurisano algorithm.
 #' Because EPA has not fully developed the mapping from critical effects in ToxValDB
 #' to standardized effects, teh values from Aurisano are used where records match.
 #' Aurisano used ToxValDB 9.1, whereas 9.5 is used here. There is also code here to do the other
 #' required mappings, and thos may need to be updated.For records in both the old and new
 #' databases, an on-the-fly plot is produced to show the corresponded between study-level
 #' BMDh values.
-#'
-#' @param toxval.db Database version
-#' @param sys.date The date of the database export
-#' @return Write a file with the results: toxval_PODs_for_BMDh {toxval.db} {sys.date}.xlsx
-#' @export
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso
+#'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+#'  \code{\link[graphics]{plot.default}}
+#' @rdname bmdh.per.study
+#' @importFrom openxlsx read.xlsx createStyle write.xlsx
+#' @importFrom graphics plot
 #-----------------------------------------------------------------------------------
 bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date="2024-04-10") {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/"
   file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
   print(file)
@@ -28,7 +39,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date="2024-04-10") {
   humanized.list = NULL
   ttlist = unique(res$toxval_type)
   for(tt in ttlist) {
-    if(dplyr::contains(tt,"HED") || dplyr::contains(tt,"ADJ")) humanized.list = c(humanized.list,tt)
+    if(grepl("HED|ADJ", tt)) humanized.list = c(humanized.list,tt)
   }
   cat("Humanized POD types:\n")
   print(humanized.list)
@@ -110,7 +121,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date="2024-04-10") {
   res = res[,nlist]
 
   res[res$critical_effect=="-","effect_category_standard"] = "none"
-  for(i in 1:nrow(res)) {
+  for(i in seq_len(nrow(res))) {
     x = res[i,"toxval_type"]
     if(is.element(res[i,"study_type"],sdict$study_type_original)) {
       st = sdict[res[i,"study_type"],"study_type"]

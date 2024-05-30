@@ -1,26 +1,36 @@
-library(digest)
 #-----------------------------------------------------------------------------------
-#' Build a data frame of the data for the toxval manuscript
-#'
 #' @param toxval.db Database version
 #' @param source The source to be updated
 #' @return Write a file with the results
-#'
+#' @title export.for.eco.qsar
+#' @description Build a data frame of the data for the toxval manuscript
+#' @details DETAILS
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso
+#'  \code{\link[utils]{write.table}}
+#'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+#' @rdname export.for.eco.qsar
+#' @export
+#' @importFrom utils write.csv
+#' @importFrom openxlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
 export.for.eco.qsar <- function(toxval.db,source=NULL) {
-  toxvaldbBMDh::printCurrentFunction(toxval.db)
+  printCurrentFunction(toxval.db)
   dir = "data/eco_qsar/"
-  slist = toxvaldbBMDh::runQuery("select distinct source from toxval",toxval.db)[,1]
+  slist = runQuery("select distinct source from toxval",toxval.db)[,1]
 
   slist = c("ECOTOX","EnviroTox_v2")
-
-
 
   res = NULL
   if(!is.null(source)) slist = source
 
   for(src in slist) {
-    n = toxvaldbBMDh::runQuery(paste0("select count(*) from toxval where human_eco='eco' and source='",src,"'"),toxval.db)[1,1]
+    n = runQuery(paste0("select count(*) from toxval where human_eco='eco' and source='",src,"'"),toxval.db)[1,1]
     cat(src,":",n,"\n")
     query = paste0("SELECT
                     a.dtxsid,a.casrn,a.name,
@@ -62,7 +72,7 @@ export.for.eco.qsar <- function(toxval.db,source=NULL) {
                     )
                     #limit 10000
                    ")
-    mat = toxvaldbBMDh::runQuery(query,toxval.db,T,F)
+    mat = runQuery(query,toxval.db,T,F)
     mat = unique(mat)
     mat[is.na(mat$casrn),"casrn"] = mat[is.na(mat$casrn),"cleaned_casrn"]
     mat[mat$casrn=='-',"casrn"] = mat[mat$casrn=='-',"cleaned_casrn"]
