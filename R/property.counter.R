@@ -19,7 +19,7 @@
 #' @rdname property.counter
 #' @importFrom openxlsx read.xlsx write.xlsx createStyle
 #-----------------------------------------------------------------------------------
-property.counter <- function(toxval.db="res_toxval_v95",sys.date="2024-03-26") {
+property.counter <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   printCurrentFunction(toxval.db)
   dir = "data/"
 

@@ -25,7 +25,7 @@
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #' @importFrom graphics plot
 #-----------------------------------------------------------------------------------
-bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date="2024-04-10") {
+bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   printCurrentFunction(toxval.db)
   dir = "data/"
   file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
