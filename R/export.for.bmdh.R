@@ -29,10 +29,10 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
   printCurrentFunction(toxval.db)
   dir = "data/"
 
-  slist = c("ATSDR PFAS 2021", "ATSDR MRLs", "Cal OEHHA", "Copper Manufacturers",
-           "ECHA IUCLID", "ECOTOX", "EFSA", "HAWC PFAS 430",
-            "HAWC Project", "Health Canada", "HESS", "HPVIS", "IRIS",
-            "NTP PFAS", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
+  slist = c("ATSDR MRLs", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
+           "ECHA IUCLID", "ECOTOX", "EFSA", "EPA OPP", "HAWC PFAS 150", "HAWC PFAS 430",
+            "HAWC Project", "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
+            "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
 
   # Get priority values for each specified source
   plist = vector(mode="integer",length=length(slist))
@@ -51,7 +51,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
   }
 
   # Query ToxVal for source data
-  res = NULL
+  res = data.frame()
   for(i in seq_len(length(slist))) {
     src = slist[i]
     priority = plist[i]
@@ -161,8 +161,9 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
       "neurotoxicity short-term",
       "neurotoxicity subchronic"
      )
+
     # Remove entries with invalid study_types
-    if(src != "HEAST") mat = mat %>% dplyr::filter(study_type %in% !!stlist)
+    if(!src %in% c("HEAST")) mat = mat %>% dplyr::filter(study_type %in% !!stlist)
     cat("[3]",src,":",nrow(mat),"\n")
 
     mat = mat %>%
@@ -203,7 +204,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
     cat("[4]",src,":",nrow(mat),"\n\n")
 
     # Add current source data to running total
-    res = rbind(res,mat)
+    res = res %>%
+      dplyr::bind_rows(mat)
   }
 
   # Write unique toxval_type values included in full data

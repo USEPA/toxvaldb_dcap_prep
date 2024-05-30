@@ -2,13 +2,13 @@
 % Please edit documentation in R/driver.R
 \name{driver}
 \alias{driver}
-\title{Run all of the calculations to go from database export to calculation of final BMDh values}
+\title{driver}
 \usage{
 driver(
   toxval.db = "res_toxval_v95",
-  sys.date = "2024-05-20",
-  user = "cweiteka",
-  password = "!QAZxsw2asdf"
+  sys.date = Sys.Date(),
+  user = "user",
+  password = "password"
 )
 }
 \arguments{
@@ -16,11 +16,23 @@ driver(
 
 \item{sys.date}{The date of the database export}
 
-\item{user}{The username for the MySQL database. The database instance is
-hard-coded in the function setDBConn().}
+\item{user}{The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().}
 
 \item{password}{The user's MySQL database password.}
 }
+\value{
+None
+}
 \description{
-`driver` Run all of the calculations to go from database export to calculation of final BMDh values
+Run all of the calculations to go from database export to calculation of final BMDh values
+}
+\details{
+DETAILS
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
 }

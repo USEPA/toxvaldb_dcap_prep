@@ -2,7 +2,7 @@
 % Please edit documentation in R/export.for.critical_effect_mapping.R
 \name{export.for.critical_effect_mapping}
 \alias{export.for.critical_effect_mapping}
-\title{Export records required for managing the critical effect categories for the BMD calculations.}
+\title{export.for.critical_effect_mapping}
 \usage{
 export.for.critical_effect_mapping(
   toxval.db = "res_toxval_v95",
@@ -13,8 +13,7 @@ export.for.critical_effect_mapping(
 \arguments{
 \item{toxval.db}{Database version}
 
-\item{user}{The username for the MySQL database. The database instance is
-hard-coded in the function setDBConn().}
+\item{user}{The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().}
 
 \item{password}{The user's MySQL database password.}
 }
@@ -22,6 +21,19 @@ hard-coded in the function setDBConn().}
 Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
 }
 \description{
-`export.for.critical_effect_mapping` Exports all of the data required for
-performing teh criticla effect mapping for the BMDh calculations
+Export records required for managing the critical effect categories for the BMD calculations.
+}
+\details{
+Exports all of the data required for
+performing the critical effect mapping for the BMDh calculations
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 }

@@ -2,15 +2,14 @@
 % Please edit documentation in R/toxval.redundancies.R
 \name{toxval.redundancies}
 \alias{toxval.redundancies}
-\title{Detect potential redundancies in ToxValDB.}
+\title{toxval.redundancies}
 \usage{
 toxval.redundancies(toxval.db = "res_toxval_v95", user = "rjudson", password)
 }
 \arguments{
 \item{toxval.db}{Database version}
 
-\item{user}{The username for the MySQL database. The database instance is
-hard-coded in the function setDBConn().}
+\item{user}{The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().}
 
 \item{password}{The user's MySQL database password.}
 }
@@ -19,4 +18,17 @@ Write a file with the results
 }
 \description{
 Detect potential redundancies in ToxValDB.
+}
+\details{
+DETAILS
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 }

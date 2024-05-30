@@ -2,11 +2,11 @@
 % Please edit documentation in R/setDBConn.R
 \name{setDBConn}
 \alias{setDBConn}
-\title{set SQL connection to the database}
+\title{setDBConn}
 \usage{
 setDBConn(
   server = "ccte-mysql-res.epa.gov",
-  user = "rjudson",
+  user = "user",
   password = NA,
   port = -1
 )
@@ -17,7 +17,22 @@ setDBConn(
 \item{user}{SQL username to access database}
 
 \item{password}{SQL password corresponding to username}
+
+\item{port}{Port to be used for connection, Default: -1}
+}
+\value{
+None
 }
 \description{
 set SQL connection to the database
+}
+\details{
+DETAILS
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
 }

@@ -25,7 +25,12 @@
 #-----------------------------------------------------------------------------------
 filter.for.multi.noel <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date()) {
   input_file = paste0("data/results/ToxValDB for BMDh LEL NEL filtered ", toxval.db, " ", sys.date, ".xlsx")
-  if(!exists("T3")) T3 = readxl::read_xlsx(input_file)
+  if(!exists("T3") & file.exists(input_file)) {
+    T3 = readxl::read_xlsx(input_file)
+  } else {
+    stop("filter.for.multi.noel missing input file '", input_file, "'")
+    return()
+  }
 
   T4 = T3 %>%
     dplyr::group_by(study_group) %>%
@@ -35,7 +40,7 @@ filter.for.multi.noel <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date(
     ) %>%
     dplyr::ungroup()
 
-  ###create 3 dataframes that respect conditions
+  ### create 3 dataframes that respect conditions
   a = T4 %>%
     dplyr::group_by(study_group) %>%
     dplyr::filter(nb_L>1 & grepl("^[L]", toxval_type)) %>%
@@ -50,12 +55,12 @@ filter.for.multi.noel <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date(
     dplyr::filter(grepl("^[B]", toxval_type) | (nb_L<=1 & grepl("^[L]", toxval_type)) | (nb_N<=1 & grepl("^[N]", toxval_type))) %>%
     dplyr::ungroup()
 
-  ### stack the dataframes
+  ### Recombine the filtered dataframes
   T4 = dplyr::bind_rows(a, b, c) %>%
     dplyr::ungroup() %>%
     dplyr::distinct()
 
-  ###add the value of L and N for each group
+  ### Add the value of L and N for each group
   T4 = T4 %>%
     dplyr::group_by(study_group) %>%
     dplyr::mutate(

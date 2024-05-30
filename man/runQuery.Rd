@@ -2,7 +2,7 @@
 % Please edit documentation in R/runQuery.R
 \name{runQuery}
 \alias{runQuery}
-\title{Runs a database query and returns a result set}
+\title{runQuery}
 \usage{
 runQuery(query, db, do.halt = T, verbose = F)
 }
@@ -15,6 +15,23 @@ runQuery(query, db, do.halt = T, verbose = F)
 
 \item{verbose}{if TRUE, print diagnostic information}
 }
+\value{
+Result set from query
+}
 \description{
 Runs a database query and returns a result set
+}
+\details{
+DETAILS
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[RMySQL]{character(0)}}, \code{\link[RMySQL]{MySQLDriver-class}}
+ \code{\link[utils]{flush.console}}
 }

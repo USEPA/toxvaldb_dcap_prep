@@ -2,12 +2,12 @@
 % Please edit documentation in R/bmdh.cumdist.plot.R
 \name{bmdh.cumdist.plot}
 \alias{bmdh.cumdist.plot}
-\title{Plot the cumulative distribution of number of studies}
+\title{bmdh.cumdist.plot}
 \usage{
 bmdh.cumdist.plot(
   to.file = F,
   toxval.db = "res_toxval_v95",
-  sys.date = "2024-02-28"
+  sys.date = Sys.Date()
 )
 }
 \arguments{
@@ -21,5 +21,21 @@ bmdh.cumdist.plot(
 writes a plot to a file
 }
 \description{
-`bmdh.cumdist.plot` plots the cumulative distribution of number of studies
+Plot the cumulative distribution of number of studies
+}
+\details{
+DETAILS
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}
+ \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{aes}}, \code{\link[ggplot2]{labs}}, \code{\link[ggplot2]{stat_ecdf}}, \code{\link[ggplot2]{ggtheme}}, \code{\link[ggplot2]{lims}}, \code{\link[ggplot2]{ggsave}}
+ \code{\link[ggpubr]{ggarrange}}
+ \code{\link[grDevices]{dev}}
 }

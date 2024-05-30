@@ -2,7 +2,7 @@
 % Please edit documentation in R/export.for.dcap.qc.R
 \name{export.for.dcap.qc}
 \alias{export.for.dcap.qc}
-\title{Export records required for performing QC on the ToxValDB DCAP sources.}
+\title{export.for.dcap.qc}
 \usage{
 export.for.dcap.qc(
   toxval.db = "res_toxval_v95",
@@ -13,8 +13,7 @@ export.for.dcap.qc(
 \arguments{
 \item{toxval.db}{Database version}
 
-\item{user}{The username for the MySQL database. The database instance is
-hard-coded in the function setDBConn().}
+\item{user}{The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().}
 
 \item{password}{The user's MySQL database password.}
 }
@@ -22,5 +21,18 @@ hard-coded in the function setDBConn().}
 Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
 }
 \description{
-`export.for.dcap.qc` Exports all of the data required for the doing DCAP QC calculations.
+Export records required for performing QC on the ToxValDB DCAP sources.
+}
+\details{
+Exports all of the data required for the doing DCAP QC calculations.
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 }

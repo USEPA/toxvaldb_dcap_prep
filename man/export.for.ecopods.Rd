@@ -2,9 +2,7 @@
 % Please edit documentation in R/export.for.ecopods.R
 \name{export.for.ecopods}
 \alias{export.for.ecopods}
-\title{Export records required for calculating POD values for ecotox QSAR models.
-The data is exported as a xlsx and csv file because some records may cause the Excel format
-to break. You can then open the csv (always works) and save as Excel}
+\title{export.for.ecopods}
 \usage{
 export.for.ecopods(
   toxval.db = "res_toxval_v95",
@@ -17,12 +15,29 @@ export.for.ecopods(
 \item{toxval.db}{Database version}
 
 \item{do.load}{If TRUE, read from the database into a global}
+
+\item{user}{The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().}
+
+\item{password}{The user's MySQL database password.}
 }
 \value{
 Write a file with the results
 }
 \description{
 Export records required for calculating POD values for ecotox QSAR models.
+}
+\details{
 The data is exported as a xlsx and csv file because some records may cause the Excel format
 to break. You can then open the csv (always works) and save as Excel
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+ \code{\link[utils]{write.table}}
 }

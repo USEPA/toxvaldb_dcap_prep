@@ -2,9 +2,9 @@
 % Please edit documentation in R/study_group.multichem.R
 \name{study_group.multichem}
 \alias{study_group.multichem}
-\title{Find study groups that span multiple chemicals}
+\title{study_group.multichem}
 \usage{
-study_group.multichem(toxval.db = "res_toxval_v95", sys.date = "2024-04-10")
+study_group.multichem(toxval.db = "res_toxval_v95", sys.date = Sys.Date())
 }
 \arguments{
 \item{toxval.db}{Database version}
@@ -15,7 +15,18 @@ study_group.multichem(toxval.db = "res_toxval_v95", sys.date = "2024-04-10")
 Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx
 }
 \description{
-`filter.for.multi.noel` Filters where multiple NOEL/NOEL etc. exist. For each study_group
-this will select the highest NO(A)EL below the lowest LO(A)EL and the lowest LO(A)EL.
-In all cases, all BMDx values are included
+Find study groups that span multiple chemicals
+}
+\details{
+DETAILS
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 }
