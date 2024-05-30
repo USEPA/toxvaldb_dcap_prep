@@ -2,7 +2,7 @@
 % Please edit documentation in R/critical_effect_source.R
 \name{critical_effect_source}
 \alias{critical_effect_source}
-\title{Find the source for odfd critical effect chunks.}
+\title{critical_effect_source}
 \usage{
 critical_effect_source(
   toxval.db = "res_toxval_v95",
@@ -13,11 +13,26 @@ critical_effect_source(
 \arguments{
 \item{toxval.db}{Database version}
 
-\item{user}{The username for the MySQL database. The database instance is
-hard-coded in the function setDBConn().}
+\item{user}{The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().}
 
 \item{password}{The user's MySQL database password.}
 }
+\value{
+Writes output to file
+}
 \description{
-Find the source for odfd critical effect chunks.
+Find the source for odd critical effect chunks.
+}
+\details{
+DETAILS
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 }

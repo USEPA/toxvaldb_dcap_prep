@@ -2,17 +2,44 @@
 % Please edit documentation in R/toxvaldb.statplots.R
 \name{toxvaldb.statplots}
 \alias{toxvaldb.statplots}
-\title{Plot statistics for ToxValDB for DCAP sources}
+\title{toxvaldb.statplots}
 \usage{
 toxvaldb.statplots(
   to.file = F,
   toxval.db = "res_toxval_v95",
-  sys.date = "2024-04-16"
+  sys.date = Sys.Date()
 )
 }
 \arguments{
+\item{to.file}{Whether to write plots to file or simply view them, Default: F}
+
+\item{toxval.db}{Database version}
+
+\item{sys.date}{The date of the database export}
+
 \item{dir}{The directory where the lists are stored}
+}
+\value{
+None; plots are generated
 }
 \description{
 Plot statistics for ToxValDB for DCAP sources
+}
+\details{
+DETAILS
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}
+ \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{aes}}, \code{\link[ggplot2]{labs}}, \code{\link[ggplot2]{geom_boxplot}}, \code{\link[ggplot2]{scale_continuous}}, \code{\link[ggplot2]{scale_manual}}, \code{\link[ggplot2]{coord_flip}}, \code{\link[ggplot2]{ggtheme}}, \code{\link[ggplot2]{theme}}, \code{\link[ggplot2]{element}}, \code{\link[ggplot2]{geom_jitter}}, \code{\link[ggplot2]{geom_freqpoly}}, \code{\link[ggplot2]{facet_wrap}}, \code{\link[ggplot2]{lims}}, \code{\link[ggplot2]{ggsave}}
+ \code{\link[forcats]{fct_rev}}
+ \code{\link[stats]{reorder.default}}
+ \code{\link[gridExtra]{arrangeGrob}}
+ \code{\link[grDevices]{dev}}
 }

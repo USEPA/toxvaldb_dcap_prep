@@ -2,9 +2,9 @@
 % Please edit documentation in R/bmdh.per.study.R
 \name{bmdh.per.study}
 \alias{bmdh.per.study}
-\title{Calculate the BMDh values per study}
+\title{bmdh.per.study}
 \usage{
-bmdh.per.study(toxval.db = "res_toxval_v95", sys.date = "2024-04-10")
+bmdh.per.study(toxval.db = "res_toxval_v95", sys.date = Sys.Date())
 }
 \arguments{
 \item{toxval.db}{Database version}
@@ -15,11 +15,25 @@ bmdh.per.study(toxval.db = "res_toxval_v95", sys.date = "2024-04-10")
 Write a file with the results: toxval_PODs_for_BMDh {toxval.db} {sys.date}.xlsx
 }
 \description{
-`bmdh.per.study` Calculates one BMDh value per study using the Aurisano algorithm.
+Calculate the BMDh values per study
+}
+\details{
+Calculates one BMDh value per study using the Aurisano algorithm.
 Because EPA has not fully developed the mapping from critical effects in ToxValDB
 to standardized effects, teh values from Aurisano are used where records match.
 Aurisano used ToxValDB 9.1, whereas 9.5 is used here. There is also code here to do the other
 required mappings, and thos may need to be updated.For records in both the old and new
 databases, an on-the-fly plot is produced to show the corresponded between study-level
 BMDh values.
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+ \code{\link[graphics]{plot.default}}
 }

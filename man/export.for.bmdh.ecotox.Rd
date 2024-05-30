@@ -2,7 +2,7 @@
 % Please edit documentation in R/export.for.bmdh.ecotox.R
 \name{export.for.bmdh.ecotox}
 \alias{export.for.bmdh.ecotox}
-\title{Export records required for calculating BMDh values.}
+\title{export.for.bmdh.ecotox}
 \usage{
 export.for.bmdh.ecotox(
   toxval.db = "res_toxval_v95",
@@ -13,8 +13,7 @@ export.for.bmdh.ecotox(
 \arguments{
 \item{toxval.db}{Database version}
 
-\item{user}{The username for the MySQL database. The database instance is
-hard-coded in the function setDBConn().}
+\item{user}{The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().}
 
 \item{password}{The user's MySQL database password.}
 }
@@ -22,10 +21,23 @@ hard-coded in the function setDBConn().}
 Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
 }
 \description{
-`export.for.bmdh` Exports all of the data required for the BMDh calculations.
+Export records required for calculating BMDh values.
+}
+\details{
+Exports all of the data required for the BMDh calculations.
 The main query may need to be modified to extract more columns if needed for
 the final application. Certain sources have been excluded because they have a high
 percentage of read-across values. Species are filtered to only include Human,
 Dog, Mouse, Rat and Rabbit. If more species are to be included, then allometric
 scaling factors for those need to added to the function bmd.per.study().
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 }

@@ -2,12 +2,12 @@
 % Please edit documentation in R/bmdh.aurisano.check.plot.R
 \name{bmdh.aurisano.check.plot}
 \alias{bmdh.aurisano.check.plot}
-\title{Plot the different between the Aurisano and current BMDh values}
+\title{bmdh.aurisano.check.plot}
 \usage{
 bmdh.aurisano.check.plot(
-  to.file = F,
+  to.file = FALSE,
   toxval.db = "res_toxval_v95",
-  sys.date = "2024-02-28"
+  sys.date = Sys.Date()
 )
 }
 \arguments{
@@ -17,6 +17,24 @@ bmdh.aurisano.check.plot(
 
 \item{sys.date}{The date of the database export}
 }
+\value{
+None; writes plot to PDF
+}
 \description{
-`bmdh.per.study` plots the different between the Aurisano and current BMDh values
+Plot the difference between the Aurisano and current BMDh values
+}
+\details{
+DETAILS
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}
+ \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{aes}}, \code{\link[ggplot2]{labs}}, \code{\link[ggplot2]{geom_point}}, \code{\link[ggplot2]{ggtheme}}, \code{\link[ggplot2]{scale_continuous}}, \code{\link[ggplot2]{ggsave}}
+ \code{\link[grDevices]{dev}}
 }

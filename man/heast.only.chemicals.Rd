@@ -2,7 +2,7 @@
 % Please edit documentation in R/heast.only.chemicals.R
 \name{heast.only.chemicals}
 \alias{heast.only.chemicals}
-\title{Get the unique HEAST chemicals}
+\title{heast.only.chemicals}
 \usage{
 heast.only.chemicals(
   toxval.db = "res_toxval_v95",
@@ -13,8 +13,7 @@ heast.only.chemicals(
 \arguments{
 \item{toxval.db}{Database version}
 
-\item{user}{The username for the MySQL database. The database instance is
-hard-coded in the function setDBConn().}
+\item{user}{The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().}
 
 \item{password}{The user's MySQL database password.}
 }
@@ -22,6 +21,18 @@ hard-coded in the function setDBConn().}
 Write a file with the results: HEAST/HEAST unique chemicals.xlsx
 }
 \description{
-`heast.only.chemicals` Exports The unique chemicals in HEAST that are not
-in IRIS or PPRTV
+Get the unique HEAST chemicals
+}
+\details{
+Exports The unique chemicals in HEAST that are not in IRIS or PPRTV
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{write.xlsx}}
 }

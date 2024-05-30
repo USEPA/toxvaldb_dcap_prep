@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------------
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
-#' @return Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx
+#' @return Write a file with the filtered results
 #' @export
 #' @title filter.for.multi.noel
 #' @description Filter the exported records for redundancy of NO(A)EL / LO(A)EL PODs in a study group
@@ -16,97 +16,77 @@
 #' }
 #' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
-#' @rdname filter.for.multi.noel
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
+#' @rdname filter.for.multi.noel
+#' @importFrom readxl read_xlsx
+#' @importFrom dplyr group_by mutate ungroup filter slice_min slice_max bind_rows distinct case_when across select
+#' @importFrom tidyr fill replace_na
+#' @importFrom writexl write_xlsx
 #-----------------------------------------------------------------------------------
-filter.for.multi.noel <- function(toxval.db="res_toxval_v95",sys.date="2024-05-20") {
-  printCurrentFunction(toxval.db)
-  dir = "data/"
-  file = paste0(dir,"results/ToxValDB for BMDh LEL NEL filtered ",toxval.db," ",sys.date,".xlsx")
-  print(file)
-  res0 = openxlsx::read.xlsx(file)
-
-  slist = unique(res0$source)
-  res = NULL
-  for(i in seq_len(length(slist))) {
-    src = slist[i]
-    t0 = res0[is.element(res0$source,src),]
-    #if(is.element(src,c("ATSDR PFAS 2021","ECHA IUCLID","EFSA","HAWC PFAS 430",
-    #                    "HAWC Project","HESS","HPVIS","NTP PFAS","PFAS 150 SEM v2"))) {
-    #if(is.element(src,c("HESS","NTP PFAS","PFAS 150 SEM v2"))) {
-      #cat(src,"\n")
-      t1 = NULL
-      sglist = unique(t0$study_group)
-
-
-      for(sg in sglist) {
-        t2 = t0[is.element(t0$study_group,sg),]
-        #---------------------------------------------------
-        # Only a single POD for the study group
-        #---------------------------------------------------
-        if(nrow(t2)==1) {
-          t1 = rbind(t1,t2)
-        }
-        #---------------------------------------------------
-        # Multiple PODs for the study group
-        #---------------------------------------------------
-        else {
-          #------------------------------------------------------------------
-          # Single NOEL/LOEL or NOAEL/LOAEL pair of PODs for the study group
-          #------------------------------------------------------------------
-          if(paste(sort(t2$toxval_type),collapse="|")==paste(c("LOEL","NOEL"),collapse="|") || paste(sort(t2$toxval_type),collapse="|")==paste(c("LOAEL","NOAEL"),collapse="|")) {
-            t1 = rbind(t1,t2)
-          }
-          #------------------------------------------------------------------
-          # More than one NO(A)EL or LO(A)EL for the study group
-          #------------------------------------------------------------------
-          else {
-            t2$tttype = t2$toxval_type
-            t2$tttype = substr(t2$tttype,1,1)
-            nset = t2[t2$tttype=="N",]
-            lset = t2[t2$tttype=="L",]
-            bset = t2[t2$tttype=="B",]
-
-            nset = nset[order(nset$toxval_numeric,decreasing=T),]
-            lset = lset[order(lset$toxval_numeric),]
-            nset0 = nset
-            lset0 = lset
-            #------------------------------------------------------------------
-            # At least one LO(A)EL for the study group
-            #------------------------------------------------------------------
-            if(nrow(lset)>0) {
-              t3 = lset[1,]
-              nset = nset[nset$toxval_numeric<=lset[1,"toxval_numeric"],]
-              if(nrow(nset)>0) t3 = rbind(t3,nset[1,])
-              if(nrow(bset)>0) t3 = rbind(t3,bset)
-              t3 = t3[,names(t0)]
-            }
-            #------------------------------------------------------------------
-            # Only NO(A)ELs for the study group
-            #------------------------------------------------------------------
-            else if(nrow(nset)>0) {
-              t3 = nset[1,]
-              if(nrow(bset)>0) t3 = rbind(t3,bset)
-              t3 = t3[,names(t0)]
-            }
-            #------------------------------------------------------------------
-            # Only BMDs for the study group
-            #------------------------------------------------------------------
-            else {
-              t3 = bset
-              t3 = t3[,names(t0)]
-            }
-            t1 = rbind(t1,t3)
-          }
-        }
-      }
-      res = rbind(res,t1)
-      cat(src,nrow(t0),nrow(t1),length(unique(t0$dtxsid)),length(unique(t1$dtxsid)),"\n")
-    #}
-    #else res = rbind(res,t0)
+filter.for.multi.noel <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date()) {
+  input_file = paste0("data/results/ToxValDB for BMDh LEL NEL filtered ", toxval.db, " ", sys.date, ".xlsx")
+  if(!exists("T3") & file.exists(input_file)) {
+    T3 = readxl::read_xlsx(input_file)
+  } else {
+    stop("filter.for.multi.noel missing input file '", input_file, "'")
+    return()
   }
 
-  file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
-  sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
-  openxlsx::write.xlsx(res,file,firstRow=T,headerStyle=sty)
+  T4 = T3 %>%
+    dplyr::group_by(study_group) %>%
+    dplyr::mutate(
+      nb_L = sum(grepl("^[L]",toxval_type)),
+      nb_N = sum(grepl("^[N]",toxval_type))
+    ) %>%
+    dplyr::ungroup()
+
+  ### create 3 dataframes that respect conditions
+  a = T4 %>%
+    dplyr::group_by(study_group) %>%
+    dplyr::filter(nb_L>1 & grepl("^[L]", toxval_type)) %>%
+    dplyr::slice_min(toxval_numeric, n=1) %>%
+    dplyr::ungroup()
+  b = T4 %>%
+    dplyr::group_by(study_group) %>%
+    dplyr::filter(nb_N>1 & grepl("^[N]", toxval_type)) %>%
+    dplyr::slice_max(toxval_numeric, n=1) %>%
+    dplyr::ungroup()
+  c = T4 %>% dplyr::group_by(study_group) %>%
+    dplyr::filter(grepl("^[B]", toxval_type) | (nb_L<=1 & grepl("^[L]", toxval_type)) | (nb_N<=1 & grepl("^[N]", toxval_type))) %>%
+    dplyr::ungroup()
+
+  ### Recombine the filtered dataframes
+  T4 = dplyr::bind_rows(a, b, c) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct()
+
+  ### Add the value of L and N for each group
+  T4 = T4 %>%
+    dplyr::group_by(study_group) %>%
+    dplyr::mutate(
+      val_L = dplyr::case_when(
+        grepl("^[L]", toxval_type) ~ toxval_numeric,
+        TRUE ~ NA_real_
+      ),
+      val_N = dplyr::case_when(
+        grepl("^[N]", toxval_type) ~ toxval_numeric,
+        TRUE ~ NA_real_
+      )
+    ) %>%
+    tidyr::fill(c(val_L, val_N), .direction = "downup") %>%
+    dplyr::mutate(
+      dplyr::across(c(val_L,val_N), ~tidyr::replace_na(.x,0)),
+      keep = dplyr::case_when(
+        nb_L > 0 & grepl("^[N]", toxval_type) & val_N > val_L ~ "remove",
+        TRUE ~ "keep"
+      )
+    ) %>%
+    dplyr::filter(keep == "keep") %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-c("keep", "nb_L", "nb_N", "val_L", "val_N")) %>%
+    dplyr::distinct()
+
+  # Write output
+  output_file = paste0("data/results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
+  writexl::write_xlsx(T4, output_file)
 }

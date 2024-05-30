@@ -17,7 +17,7 @@
 #' @rdname pod.per.chemical
 #' @export
 #-------------------------------------------------------------------------------
-pod.per.chemical <- function(toxval.db="res_toxval_v95",sys.date="2024-03-05") {
+pod.per.chemical <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   printCurrentFunction()
 
   cat("read in ToxValDB data\n")

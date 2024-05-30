@@ -19,7 +19,7 @@
 #' @importFrom openxlsx read.xlsx write.xlsx
 #' @importFrom stats quantile sd
 #-------------------------------------------------------------------------------
-pod.per.chemical.eco <- function(toxval.db="res_toxval_v95",sys.date="2024-03-05") {
+pod.per.chemical.eco <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   printCurrentFunction()
   dir = "data/ecoqsarpods/"
   if(!exists("TOXVALECO")) {

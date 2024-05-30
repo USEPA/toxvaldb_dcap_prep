@@ -2,7 +2,7 @@
 % Please edit documentation in R/export.for.eco.qsar.R
 \name{export.for.eco.qsar}
 \alias{export.for.eco.qsar}
-\title{Build a data frame of the data for the toxval manuscript}
+\title{export.for.eco.qsar}
 \usage{
 export.for.eco.qsar(toxval.db, source = NULL)
 }
@@ -16,4 +16,18 @@ Write a file with the results
 }
 \description{
 Build a data frame of the data for the toxval manuscript
+}
+\details{
+DETAILS
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[utils]{write.table}}
+ \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 }
