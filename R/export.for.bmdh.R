@@ -204,6 +204,15 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
       dplyr::bind_rows(mat)
   }
 
+  # Set NOAEL/related toxval_type values to NA
+  res = res %>%
+    dplyr::mutate(
+      toxval_type = dplyr::case_when(
+        grepl("NO?A?EL", toxval_type) ~ as.character(NA),
+        TRUE ~ toxval_type
+      )
+    )
+
   # Write unique toxval_type values included in full data
   unique_toxval_type = res %>%
     dplyr::select(source, toxval_type) %>%
