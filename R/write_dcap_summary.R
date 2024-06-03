@@ -44,6 +44,7 @@ write_dcap_summary <- function(toxval.db, sys.date=Sys.Date()) {
   all_chems = data.frame()
   all_excl_key_fields = list(data.frame(), data.frame(), data.frame(), data.frame(), data.frame())
   total_toxval_records = 0
+  prop_missing_key_fields = data.frame()
 
   # Query ToxVal for records by source
   for(src in dcap_list) {
@@ -131,12 +132,22 @@ write_dcap_summary <- function(toxval.db, sys.date=Sys.Date()) {
       # Get proportion of entries missing current field
       key_col_empty = key_vals %>%
         dplyr::pull(dplyr::ensym(field))
-      key_col_empty = key_col_empty[key_col_empty %in% c("-", as.character(NA), "-")]
-      key_num_missing = nrow(key_col_empty)
+      key_col_empty = key_col_empty[key_col_empty %in% c("-", as.character(NA), "")]
+      key_num_missing = length(key_col_empty)
       if(is.null(key_num_missing)) {
         key_num_missing = 0
         key_prop_missing = 0
       } else key_prop_missing = key_num_missing / current_toxval_count
+
+      # Store results
+      curr_prop_missing_key_fields = tibble::tibble(
+        Source = !!src,
+        Field = !!field,
+        `Entries Missing Value` = !!key_num_missing,
+        `Proportion Missing Value` = !!key_prop_missing
+      )
+      prop_missing_key_fields = prop_missing_key_fields %>%
+        rbind(curr_prop_missing_key_fields)
 
       # Get list of key field values that are left out
       dcap_key_vals = dcap_data %>%
@@ -151,20 +162,20 @@ write_dcap_summary <- function(toxval.db, sys.date=Sys.Date()) {
         dplyr::select(-remove)
 
       # Add findings to report
-      field_name = paste0("Prop. Entries Missing ", field)
-      report_summary = report_summary %>%
-        dplyr::mutate(
-          !!field_name := key_prop_missing
-        )
       output_reports = append(output_reports, dropped_key_vals)
 
       all_excl_key_fields[i] = rbind(all_excl_key_fields[i], dropped_key_vals) %>%
         unique()
     }
 
+    # Add proportion missing information to output
+    output_reports = append(output_reports, list(prop_missing_key_fields %>%
+                              dplyr::filter(Source == !!src)))
+
     # Name output reports
     names(output_reports) = c("general_summary", "excl_chemicals",
-                              lapply(key_fields, function(x) paste0("excl_", x)))
+                              lapply(key_fields, function(x) paste0("excl_", x)),
+                              "prop_missing_key_fields")
 
     # Write source-specific report to file
     openxlsx::write.xlsx(output_reports, paste0("data/results/dcap_source_summaries/dcap_summary_",
@@ -192,8 +203,11 @@ write_dcap_summary <- function(toxval.db, sys.date=Sys.Date()) {
 
   aggregate_report = list(agg_report_summary, all_excl_chems)
   aggregate_report = append(aggregate_report, all_excl_key_fields)
+  aggregate_report = append(aggregate_report, list(prop_missing_key_fields %>%
+                              dplyr::filter(`Entries Missing Value` > 0)))
   names(aggregate_report) = c("general_summary", "excl_chemicals", "excl_study_type", "excl_common_name",
-                              "excl_exposure_route", "excl_toxval_units", "excl_toxval_type_supercategory")
+                              "excl_exposure_route", "excl_toxval_units", "excl_toxval_type_supercategory",
+                              "prop_missing_key_fields")
 
   # Write aggregate report to file
   openxlsx::write.xlsx(aggregate_report,paste0("data/results/dcap_source_summaries/dcap_summary_ALL SOURCES_",
