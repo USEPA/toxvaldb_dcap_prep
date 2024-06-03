@@ -141,7 +141,6 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
 
     # Initialize list of study_type values to include
     stlist = c(
-      "short-term",
       "subchronic",
       "28-day",
       "chronic",
@@ -149,17 +148,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
       "developmental",
       "reproduction",
       "reproduction developmental",
-      "immunotoxicity",
-      "immunotoxicity 28-day",
-      "immunotoxicity chronic",
-      "immunotoxicity short-term",
-      "immunotoxicity subchronic",
-      "intermediate",
-      "neurotoxicity",
-      "neurotoxicity 28-day",
-      "neurotoxicity chronic",
-      "neurotoxicity short-term",
-      "neurotoxicity subchronic"
+      "clinical"
      )
 
     # Remove entries with invalid study_types
