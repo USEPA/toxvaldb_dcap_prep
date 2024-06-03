@@ -204,12 +204,12 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
       dplyr::bind_rows(mat)
   }
 
-  # Set NOAEL/related toxval_type values to NA
+  # Set critical_effect values for NOAEL/related toxval_type to none
   res = res %>%
     dplyr::mutate(
-      toxval_type = dplyr::case_when(
-        grepl("NO?A?EL", toxval_type) ~ as.character(NA),
-        TRUE ~ toxval_type
+      critical_effect = dplyr::case_when(
+        grepl("NO?A?EL", toxval_type) ~ "none",
+        TRUE ~ critical_effect
       )
     )
 
