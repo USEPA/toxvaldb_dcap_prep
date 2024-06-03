@@ -200,6 +200,12 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
       # Remove non-experimental records
       dplyr::filter(!experimental_record %in% c("no", "No", "not experimental", "Not experimental"))
 
+    # Filter out critical_effect values with "accumulation" if source is ECOTOX
+    if(src == "ECOTOX") {
+      mat = mat %>%
+        dplyr::filter(!grepl("accumulation", critical_effect, ignore.case=TRUE))
+    }
+
 
     cat("[4]",src,":",nrow(mat),"\n\n")
 
