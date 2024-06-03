@@ -152,7 +152,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
      )
 
     # Remove entries with invalid study_types
-    if(!src %in% c("HEAST")) mat = mat %>% dplyr::filter(study_type %in% !!stlist)
+    mat = mat %>%
+      dplyr::filter(study_type %in% !!stlist)
     cat("[3]",src,":",nrow(mat),"\n")
 
     mat = mat %>%
