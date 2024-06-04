@@ -98,6 +98,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
                       "f.record_source_type, ",
                       "f.priority, ",
                       "f.clowder_doc_id, ",
+                      "f.quality, ",
                       "b.source_hash, ",
                       "b.study_group, ",
                       "b.qc_status, ",
@@ -196,6 +197,11 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
         dplyr::filter(!grepl("accumulation", critical_effect, ignore.case=TRUE))
     }
 
+    # Filter out records with quality rating of "3 (not reliable)" for IUCLID
+    if(src == "ECHA IUCLID") {
+      mat = mat %>%
+        dplyr::filter(!grepl("3 \\(not reliable\\)", quality, ignore.case=TRUE))
+    }
 
     cat("[4]",src,":",nrow(mat),"\n\n")
 
