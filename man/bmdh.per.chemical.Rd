@@ -2,11 +2,11 @@
 % Please edit documentation in R/bmdh.per.chemical.R
 \name{bmdh.per.chemical}
 \alias{bmdh.per.chemical}
-\title{Calculate BMDh values one per chemical}
+\title{bmdh.per.chemical}
 \usage{
 bmdh.per.chemical(
   toxval.db = "res_toxval_v95",
-  sys.date = "2024-02-28",
+  sys.date = Sys.Date(),
   regulatory.sources = c("IRIS", "PPRTV (CPHEA)", "ATSDR MRLs 2022", "ATSDR MRLs",
     "ATSDR PFAS 2021", "EPA OPP", "HEAST")
 )
@@ -16,16 +16,29 @@ bmdh.per.chemical(
 
 \item{sys.date}{The date of the database export}
 
-\item{regulatory.sources}{This is the list of sources that will be used to select the
-optimal quantile  to use for selecting the final chemical-level BMDh.}
+\item{regulatory.sources}{This is the list of sources that will be used to select the #' optimal quantile to use for selecting the final chemical-level BMDh.}
 }
 \value{
 Write a file with the results: toxval_PODs_for_BMDh chemical level {toxval.db} {sys.date}.xlsx
 }
 \description{
-`bmdh.per.study` Calculates one BMDh value per chemical. This is done by taking
+Calculate BMDh values one per chemical
+}
+\details{
+Calculates one BMDh value per chemical. This is done by taking
 various percentiles of the distribution of the BMDh values and building a table
 with one column per percentile per chemical. The values are calibrated
 against regulatory values. The list of high-quality, regulator sources is given
 as one of the calling arguments.
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+ \code{\link[stats]{sd}}, \code{\link[stats]{quantile}}
 }

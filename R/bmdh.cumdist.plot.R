@@ -24,7 +24,7 @@
 #' @importFrom ggpubr ggarrange
 #' @importFrom grDevices dev.off
 #-------------------------------------------------------------------------------
-bmdh.cumdist.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date="2024-02-28") {
+bmdh.cumdist.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   printCurrentFunction()
   dir = "data/"
   file = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".xlsx")

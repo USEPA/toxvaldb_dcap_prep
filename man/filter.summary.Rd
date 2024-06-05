@@ -2,20 +2,35 @@
 % Please edit documentation in R/filter.summary.R
 \name{filter.summary}
 \alias{filter.summary}
-\title{Summarize the filtering steps}
+\title{filter.summary}
 \usage{
-\method{filter}{summary}(toxval.db = "res_toxval_v95", sys.date = "2024-04-10", do.load = T)
+\method{filter}{summary}(toxval.db = "res_toxval_v95", sys.date = Sys.Date(), do.load = TRUE)
 }
 \arguments{
 \item{toxval.db}{Database version}
 
 \item{sys.date}{The date of the export}
+
+\item{do.load}{Whether to load data from Excel, Default: TRUE}
 }
 \value{
 Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx
 }
 \description{
-`filter.for.multi.noel` Filters where multiple NOEL/NOEL etc. exist. For each study_group
+Summarize the filtering steps
+}
+\details{
+Filters where multiple NOEL/NOEL etc. exist. For each study_group
 this will select the highest NO(A)EL below the lowest LO(A)EL and the lowest LO(A)EL.
 In all cases, all BMDx values are included
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 }

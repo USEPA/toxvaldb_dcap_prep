@@ -2,9 +2,9 @@
 % Please edit documentation in R/filter.for.multi.noel.R
 \name{filter.for.multi.noel}
 \alias{filter.for.multi.noel}
-\title{Filter the exported records for redundancy of NO(A)EL / LO(A)EL PODs in a study group}
+\title{filter.for.multi.noel}
 \usage{
-\method{filter}{for.multi.noel}(toxval.db = "res_toxval_v95", sys.date = "2024-05-20")
+\method{filter}{for.multi.noel}(toxval.db = "res_toxval_v95", sys.date = Sys.Date())
 }
 \arguments{
 \item{toxval.db}{Database version}
@@ -12,10 +12,23 @@
 \item{sys.date}{The date of the export}
 }
 \value{
-Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx
+Write a file with the filtered results
 }
 \description{
-`filter.for.multi.noel` Filters where multiple NOEL/NOEL etc. exist. For each study_group
+Filter the exported records for redundancy of NO(A)EL / LO(A)EL PODs in a study group
+}
+\details{
+Filters where multiple NOEL/NOEL etc. exist. For each study_group
 this will select the highest NO(A)EL below the lowest LO(A)EL and the lowest LO(A)EL.
 In all cases, all BMDx values are included
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 }

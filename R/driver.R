@@ -16,9 +16,10 @@
 #' }
 #' @rdname driver
 #-------------------------------------------------------------------------------
-driver <- function(toxval.db="res_toxval_v95",sys.date="2024-05-20",user="user",password="password") {
+driver <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),user="user",password="password") {
   printCurrentFunction()
-  export.for.bmdh(toxval.db,user,password)
+  setDBConn(user=user, password=password)
+  export.for.bmdh(toxval.db)
   filter.for.bmdh(toxval.db,sys.date)
   filter.for.lel(toxval.db,sys.date)
   filter.for.multi.noel(toxval.db,sys.date)

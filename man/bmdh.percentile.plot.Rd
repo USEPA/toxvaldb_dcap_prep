@@ -2,12 +2,12 @@
 % Please edit documentation in R/bmdh.percentile.plot.R
 \name{bmdh.percentile.plot}
 \alias{bmdh.percentile.plot}
-\title{Plot the BMDs vs the regulatory values for different percentiles and determine the best fit}
+\title{bmdh.percentile.plot}
 \usage{
 bmdh.percentile.plot(
   to.file = F,
   toxval.db = "res_toxval_v95",
-  sys.date = "2024-02-28",
+  sys.date = Sys.Date(),
   minstudies = 3,
   cutoff.logsd = 2
 )
@@ -27,6 +27,23 @@ bmdh.percentile.plot(
 Write a file with the results: toxval_PODs_for_BMDh chemical level {toxval.db} {sys.date}.xlsx
 }
 \description{
-`bmdh.percentile.plot` Helps determine the optimal percentile. The output file shows the
+Plot the BMDs vs the regulatory values for different percentiles and determine the best fit
+}
+\details{
+Helps determine the optimal percentile. The output file shows the
 fit statistics for different percentiles, and one should select the one with the lowest RMSE and highest R2.
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
+ \code{\link[stats]{lm}}
+ \code{\link[RMySQL]{character(0)}}
+ \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{aes}}, \code{\link[ggplot2]{labs}}, \code{\link[ggplot2]{geom_point}}, \code{\link[ggplot2]{ggtheme}}, \code{\link[ggplot2]{facet_grid}}, \code{\link[ggplot2]{lims}}, \code{\link[ggplot2]{geom_segment}}, \code{\link[ggplot2]{ggsave}}
+ \code{\link[grDevices]{dev}}
 }

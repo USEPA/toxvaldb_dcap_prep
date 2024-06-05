@@ -2,9 +2,9 @@
 % Please edit documentation in R/dcap.counts.R
 \name{dcap.counts}
 \alias{dcap.counts}
-\title{Calculate some stats for DCAP}
+\title{dcap.counts}
 \usage{
-dcap.counts(toxval.db = "res_toxval_v95", sys.date = "2024-04-09")
+dcap.counts(toxval.db = "res_toxval_v95", sys.date = Sys.Date())
 }
 \arguments{
 \item{toxval.db}{Database version}
@@ -15,6 +15,18 @@ dcap.counts(toxval.db = "res_toxval_v95", sys.date = "2024-04-09")
 Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
 }
 \description{
-`dcap.counts` Gets some statistics for the DCAP project off of the current
-ToxValDB export
+Calculate some stats for DCAP
+}
+\details{
+Gets some statistics for the DCAP project off of the current ToxValDB export
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 }

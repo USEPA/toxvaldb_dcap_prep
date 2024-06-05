@@ -22,7 +22,7 @@
 #' @importFrom ggplot2 ggplot aes ggtitle geom_point theme_bw xlab ylab scale_x_continuous scale_y_continuous ggsave
 #' @importFrom grDevices dev.off
 #-------------------------------------------------------------------------------
-bmdh.aurisano.check.plot <- function(to.file=FALSE,toxval.db="res_toxval_v95",sys.date="2024-02-28") {
+bmdh.aurisano.check.plot <- function(to.file=FALSE,toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   printCurrentFunction()
   dir = "data/"
   file = paste0(dir,"results/ToxValDB BMDh per study ",toxval.db," ",sys.date,".xlsx")

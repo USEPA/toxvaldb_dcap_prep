@@ -2,9 +2,9 @@
 % Please edit documentation in R/filter.for.bmdh.R
 \name{filter.for.bmdh}
 \alias{filter.for.bmdh}
-\title{Filter the exported records for redundancy}
+\title{filter.for.bmdh}
 \usage{
-\method{filter}{for.bmdh}(toxval.db = "res_toxval_v95", sys.date = "2024-05-20")
+\method{filter}{for.bmdh}(toxval.db = "res_toxval_v95", sys.date = Sys.Date())
 }
 \arguments{
 \item{toxval.db}{Database version}
@@ -15,7 +15,10 @@
 Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
 }
 \description{
-`filter.for.bmdh` Filters redundant rows in the raw database export. There are
+Filter the exported records for redundancy
+}
+\details{
+Filters redundant rows in the raw database export. There are
 two kinds of redundancy. The first filters extra reference rows from the record_source table.
 The main data is in the toxval tables, and references are linked through the toxval_id to
 the record_source table. During the curation process, these references get
@@ -24,4 +27,15 @@ Then, there are redundancies in the toxval table itself, likely caused by upstre
 processing issues. These will be solved there, but the filtering
 in this function takes care of this issue
 for the moment.
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
+ \code{\link[digest]{digest}}
 }

@@ -24,7 +24,7 @@
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #' @importFrom stats sd quantile
 #-------------------------------------------------------------------------------
-bmdh.per.chemical <- function(toxval.db="res_toxval_v95",sys.date="2024-02-28",
+bmdh.per.chemical <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),
                               regulatory.sources=c("IRIS",
                                                    "PPRTV (CPHEA)",
                                                    "ATSDR MRLs 2022",

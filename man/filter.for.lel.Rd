@@ -2,9 +2,9 @@
 % Please edit documentation in R/filter.for.lel.R
 \name{filter.for.lel}
 \alias{filter.for.lel}
-\title{Filter the exported records for redundancy}
+\title{filter.for.lel}
 \usage{
-\method{filter}{for.lel}(toxval.db = "res_toxval_v95", sys.date = "2024-04-10")
+\method{filter}{for.lel}(toxval.db = "res_toxval_v95", sys.date = Sys.Date())
 }
 \arguments{
 \item{toxval.db}{Database version}
@@ -15,5 +15,18 @@
 Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
 }
 \description{
-`filter.for.lel` Filters LEL, NEL values wihere a LOAEL/NOAEL value exists
+Filter the exported records for redundancy
+}
+\details{
+Filters LEL, NEL values wihere a LOAEL/NOAEL value exists
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 }

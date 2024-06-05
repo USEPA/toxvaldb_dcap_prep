@@ -17,7 +17,7 @@
 #' @rdname dcap.counts
 #' @importFrom openxlsx read.xlsx write.xlsx
 #-----------------------------------------------------------------------------------
-dcap.counts <- function(toxval.db="res_toxval_v95",sys.date="2024-04-09") {
+dcap.counts <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   printCurrentFunction(toxval.db)
   dir = "data/"
   file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")

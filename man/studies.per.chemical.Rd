@@ -2,9 +2,9 @@
 % Please edit documentation in R/studies.per.chemical.R
 \name{studies.per.chemical}
 \alias{studies.per.chemical}
-\title{Calculate some stats for DCAP}
+\title{studies.per.chemical}
 \usage{
-studies.per.chemical(toxval.db = "res_toxval_v95", sys.date = "2024-04-03")
+studies.per.chemical(toxval.db = "res_toxval_v95", sys.date = Sys.Date())
 }
 \arguments{
 \item{toxval.db}{Database version}
@@ -15,6 +15,18 @@ studies.per.chemical(toxval.db = "res_toxval_v95", sys.date = "2024-04-03")
 Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
 }
 \description{
-`studies.per.chemical` Gets teh number of studies per chemical from the current
-ToxValDB export
+Calculate some stats for DCAP
+}
+\details{
+Gets the number of studies per chemical from the current ToxValDB export
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 }

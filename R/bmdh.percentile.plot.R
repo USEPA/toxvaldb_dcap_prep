@@ -29,7 +29,7 @@
 #' @importFrom ggplot2 ggplot aes ggtitle geom_point theme_bw facet_grid xlim ylim xlab ylab geom_segment ggsave
 #' @importFrom grDevices dev.off
 #-------------------------------------------------------------------------------
-bmdh.percentile.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date="2024-02-28",minstudies=3,cutoff.logsd=2) {
+bmdh.percentile.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=Sys.Date(),minstudies=3,cutoff.logsd=2) {
   printCurrentFunction()
   dir = "data/"
   file = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".xlsx")
