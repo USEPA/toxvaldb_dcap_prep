@@ -33,9 +33,11 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   res = openxlsx::read.xlsx(file)
   res = res[res$toxval_numeric>0,]
 
+  # Remove entries related to specified studies
   exclude.list = c("epidemiology","human","genetics","occupational")
   res = res[!is.element(res$study_type,exclude.list),]
 
+  # Get list of toxval_type values related to "human" and set common_name accordingly
   humanized.list = NULL
   ttlist = unique(res$toxval_type)
   for(tt in ttlist) {
@@ -52,6 +54,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   print(file)
   s2 = openxlsx::read.xlsx(file)
 
+  # Fix test species/study type values
   s1[is.element(s1$tested_species_curated,"rat"),"tested_species_curated"] = "Rat"
   s1[is.element(s1$tested_species_curated,"rat*"),"tested_species_curated"] = "Rat"
   s1[is.element(s1$tested_species_curated,"mouse"),"tested_species_curated"] = "Mouse"
@@ -67,30 +70,34 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   s2[is.element(s2$tested_species_curated,"dog"),"tested_species_curated"] = "Dog"
   s2[is.element(s2$tested_species_curated,"rabbit"),"tested_species_curated"] = "Rabbit"
 
+  # Prepare res for calculations
   s1$key = paste(s1$dtxsid,s1$source,s1$toxval_numeric,s1$tested_species_curated,s1$toxval_type_curated,s1$study_type_curated)
   s2$key = paste(s2$dtxsid,s2$source,s2$toxval_numeric,s2$tested_species_curated,s2$toxval_type_curated,s2$study_type_curated)
   s1 = unique(s1)
   s2 = unique(s2)
-  res$study_type_standard = NA
-  res$effect_category_standard = NA
-  res$toxval_type_standard = NA
-  res$conceptual_model_1 = "-"
-  res$conceptual_model_2 = "-"
-  res$conceptual_model_1_aurisano = "-"
-  res$conceptual_model_2_aurisano = "-"
-  res$bmdh1 = NA
-  res$bmdh2 = NA
-  res$bmdh = NA
-  res$bmdh1_aurisano = NA
-  res$bmdh2_aurisano = NA
-  res$bmdh_aurisano = NA
-  res$bmdh_ratio = NA
-  res$F1 = NA
-  res$F2 = NA
-  res$F31 = NA
-  res$F32 = NA
-  res$F4 = NA
-  res$F5 = NA
+  res = res %>%
+    dplyr::mutate(
+      study_type_standard = NA,
+      effect_category_standard = NA,
+      toxval_type_standard = NA,
+      conceptual_model_1 = "-",
+      conceptual_model_2 = "-",
+      conceptual_model_1_aurisano = "-",
+      conceptual_model_2_aurisano = "-",
+      bmdh1 = NA,
+      bmdh2 = NA,
+      bmdh = NA,
+      bmdh1_aurisano = NA,
+      bmdh2_aurisano = NA,
+      bmdh_aurisano = NA,
+      bmdh_ratio = NA,
+      F1 = NA,
+      F2 = NA,
+      F31 = NA,
+      F32 = NA,
+      F4 = NA,
+      F5 = NA
+    )
 
   file = paste0(dir,"effect category dictionary.xlsx")
   print(file)
@@ -120,6 +127,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
           "study_group","key")
   res = res[,nlist]
 
+  # Set appropriate values in res
   res[res$critical_effect=="-","effect_category_standard"] = "none"
   for(i in seq_len(nrow(res))) {
     x = res[i,"toxval_type"]
@@ -264,6 +272,8 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   x = x[!is.na(y)]
   y = y[!is.na(y)]
   graphics::plot(y~x)
+
+  # Write output to file
   sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
   file = paste0(dir,"results/ToxValDB BMDh per study ",toxval.db," ",sys.date,".xlsx")
   openxlsx::write.xlsx(res,file,firstRow=T,headerStyle=sty)

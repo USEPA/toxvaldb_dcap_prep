@@ -52,6 +52,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
 
   # Query ToxVal for source data
   res = data.frame()
+
   for(i in seq_len(length(slist))) {
     src = slist[i]
     priority = plist[i]

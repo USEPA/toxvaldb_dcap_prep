@@ -34,6 +34,7 @@ bmdh.cumdist.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=Sys.
   print(file)
   tsca = openxlsx::read.xlsx(file)
 
+  # Create all chemicals percentile plot
   p1 = ggplot2::ggplot(data=mat,ggplot2::aes(x=studies))  +
     ggplot2::ggtitle(paste0("Percentiles All Chemicals: ",nrow(mat))) +
     ggplot2::stat_ecdf(geom = "step") +
@@ -42,6 +43,7 @@ bmdh.cumdist.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=Sys.
     ggplot2::xlab("Number of Studies") +
     ggplot2::ylab("Cumulative Fraction of Chemicals")
 
+  # Create TSCA chemicals percentile plot
   mat = mat[is.element(mat$dtxsid,tsca$dtxsid),]
   p2 = ggplot2::ggplot(data=mat,ggplot2::aes(x=studies))  +
     ggplot2::ggtitle(paste0("Percentiles TSCA Chemicals: ",nrow(mat))) +
@@ -51,12 +53,14 @@ bmdh.cumdist.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=Sys.
     ggplot2::xlab("Number of Studies") +
     ggplot2::ylab("Cumulative Fraction of Chemicals")
 
+  # Create multiplot using plots above
   p3 =  ggpubr::ggarrange(p1, p2,
             labels = c("", ""),
             ncol = 2, nrow = 1)
 
   print(p3)
 
+  # Write plot to file or display in browser
   if(to.file) {
     fname = paste0(dir,"results/Percentile x number of studies.pdf")
     ggplot2::ggsave(plot = p3, width = 8, height = 2.5, dpi = 300, filename =fname)

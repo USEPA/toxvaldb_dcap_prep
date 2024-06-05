@@ -28,12 +28,7 @@ export.for.bmdh.ecotox <- function(toxval.db="res_toxval_v95",user="_dataminer",
   dir = "data/"
   setDBConn(user=user,password=password)
 
-  slist = c("ATSDR PFAS 2021","ATSDR MRLs","Copper Manufacturers",
-            "ECHA IUCLID","ECOTOX","EFSA","HAWC PFAS 430",
-            "HAWC Project","HEAST","HESS","HPVIS","IRIS",
-            "NTP PFAS","PFAS 150 SEM v2","PPRTV (CPHEA)",
-            "ToxRefDB","WHO JECFA Tox Studies")
-
+  # Set ECOTOX source and get appropriate source priority
   slist = "ECOTOX"
   plist = vector(mode="integer",length=length(slist))
   plist[] = 1
@@ -53,6 +48,8 @@ export.for.bmdh.ecotox <- function(toxval.db="res_toxval_v95",user="_dataminer",
   for(i in seq_len(length(slist))) {
     src = slist[i]
     priority = plist[i]
+
+    # Query ToxVal for ECOTOX data
     query = paste0("SELECT
                       a.dtxsid,a.casrn,a.name,
                       b.source,
@@ -102,6 +99,8 @@ export.for.bmdh.ecotox <- function(toxval.db="res_toxval_v95",user="_dataminer",
     mat = runQuery(query,toxval.db,T,F)
     mat = unique(mat)
     cat("[1]",src,":",nrow(mat),"\n")
+
+    # Prep ECOTOX data
     mat[is.na(mat$toxval_numeric_qualifier),"toxval_numeric_qualifier"] = "ns"
     #mat[is.element(mat$toxval_numeric_qualifier,c("~","<","<=")),"toxval_numeric_qualifier"] = "="
     #mat = mat[mat$toxval_numeric_qualifier=="=",]
@@ -150,6 +149,8 @@ export.for.bmdh.ecotox <- function(toxval.db="res_toxval_v95",user="_dataminer",
     cat("[4]",src,":",nrow(mat),"\n\n")
     res = rbind(res,mat)
   }
+
+  # Write ECOTOX data to file
   sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
   file = paste0(dir,"results/ToxValDB for BMDh ",slist," ",toxval.db," ",Sys.Date(),".xlsx")
   openxlsx::write.xlsx(res,file,firstRow=T,headerStyle=sty)
