@@ -52,6 +52,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
 
   # Query ToxVal for source data
   res = data.frame()
+
   for(i in seq_len(length(slist))) {
     src = slist[i]
     priority = plist[i]
@@ -79,6 +80,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
                       "b.study_duration_value, ",
                       "b.study_duration_units, ",
                       "b.study_duration_class, ",
+                      "b.supersource, ",
                       "d.common_name, ",
                       "b.strain, ",
                       "b.sex, ",
@@ -112,6 +114,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
                       "INNER JOIN record_source f on b.toxval_id=f.toxval_id ",
                       "WHERE ",
                       "b.source='", src, "' ",
+                      "and b.qc_status NOT LIKE '%fail%' ",
                       # "and b.human_eco='human health' ",
                       "and e.toxval_type_supercategory in ('Point of Departure') ",
                       "and b.toxval_units='mg/kg-day' ",
@@ -162,6 +165,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
       dplyr::mutate(
         common_name = dplyr::case_when(
           common_name == "European Rabbit" ~ "Rabbit",
+          common_name == "Western European House Mouse" ~ "Mouse",
           common_name == "Norway Rat" ~ "Rat",
           common_name == "Domestic Dog" ~ "Dog",
           common_name == "House Mouse" ~ "Mouse",
