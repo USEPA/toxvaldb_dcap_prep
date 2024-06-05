@@ -98,6 +98,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
                       "f.record_source_type, ",
                       "f.priority, ",
                       "f.clowder_doc_id, ",
+                      "f.quality, ",
                       "b.source_hash, ",
                       "b.study_group, ",
                       "b.qc_status, ",
@@ -141,7 +142,6 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
 
     # Initialize list of study_type values to include
     stlist = c(
-      "short-term",
       "subchronic",
       "28-day",
       "chronic",
@@ -149,21 +149,12 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
       "developmental",
       "reproduction",
       "reproduction developmental",
-      "immunotoxicity",
-      "immunotoxicity 28-day",
-      "immunotoxicity chronic",
-      "immunotoxicity short-term",
-      "immunotoxicity subchronic",
-      "intermediate",
-      "neurotoxicity",
-      "neurotoxicity 28-day",
-      "neurotoxicity chronic",
-      "neurotoxicity short-term",
-      "neurotoxicity subchronic"
+      "clinical"
      )
 
     # Remove entries with invalid study_types
-    if(!src %in% c("HEAST")) mat = mat %>% dplyr::filter(study_type %in% !!stlist)
+    mat = mat %>%
+      dplyr::filter(study_type %in% !!stlist)
     cat("[3]",src,":",nrow(mat),"\n")
 
     mat = mat %>%
@@ -200,6 +191,17 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
       # Remove non-experimental records
       dplyr::filter(!experimental_record %in% c("no", "No", "not experimental", "Not experimental"))
 
+    # Filter out critical_effect values with "accumulation" if source is ECOTOX
+    if(src == "ECOTOX") {
+      mat = mat %>%
+        dplyr::filter(!grepl("accumulation", critical_effect, ignore.case=TRUE))
+    }
+
+    # Filter out records with quality rating of "3 (not reliable)" for IUCLID
+    if(src == "ECHA IUCLID") {
+      mat = mat %>%
+        dplyr::filter(!grepl("3 \\(not reliable\\)", quality, ignore.case=TRUE))
+    }
 
     cat("[4]",src,":",nrow(mat),"\n\n")
 
@@ -207,6 +209,15 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
     res = res %>%
       dplyr::bind_rows(mat)
   }
+
+  # Set critical_effect values for NOAEL/related toxval_type to none
+  res = res %>%
+    dplyr::mutate(
+      critical_effect = dplyr::case_when(
+        grepl("NO?A?EL", toxval_type) ~ "none",
+        TRUE ~ critical_effect
+      )
+    )
 
   # Write unique toxval_type values included in full data
   unique_toxval_type = res %>%
