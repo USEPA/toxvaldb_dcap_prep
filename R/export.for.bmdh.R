@@ -30,7 +30,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
   dir = "data/"
 
   slist = c("ATSDR MRLs", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
-           "ECHA IUCLID", "ECOTOX", "EFSA", "EPA OPP", "HAWC PFAS 150", "HAWC PFAS 430",
+           "ECHA IUCLID", "ECOTOX", "EFSA", "HAWC PFAS 150", "HAWC PFAS 430",
             "HAWC Project", "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
             "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
 
@@ -56,6 +56,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
   for(i in seq_len(length(slist))) {
     src = slist[i]
     priority = plist[i]
+    cat("Pulling ", src, " (", i, " of ", length(slist), ")\n")
 
     # Handle inclusion of only specified IUCLID OHTs
     iuclid_addition = NULL
@@ -209,20 +210,41 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
 
     cat("[4]",src,":",nrow(mat),"\n\n")
 
+    # Map critical_effect_category
+    crit_cat_map <- runQuery(paste0("SELECT source_hash, critical_effect_category FROM critical_effect_terms ",
+                                    "WHERE source_hash in ('",
+                                    paste0(mat$source_hash, collapse = "', '")
+                                    ,"') ",
+                                    # Remove select terms
+                                    "and term not in ('none')"),
+                             toxval.db) %>%
+      dplyr::group_by(source_hash) %>%
+      dplyr::mutate(critical_effect_category = paste0(unique(critical_effect_category[!is.na(critical_effect_category)]),
+                                                      collapse = "|")) %>%
+      dplyr::distinct() %>%
+      dplyr::ungroup()
+
+    mat = mat %>%
+      dplyr::left_join(crit_cat_map,
+                       by="source_hash")
+
+    rm(crit_cat_map)
+
     # Add current source data to running total
     res = res %>%
       dplyr::bind_rows(mat)
   }
 
-  # Set critical_effect values for NOAEL/related toxval_type to none
+  # Set critical_effect_category values for NOAEL/related toxval_type to none
   res = res %>%
     dplyr::mutate(
-      critical_effect = dplyr::case_when(
+      critical_effect_category = dplyr::case_when(
         grepl("NO?A?EL", toxval_type) ~ "none",
-        TRUE ~ critical_effect
+        TRUE ~ critical_effect_category
       )
     )
 
+  cat("Exporting results...\n")
   # Write unique toxval_type values included in full data
   unique_toxval_type = res %>%
     dplyr::select(source, toxval_type) %>%
