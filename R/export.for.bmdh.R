@@ -244,6 +244,13 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
       )
     )
 
+  # Get conceptual model by critical_effect_category
+  conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res)
+  # Map conceptual models
+  res = res %>%
+    dplyr::left_join(conceptual_model_map,
+                     by = "source_hash")
+
   cat("Exporting results...\n")
   # Write unique toxval_type values included in full data
   unique_toxval_type = res %>%
