@@ -35,10 +35,16 @@ bmdh.percentile.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=S
   file = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".xlsx")
   print(file)
   mat = openxlsx::read.xlsx(file)
+
+  # Filter out entries with less than minstudies
   mat = mat[mat$studies>=minstudies,]
+
+  # Note whether logsd values excede specified cutoff
   mat$highsd = "N"
   mat[mat$log.sd>cutoff.logsd,"highsd"] = "Y"
   #mat = mat[mat$log.sd<cutoff.logsd,]
+
+  # Build dataframe
   plist = c(5,10,15,20,25,30,35)
   clist = c("pod_05","pod_10","pod_15","pod_20","pod_25","pod_30","pod_35")
   hlist = c(" 5th percentile","10th percentile","15th percentile","20th percentile","25th percentile","30th percentile","35th percentile")
@@ -48,6 +54,8 @@ bmdh.percentile.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=S
   pdata = NULL
   tmat = mat[mat$studies>=minstudies,]
   tmat = tmat[!is.na(tmat$pod_hra),]
+
+  # Accumulate data
   for(i in seq_len(length(plist))) {
     col = clist[i]
     res[i,"percentile"] = plist[i]
@@ -80,6 +88,8 @@ bmdh.percentile.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=S
   }
   pdata = pdata[!is.na(pdata$RA),]
   print(res)
+
+  # Plot results
   p = ggplot2::ggplot(data=pdata,ggplot2::aes(x=experiment,y=RA))  +
     ggplot2::ggtitle(paste0("BMDh Percentiles")) +
     ggplot2::geom_point(size=0.1) +
@@ -91,9 +101,11 @@ bmdh.percentile.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=S
     ggplot2::geom_segment(ggplot2::aes(x=-4,xend=4,y=-4,yend=4))
   print(p)
 
+  # Write results to file
   file = paste0(dir,"results/ToxValDB BMDh per chemical percentiles ",toxval.db," ",sys.date,".xlsx")
-  openxlsx::write.xlsx(res,file)
+  writexl::write_xlsx(res,file)
 
+  # Save or view resulting plot
   if(to.file) {
     fname = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".pdf")
     #fname = paste0(dir,"bmdh.percentile.plot.pdf")

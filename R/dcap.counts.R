@@ -24,6 +24,8 @@ dcap.counts <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   print(file)
   res = openxlsx::read.xlsx(file)
   cat("Find all combinations of toxval_types per study\n")
+
+  # Record study_group counts
   t1 = res$study_group
   t2 = as.data.frame(table(t1))
   names(t2) = c("study_group","count")
@@ -41,8 +43,9 @@ dcap.counts <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
     t2[i,"name"] = x[1,"name"]
   }
   file = paste0(dir,"DCAP/big_study_group.xlsx")
-  openxlsx::write.xlsx(t2,file)
+  writexl::write_xlsx(t2,file)
 
+  # Record POD combination counts
   sglist = unique(res$study_group)
   ttlist = NULL
   for(sg in sglist) {
@@ -54,5 +57,5 @@ dcap.counts <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   names(t3) = c("pod.combination","studies")
   t3 = t3[order(t3$studies,decreasing=T),]
   file = paste0(dir,"results/pod_combinations.xlsx")
-  openxlsx::write.xlsx(t3,file)
+  writexl::write_xlsx(t3,file)
 }

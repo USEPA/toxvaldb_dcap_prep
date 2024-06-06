@@ -30,6 +30,8 @@ export.for.critical_effect_mapping <- function(toxval.db="res_toxval_v95",user="
   for(src in slist) {
     n = runQuery(paste0("select count(*) from toxval where source='",src,"'"),toxval.db)[1,1]
     cat(src,":",n,"\n")
+
+    # Query ToxVal for source data
     query = paste0("SELECT
                       a.dtxsid,a.casrn,a.name,
                       b.source,
@@ -56,6 +58,7 @@ export.for.critical_effect_mapping <- function(toxval.db="res_toxval_v95",user="
     mat = runQuery(query,toxval.db,T,F)
     mat = unique(mat)
 
+    # Prepare data
     ttlist = c( "NOAEL (HED)","NOAEL (HEC)","NOAEL","NOEL",
               "LOAEL (HED)","LOAEL (HEC)","LOAEL","LOEL",
               "BMD","BMD (10 LED)","BMD (1SD)","BMD (2.5)","BMD (2X)","BMD (50)","BMDL","BMDL (0.5 SD)","BMDL (0.5)","BMDL (01 HEC)",
@@ -92,6 +95,8 @@ export.for.critical_effect_mapping <- function(toxval.db="res_toxval_v95",user="
   res$adverse = "Y"
   res$standard_effect_1 = NA
   res$standard_effect_2 = NA
+
+  # Write output to file
   sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
   file = paste0(dir,"results/ToxValDB for critical effect ",toxval.db," ",Sys.Date(),".xlsx")
   openxlsx::write.xlsx(res,file,firstRow=T,headerStyle=sty)
