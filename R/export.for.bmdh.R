@@ -35,6 +35,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
             "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
 
   # Read in pesticide DTXSID values to exclude
+  # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
   pesticide_file = paste0(dir, "input/list_chemicals-2024-06-07-08-25-08.xls")
   pesticide_dtxsid = readxl::read_xls(pesticide_file) %>%
     dplyr::pull(DTXSID) %>%
