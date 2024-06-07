@@ -24,6 +24,7 @@
 #' @importFrom digest digest
 #-----------------------------------------------------------------------------------
 get_chemcial_index <- function(input_toxval_file, input_qsar_file){
+  dir = "data/"
 
   if(is.null(input_toxval_file) || input_toxval_file %in% c(NA, "NA", "")) stop("input_toxval_file must be a file path string...")
   if(!file.exists(input_toxval_file)) stop("input_toxval_file '", input_toxval_file, "' does not exist...")
@@ -50,7 +51,7 @@ get_chemcial_index <- function(input_toxval_file, input_qsar_file){
     dplyr::mutate(DCAP_INDEX = paste0("DCAP_INDEX_", purrr::map_chr(QSAR_READY_SMILES, digest::digest, algo = 'crc32'))) %>%
     dplyr::ungroup()
   #Write the DTXSID grouping file
-  readr::write_csv(in_toxval,"input/ToxVal_DTXSIDs_Grouped.csv", na = "")
+  readr::write_csv(in_toxval, paste0(dir, "input/ToxVal_DTXSIDs_Grouped.csv"), na = "")
   # Return index dataframe
   return(in_toxval)
 }
