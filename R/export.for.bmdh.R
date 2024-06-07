@@ -29,11 +29,11 @@
 export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE) {
   printCurrentFunction(toxval.db)
   dir = "data/"
-
-  slist = c("ATSDR MRLs", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
-           "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
-            "HAWC Project", "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
-            "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
+  
+  slist =  c("ATSDR MRLs", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
+             "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
+             "HAWC Project", "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
+             "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
 
   # Read in pesticide DTXSID values to exclude
   # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
@@ -76,10 +76,10 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     if(src == "ECHA IUCLID") {
       iuclid_addition = paste0(" AND b.source_table in ",
                                "('source_iuclid_repeateddosetoxicityoral', ",
-                                "'source_iuclid_developmentaltoxicityteratogenicity', ",
-                                "'source_iuclid_carcinogenicity', ",
-                                "'source_iuclid_immunotoxicity', ",
-                                "'source_iuclid_neurotoxicity')")
+                               "'source_iuclid_developmentaltoxicityteratogenicity', ",
+                               "'source_iuclid_carcinogenicity', ",
+                               "'source_iuclid_immunotoxicity', ",
+                               "'source_iuclid_neurotoxicity')")
     }
 
     query = paste0("SELECT ",
@@ -168,7 +168,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       "reproduction",
       "reproduction developmental",
       "clinical"
-     )
+    )
 
     # Remove entries with invalid study_types
     mat = mat %>%
@@ -257,6 +257,13 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
         TRUE ~ critical_effect_category
       )
     )
+
+  # Get conceptual model by critical_effect_category
+  conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res)
+  # Map conceptual models
+  res = res %>%
+    dplyr::left_join(conceptual_model_map,
+                     by = "source_hash")
 
   cat("Exporting results...\n")
   # Write unique toxval_type values included in full data
