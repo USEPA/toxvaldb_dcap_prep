@@ -29,10 +29,10 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
   printCurrentFunction(toxval.db)
   dir = "data/"
 
-  slist = c("ATSDR MRLs", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
-           "ECHA IUCLID", "ECOTOX", "EFSA", "HAWC PFAS 150", "HAWC PFAS 430",
-            "HAWC Project", "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
-            "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
+  slist =  c("ATSDR MRLs", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
+             "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
+             "HAWC Project", "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
+             "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
 
   # Get priority values for each specified source
   plist = vector(mode="integer",length=length(slist))
@@ -63,66 +63,66 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
     if(src == "ECHA IUCLID") {
       iuclid_addition = paste0(" AND b.source_table in ",
                                "('source_iuclid_repeateddosetoxicityoral', ",
-                                "'source_iuclid_developmentaltoxicityteratogenicity', ",
-                                "'source_iuclid_carcinogenicity', ",
-                                "'source_iuclid_immunotoxicity', ",
-                                "'source_iuclid_neurotoxicity')")
+                               "'source_iuclid_developmentaltoxicityteratogenicity', ",
+                               "'source_iuclid_carcinogenicity', ",
+                               "'source_iuclid_immunotoxicity', ",
+                               "'source_iuclid_neurotoxicity')")
     }
 
     query = paste0("SELECT ",
-                      "a.dtxsid, a.casrn, a.name, ",
-                      "b.source, ",
-                      "b.toxval_type, ",
-                      "b.toxval_subtype, ",
-                      "b.toxval_numeric_qualifier, ",
-                      "b.toxval_numeric, ",
-                      "b.toxval_units, ",
-                      "b.study_type, ",
-                      "b.study_duration_value, ",
-                      "b.study_duration_units, ",
-                      "b.study_duration_class, ",
-                      "b.supersource, ",
-                      "d.common_name, ",
-                      "b.strain, ",
-                      "b.sex, ",
-                      "b.lifestage, ",
-                      "b.generation, ",
-                      "b.exposure_route, ",
-                      "b.exposure_method, ",
-                      "b.exposure_form, ",
-                      "b.critical_effect, ",
-                      "b.year, ",
-                      "f.long_ref, ",
-                      "f.url, ",
-                      "f.title, ",
-                      "f.pmid, ",
-                      "f.guideline, ",
-                      "f.record_source_level, ",
-                      "f.record_source_type, ",
-                      "f.priority, ",
-                      "f.clowder_doc_id, ",
-                      "f.quality, ",
-                      "b.source_hash, ",
-                      "b.study_group, ",
-                      "b.qc_status, ",
-                      "b.experimental_record, ",
-                      "a.cleaned_casrn, a.cleaned_name ",
-                      "FROM ",
-                      "toxval b ",
-                      "INNER JOIN source_chemical a on a.chemical_id=b.chemical_id ",
-                      "LEFT JOIN species d on b.species_id=d.species_id ",
-                      "INNER JOIN toxval_type_dictionary e on b.toxval_type=e.toxval_type ",
-                      "INNER JOIN record_source f on b.toxval_id=f.toxval_id ",
-                      "WHERE ",
-                      "b.source='", src, "' ",
-                      "and b.qc_status NOT LIKE '%fail%' ",
-                      # "and b.human_eco='human health' ",
-                      "and e.toxval_type_supercategory in ('Point of Departure') ",
-                      "and b.toxval_units='mg/kg-day' ",
-                      "and b.exposure_route='oral'",
-                      # " and f.priority='", priority, "'",
-                      iuclid_addition
-                     )
+                   "a.dtxsid, a.casrn, a.name, ",
+                   "b.source, ",
+                   "b.toxval_type, ",
+                   "b.toxval_subtype, ",
+                   "b.toxval_numeric_qualifier, ",
+                   "b.toxval_numeric, ",
+                   "b.toxval_units, ",
+                   "b.study_type, ",
+                   "b.study_duration_value, ",
+                   "b.study_duration_units, ",
+                   "b.study_duration_class, ",
+                   "b.supersource, ",
+                   "d.common_name, ",
+                   "b.strain, ",
+                   "b.sex, ",
+                   "b.lifestage, ",
+                   "b.generation, ",
+                   "b.exposure_route, ",
+                   "b.exposure_method, ",
+                   "b.exposure_form, ",
+                   "b.critical_effect, ",
+                   "b.year, ",
+                   "f.long_ref, ",
+                   "f.url, ",
+                   "f.title, ",
+                   "f.pmid, ",
+                   "f.guideline, ",
+                   "f.record_source_level, ",
+                   "f.record_source_type, ",
+                   "f.priority, ",
+                   "f.clowder_doc_id, ",
+                   "f.quality, ",
+                   "b.source_hash, ",
+                   "b.study_group, ",
+                   "b.qc_status, ",
+                   "b.experimental_record, ",
+                   "a.cleaned_casrn, a.cleaned_name ",
+                   "FROM ",
+                   "toxval b ",
+                   "INNER JOIN source_chemical a on a.chemical_id=b.chemical_id ",
+                   "LEFT JOIN species d on b.species_id=d.species_id ",
+                   "INNER JOIN toxval_type_dictionary e on b.toxval_type=e.toxval_type ",
+                   "INNER JOIN record_source f on b.toxval_id=f.toxval_id ",
+                   "WHERE ",
+                   "b.source='", src, "' ",
+                   "and b.qc_status NOT LIKE '%fail%' ",
+                   # "and b.human_eco='human health' ",
+                   "and e.toxval_type_supercategory in ('Point of Departure') ",
+                   "and b.toxval_units='mg/kg-day' ",
+                   "and b.exposure_route='oral'",
+                   # " and f.priority='", priority, "'",
+                   iuclid_addition
+    )
 
     # Get unique entries using query
     mat = runQuery(query, toxval.db) %>%
@@ -154,7 +154,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
       "reproduction",
       "reproduction developmental",
       "clinical"
-     )
+    )
 
     # Remove entries with invalid study_types
     mat = mat %>%
