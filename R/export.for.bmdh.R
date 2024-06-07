@@ -34,6 +34,13 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
             "HAWC Project", "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
             "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
 
+  # Read in pesticide DTXSID values to exclude
+  pesticide_file = paste0(dir, "input/list_chemicals-2024-06-07-08-25-08.xls")
+  pesticide_dtxsid = readxl::read_xls(pesticide_file) %>%
+    dplyr::pull(DTXSID) %>%
+    unique() %>%
+    paste0(., collapse="', '")
+
   # Get priority values for each specified source
   plist = vector(mode="integer",length=length(slist))
   plist[] = 1
@@ -119,7 +126,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
                       # "and b.human_eco='human health' ",
                       "and e.toxval_type_supercategory in ('Point of Departure') ",
                       "and b.toxval_units='mg/kg-day' ",
-                      "and b.exposure_route='oral'",
+                      "and b.exposure_route='oral' ",
+                      "and a.dtxsid NOT IN ('", pesticide_dtxsid, "')",
                       # " and f.priority='", priority, "'",
                       iuclid_addition
                      )
