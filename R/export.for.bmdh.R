@@ -2,6 +2,7 @@
 #' @title export.for.bmdh
 #' @description Export records required for calculating BMDh values.
 #' @param toxval.db Database version
+#' @param include.pesticides Flag to include pesticides in output or not
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
 #' @details Exports all of the data required for the BMDh calculations.
 #' The main query may need to be modified to extract more columns if needed for
@@ -25,14 +26,26 @@
 #' @importFrom tidyr replace_na
 #' @importFrom writexl write_xlsx
 #-----------------------------------------------------------------------------------
-export.for.bmdh <- function(toxval.db="res_toxval_v95") {
+export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE) {
   printCurrentFunction(toxval.db)
   dir = "data/"
 
   slist = c("ATSDR MRLs", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
-           "ECHA IUCLID", "ECOTOX", "EFSA", "HAWC PFAS 150", "HAWC PFAS 430",
+           "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
             "HAWC Project", "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
             "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
+
+  # Read in pesticide DTXSID values to exclude
+  # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
+  pesticide_file = paste0(dir, "input/list_chemicals-2024-06-07-08-25-08.xls")
+  pesticide_dtxsid = readxl::read_xls(pesticide_file) %>%
+    dplyr::pull(DTXSID) %>%
+    unique() %>%
+    paste0(., collapse="', '")
+
+  # Set pesticide addition according to parameter
+  if(include.pesticides) pesticide_addition = ""
+  else pesticide_addition = paste0(" and a.dtxsid NOT IN ('", pesticide_dtxsid, "')")
 
   # Get priority values for each specified source
   plist = vector(mode="integer",length=length(slist))
@@ -120,6 +133,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
                       "and e.toxval_type_supercategory in ('Point of Departure') ",
                       "and b.toxval_units='mg/kg-day' ",
                       "and b.exposure_route='oral'",
+                      pesticide_addition,
                       # " and f.priority='", priority, "'",
                       iuclid_addition
                      )
@@ -253,6 +267,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95") {
   writexl::write_xlsx(unique_toxval_type, file)
 
   # Write full data to file
-  file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," ",Sys.Date(),".xlsx")
+  if(include.pesticides) file = paste0(dir,"results/ToxValDB for BMDh WITH PESTICIDES ",
+                                       toxval.db," ",Sys.Date(),".xlsx")
+  else file = paste0(dir,"results/ToxValDB for BMDh ", toxval.db," ",Sys.Date(),".xlsx")
   writexl::write_xlsx(res, file)
 }
