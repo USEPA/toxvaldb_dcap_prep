@@ -13,12 +13,13 @@ get.conceptual_model.by.critical_effect_category <- function(df){
     dplyr::distinct() %>%
     dplyr::mutate(type_map = dplyr::case_when(
       grepl("chronic", study_type, ignore.case=TRUE) ~ "repeat dose",
-      grepl("short-term", study_type, ignore.case=TRUE) ~ "repeat dose",
+      grepl("subchronic", study_type, ignore.case=TRUE) ~ "repeat dose",
       grepl("28-day", study_type, ignore.case=TRUE) ~ "repeat dose",
-      study_type=="developmental"~"developmental",
-      study_type=="reproduction"~"reproductive",
-      study_type=="neurotoxicity"~"repeat dose",
-      study_type=="immunotoxicity"~"repeat dose",
+      grepl("clinical", study_type, ignore.case=TRUE) ~ "repeat dose",
+      grepl("repeat dose other", study_type, ignore.case=TRUE) ~ "repeat dose",
+      study_type=="developmental"~"repro dev",
+      study_type=="reproduction"~"repro dev",
+      study_type=="reproduction developmental"~"repro dev",
       TRUE ~ NA_character_
     ))%>%
     dplyr::mutate(type = dplyr::case_when(
@@ -69,7 +70,7 @@ get.conceptual_model.by.critical_effect_category <- function(df){
     )) %>%
     dplyr::mutate(model2 = dplyr::case_when(
       (grepl("det", model2_all, ignore.case=TRUE) & grepl("stoch", model2_all) & type == "repeat dose") ~ "quantal-deterministic",
-      (grepl("det", model2_all, ignore.case=TRUE) & grepl("stoch", model2_all) & type == "reproductive|developmental") ~ "quantal-stochastic",
+      (grepl("det", model2_all, ignore.case=TRUE) & grepl("stoch", model2_all) & type == "repro dev") ~ "quantal-stochastic",
       grepl("det", model2_all, ignore.case=TRUE) ~ "quantal-deterministic",
       grepl("stoch", model2_all, ignore.case=TRUE) ~ "quantal-stochastic",
       TRUE ~ NA_character_)
@@ -80,7 +81,7 @@ get.conceptual_model.by.critical_effect_category <- function(df){
       model2 == "quantal-stochastic" ~ "quantal-stochastic",
       model2 == "quantal-deterministic" ~ "quantal-deterministic",
       multiple_flag == "multiple" & type == "repeat dose" ~ "quantal-deterministic",
-      multiple_flag == "multiple" & type == "reproductive|developmental" ~ "quantal-stochastic",
+      multiple_flag == "multiple" & type == "repro dev" ~ "quantal-stochastic",
       TRUE ~ NA_character_)
     ) %>%
     distinct()
