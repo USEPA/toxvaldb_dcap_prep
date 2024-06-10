@@ -144,6 +144,12 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     mat = runQuery(query, toxval.db) %>%
       dplyr::distinct()
 
+    if(!nrow(mat)){
+      cat("No data pulled for: ", src, "\n")
+      browser()
+      next
+    }
+
     # Pull record_source records and collapse into JSON list
     # Expand reference information rowwise() with as.data.frame(jsonlite::fromJSON(mat$record_source_info[1]))
     mat_refs = runQuery(paste0("SELECT ",
@@ -177,7 +183,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     # Join to main ToxVal data
     mat = mat %>%
       dplyr::left_join(mat_refs,
-                       by="toxval_id")
+                       by="toxval_id") %>%
+      dplyr::select(-toxval_id)
 
     cat("[1]",src,":",nrow(mat),"\n")
 
@@ -295,7 +302,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       # Special logic implemented for now to further collapse source records post-ToxVal
       mat = toxval.source.import.dedup(mat %>%
                                          dplyr::rename(source_hash_toxval=source_hash),
-                                       hashing_cols=c("study_group", "toxval_type", "toxval_numeric")) %>%
+                                       hashing_cols=c("study_group", "toxval_type", "toxval_numeric", "record_source_info")) %>%
         # Replace "|::|" in critical_effect with "|" delimiter
         dplyr::mutate(
           critical_effect = critical_effect %>%
@@ -312,8 +319,6 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     res = res %>%
       dplyr::bind_rows(mat %>%
                          dplyr::mutate(across(c("study_duration_value",
-                                                "pmid",
-                                                "priority",
                                                 "toxval_numeric_hed"), ~as.numeric(.))))
   }
 
