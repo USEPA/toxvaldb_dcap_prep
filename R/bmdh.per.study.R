@@ -142,6 +142,8 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
     else if(substr(x,1,4)=="BMDL")  res[i,"toxval_type_standard"] = "BMDL"
     else if(substr(x,1,3)=="BMD")  res[i,"toxval_type_standard"] = "BMD"
     else if(substr(x,1,3)=="POD")  res[i,"toxval_type_standard"] = "BMD"
+    else if(substr(x,1,4)=="BMCL")  res[i,"toxval_type_standard"] = "BMCL"
+    else if(substr(x,1,3)=="BMC")  res[i,"toxval_type_standard"] = "BMC"
     else browser()
 
     # Map the study types to standard study types

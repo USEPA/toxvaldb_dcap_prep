@@ -29,8 +29,8 @@ driver <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),user="user",pa
   dcap.counts(toxval.db,sys.date)
   studies.per.chemical(toxval.db,sys.date)
   toxvaldb.statplots(to.file=T,toxval.db,sys.date)
-  #bmdh.per.study(toxval.db,sys.date)
-  #bmdh.per.chemical(toxval.db,sys.date)
-  #bmdh.percentile.plot(T,toxval.db,sys.date,minstudies=3,cutoff.logsd=2)
-  #bmdh.aurisano.check.plot(T,toxval.db,sys.date)
+  bmdh.per.study(toxval.db,sys.date)
+  bmdh.per.chemical(toxval.db,sys.date)
+  bmdh.percentile.plot(T,toxval.db,sys.date,minstudies=3,cutoff.logsd=2)
+  bmdh.aurisano.check.plot(T,toxval.db,sys.date)
 }
