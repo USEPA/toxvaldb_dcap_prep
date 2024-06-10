@@ -223,6 +223,10 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       # Filter out undetermined experimental record for EFSA (concern for surrogate and read-across records)
       mat = mat %>%
         dplyr::filter(!experimental_record %in% c("undetermined", "Undetermined"))
+    } else if(src == "ATSDR MRLs"){
+      # Set toxval_subtype = "-" for all "Point of Departure" toxval_type entries
+      # At time of this edit, filter was for only "Point of Departure" toxval_type entries
+      mat$toxval_subtype = "-"
     }
 
     cat("[4]",src,":",nrow(mat),"\n\n")
