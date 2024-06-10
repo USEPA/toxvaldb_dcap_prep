@@ -33,15 +33,21 @@ filter.for.bmdh <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   dir = "data/"
   file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," ",sys.date,".xlsx")
   print(file)
-  raw = openxlsx::read.xlsx(file)
-  raw$level = 0
-  raw[raw$record_source_level=="primary (risk assessment values)","level"] = 4
-  raw[raw$record_source_level=="-","level"] = 3
-  raw[raw$record_source_level=="extraction","level"] = 2
-  raw[raw$record_source_level=="origin","level"] = 1
+
+  raw = file %>%
+    readxl::read_xlsx() %>%
+    dplyr::mutate(level = dplyr::case_when(
+      record_source_level=="primary (risk assessment values)" ~ 4,
+      record_source_level=="-" ~ 3,
+      record_source_level=="extraction" ~ 2,
+      record_source_level=="origin" ~ 1,
+      TRUE ~ 0
+    ))
+
   cat("nrow raw:",nrow(raw),"\n")
   final = NULL
   slist = sort(unique(raw$source))
+  # TODO Update hashing and reference selection logic
   for(source in slist) {
     t1 = raw[raw$source==source,]
     t2 = NULL

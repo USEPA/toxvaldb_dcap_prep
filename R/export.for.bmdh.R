@@ -30,9 +30,9 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   printCurrentFunction(toxval.db)
   dir = "data/"
 
-  slist =  c("ATSDR MRLs", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
+  slist =  c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
              "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
-             "HAWC Project", "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
+             "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
              "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
 
   # Read in pesticide DTXSID values to exclude
@@ -273,16 +273,27 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
     # Add current source data to running total
     res = res %>%
-      dplyr::bind_rows(mat)
+      dplyr::bind_rows(mat %>%
+                         dplyr::mutate(across(c("study_duration_value",
+                                                "pmid",
+                                                "priority",
+                                                "toxval_numeric_hed"), ~as.numeric(.))))
   }
 
-  # Set critical_effect_category values for NOAEL/related toxval_type to none
   res = res %>%
     dplyr::mutate(
+      # Convert "<" N(OA)EL to L(OA)EL
+      toxval_type = dplyr::case_when(
+        grepl("NO?A?EL", toxval_type) & toxval_numeric_qualifier %in% c("<") ~ gsub("^N", "L", toxval_type),
+        TRUE ~ toxval_type
+      ),
+      # Set critical_effect_category values for NOAEL/related toxval_type to none
       critical_effect_category = dplyr::case_when(
         grepl("NO?A?EL", toxval_type) ~ "none",
         TRUE ~ critical_effect_category
-      )
+      ),
+      # Set all toxval_numeric_qualifier values to "=".
+      toxval_numeric_qualifier = "="
     )
 
   # Get conceptual model by critical_effect_category
@@ -305,5 +316,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   if(include.pesticides) file = paste0(dir,"results/ToxValDB for BMDh WITH PESTICIDES ",
                                        toxval.db," ",Sys.Date(),".xlsx")
   else file = paste0(dir,"results/ToxValDB for BMDh ", toxval.db," ",Sys.Date(),".xlsx")
+
   writexl::write_xlsx(res, file)
+  return(res)
 }
