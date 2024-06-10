@@ -1,8 +1,10 @@
 #' @title get.conceptual_model.by.critical_effect_category
 #' @description Get the conceptual model based on critical_effect_category
 #' @param df Input dataframe of study_type and critical_effect data.
+#' @export
 #' @return DataFrame map of models by critical_effect and study_type
 get.conceptual_model.by.critical_effect_category <- function(df){
+  dir = "data/"
 
   df_dcap <- df %>%
     dplyr::select(source_hash, study_type, critical_effect_category) %>%
@@ -30,7 +32,7 @@ get.conceptual_model.by.critical_effect_category <- function(df){
     dplyr::distinct()
 
   # Read in map for standard term to conceptual model
-  model_map <- readr::read_csv("input/conceptual_model_map.csv", col_types = readr::cols())
+  model_map <- readr::read_csv(paste0(dir, "input/conceptual_model_map.csv"), col_types = readr::cols())
 
   df3 <- df2_dcap %>%
     dplyr::left_join(model_map %>%

@@ -29,10 +29,10 @@
 export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE) {
   printCurrentFunction(toxval.db)
   dir = "data/"
-  
-  slist =  c("ATSDR MRLs", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
+
+  slist =  c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
              "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
-             "HAWC Project", "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
+             "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
              "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
 
   # Read in pesticide DTXSID values to exclude
@@ -44,8 +44,11 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     paste0(., collapse="', '")
 
   # Set pesticide addition according to parameter
-  if(include.pesticides) pesticide_addition = ""
-  else pesticide_addition = paste0(" and a.dtxsid NOT IN ('", pesticide_dtxsid, "')")
+  if(include.pesticides) {
+    pesticide_addition = ""
+  } else {
+    pesticide_addition = paste0(" and b.dtxsid NOT IN ('", pesticide_dtxsid, "')")
+  }
 
   # Get priority values for each specified source
   plist = vector(mode="integer",length=length(slist))
@@ -57,9 +60,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     cat(src,paste(vals,collapse="|"),"\n")
     if(length(vals)>0) plist[i] = vals[1]
     else {
-      if(src=="HEAST") plist[i] = 1
-      if(src=="HESS") plist[i] = 1
-      if(src=="ECHA IUCLID") plist[i] = 1
+      if(src %in% c("HEAST", "HESS", "ECHA IUCLID")) plist[i] = 1
     }
   }
 
@@ -214,12 +215,21 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     if(src == "ECOTOX") {
       mat = mat %>%
         dplyr::filter(!grepl("accumulation", critical_effect, ignore.case=TRUE))
-    }
-
-    # Filter out records with quality rating of "3 (not reliable)" for IUCLID
-    if(src == "ECHA IUCLID") {
+    } else if(src == "ECHA IUCLID") {
+      # Filter out records with quality rating of "3 (not reliable)" for IUCLID
       mat = mat %>%
         dplyr::filter(!grepl("3 \\(not reliable\\)", quality, ignore.case=TRUE))
+    } else if(src == "EFSA"){
+      # Filter out undetermined experimental record for EFSA (concern for surrogate and read-across records)
+      mat = mat %>%
+        dplyr::filter(!experimental_record %in% c("undetermined", "Undetermined"))
+    } else if(src == "ATSDR MRLs"){
+      # Set toxval_subtype = "-" for all "Point of Departure" toxval_type entries
+      # At time of this edit, filter was for only "Point of Departure" toxval_type entries
+      mat$toxval_subtype = "-"
+    } else if(src == "PFAS 150 SEM v2"){
+      # Set toxval_subtype = "-" to remove duplicates due to system vs. study level designations
+      mat$toxval_subtype = "-"
     }
 
     cat("[4]",src,":",nrow(mat),"\n\n")
@@ -244,22 +254,51 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
     rm(crit_cat_map)
 
+    if(src %in% c("NTP PFAS", "ECHA IUCLID", "HAWC Project",  "PFAS 150 SEM v2")){
+      # Special logic implemented for now to further collapse source records post-ToxVal
+      mat = toxval.source.import.dedup(mat %>%
+                                         dplyr::rename(source_hash_toxval=source_hash),
+                                       hashing_cols=c("study_group", "toxval_type", "toxval_numeric")) %>%
+        # Replace "|::|" in critical_effect with "|" delimiter
+        dplyr::mutate(
+          critical_effect = critical_effect %>%
+            gsub(" \\|::\\| ", "|", .),
+          source_hash = source_hash_toxval %>%
+            gsub(" \\|::\\| ", ",", .),
+          critical_effect_category = critical_effect_category %>%
+            gsub(" \\|::\\| ", "|", .)
+        ) %>%
+        dplyr::select(-source_hash_toxval)
+    }
+
     # Add current source data to running total
     res = res %>%
-      dplyr::bind_rows(mat)
+      dplyr::bind_rows(mat %>%
+                         dplyr::mutate(across(c("study_duration_value",
+                                                "pmid",
+                                                "priority",
+                                                "toxval_numeric_hed"), ~as.numeric(.))))
   }
 
-  # Set critical_effect_category values for NOAEL/related toxval_type to none
   res = res %>%
     dplyr::mutate(
+      # Convert "<" N(OA)EL to L(OA)EL
+      toxval_type = dplyr::case_when(
+        grepl("NO?A?EL", toxval_type) & toxval_numeric_qualifier %in% c("<") ~ gsub("^N", "L", toxval_type),
+        TRUE ~ toxval_type
+      ),
+      # Set critical_effect_category values for NOAEL/related toxval_type to none
       critical_effect_category = dplyr::case_when(
         grepl("NO?A?EL", toxval_type) ~ "none",
         TRUE ~ critical_effect_category
-      )
+      ),
+      # Set all toxval_numeric_qualifier values to "=".
+      toxval_numeric_qualifier = "="
     )
 
   # Get conceptual model by critical_effect_category
-  conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res)
+  conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res) %>%
+    dplyr::select(-study_type, -critical_effect_category)
   # Map conceptual models
   res = res %>%
     dplyr::left_join(conceptual_model_map,
@@ -277,5 +316,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   if(include.pesticides) file = paste0(dir,"results/ToxValDB for BMDh WITH PESTICIDES ",
                                        toxval.db," ",Sys.Date(),".xlsx")
   else file = paste0(dir,"results/ToxValDB for BMDh ", toxval.db," ",Sys.Date(),".xlsx")
+
   writexl::write_xlsx(res, file)
+  return(res)
 }
