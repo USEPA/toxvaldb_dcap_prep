@@ -65,8 +65,8 @@ bmdh.percentile.plot <- function(to.file=FALSE, toxval.db="res_toxval_v95", sys.
     res[i,"percentile"] = plist[i]
     res[i,"column"] = col
 
-    x = log10(tmat[,col])
-    y = log10(tmat[,"pod_hra"])
+    x = log10(tmat[[col]])
+    y = log10(tmat$pod_hra)
 
     ptemp = tmat[,c(col,"pod_hra","log.sd")]
     ptemp[,1] = log10(ptemp[,1])
