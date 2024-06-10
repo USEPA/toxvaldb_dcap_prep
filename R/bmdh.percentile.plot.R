@@ -29,31 +29,35 @@
 #' @importFrom ggplot2 ggplot aes ggtitle geom_point theme_bw facet_grid xlim ylim xlab ylab geom_segment ggsave
 #' @importFrom grDevices dev.off
 #-------------------------------------------------------------------------------
-bmdh.percentile.plot <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=Sys.Date(),minstudies=3,cutoff.logsd=2) {
+bmdh.percentile.plot <- function(to.file=FALSE, toxval.db="res_toxval_v95", sys.date=Sys.Date(),
+                                 minstudies=3, cutoff.logsd=2) {
   printCurrentFunction()
   dir = "data/"
   file = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".xlsx")
-  print(file)
-  mat = openxlsx::read.xlsx(file)
 
-  # Filter out entries with less than minstudies
-  mat = mat[mat$studies>=minstudies,]
+  mat = readxl::read_xlsx(file) %>%
+    # Filter out entries with less than minstudies
+    dplyr::filter(studies >= !!minstudies) %>%
+    dplyr::mutate(
+      # Note whether logsd values excede specified cutoff
+      highsd = dplyr::case_when(
+        log.sd > !!cutoff.logsd ~ "Y",
+        TRUE ~ "N"
+      )
+    )
 
-  # Note whether logsd values excede specified cutoff
-  mat$highsd = "N"
-  mat[mat$log.sd>cutoff.logsd,"highsd"] = "Y"
-  #mat = mat[mat$log.sd<cutoff.logsd,]
-
-  # Build dataframe
   plist = c(5,10,15,20,25,30,35)
   clist = c("pod_05","pod_10","pod_15","pod_20","pod_25","pod_30","pod_35")
   hlist = c(" 5th percentile","10th percentile","15th percentile","20th percentile","25th percentile","30th percentile","35th percentile")
   nlist = c("percentile","column","abserr","rmse","r2","slope","pval","chemicals")
   res = as.data.frame(matrix(nrow=length(plist),ncol=length(nlist)))
   names(res) = nlist
+
   pdata = NULL
-  tmat = mat[mat$studies>=minstudies,]
-  tmat = tmat[!is.na(tmat$pod_hra),]
+
+  tmat = mat %>%
+    dplyr::filter(studies >= !!minstudies) %>%
+    tidyr::drop_na(pod_hra)
 
   # Accumulate data
   for(i in seq_len(length(plist))) {
