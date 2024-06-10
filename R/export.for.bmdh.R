@@ -251,8 +251,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
     rm(crit_cat_map)
 
-    if(src == "NTP PFAS"){
-      # Special logic implemented for now to further collapse NTP PFAS records post-ToxVal
+    if(src %in% c("NTP PFAS", "ECHA IUCLID", "HAWC Project")){
+      # Special logic implemented for now to further collapse source records post-ToxVal
       mat = toxval.source.import.dedup(mat %>%
                                          dplyr::rename(source_hash_toxval=source_hash),
                                        hashing_cols=c("study_group", "toxval_type", "toxval_numeric")) %>%
