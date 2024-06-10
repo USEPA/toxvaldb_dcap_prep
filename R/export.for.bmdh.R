@@ -227,6 +227,9 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       # Set toxval_subtype = "-" for all "Point of Departure" toxval_type entries
       # At time of this edit, filter was for only "Point of Departure" toxval_type entries
       mat$toxval_subtype = "-"
+    } else if(src == "PFAS 150 SEM v2"){
+      # Set toxval_subtype = "-" to remove duplicates due to system vs. study level designations
+      mat$toxval_subtype = "-"
     }
 
     cat("[4]",src,":",nrow(mat),"\n\n")
@@ -251,7 +254,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
     rm(crit_cat_map)
 
-    if(src %in% c("NTP PFAS", "ECHA IUCLID", "HAWC Project")){
+    if(src %in% c("NTP PFAS", "ECHA IUCLID", "HAWC Project",  "PFAS 150 SEM v2")){
       # Special logic implemented for now to further collapse source records post-ToxVal
       mat = toxval.source.import.dedup(mat %>%
                                          dplyr::rename(source_hash_toxval=source_hash),
