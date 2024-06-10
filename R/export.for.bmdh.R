@@ -84,64 +84,100 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     }
 
     query = paste0("SELECT ",
-                      "a.dtxsid, a.casrn, a.name, ",
-                      "b.source, ",
-                      "b.toxval_type, ",
-                      "b.toxval_subtype, ",
-                      "b.toxval_numeric_qualifier, ",
-                      "b.toxval_numeric, ",
-                      "b.toxval_units, ",
-                      "b.study_type, ",
-                      "b.study_duration_value, ",
-                      "b.study_duration_units, ",
-                      "b.study_duration_class, ",
-                      "b.supersource, ",
-                      "d.common_name, ",
-                      "b.strain, ",
-                      "b.sex, ",
-                      "b.lifestage, ",
-                      "b.generation, ",
-                      "b.exposure_route, ",
-                      "b.exposure_method, ",
-                      "b.exposure_form, ",
-                      "b.critical_effect, ",
-                      "b.year, ",
-                      "f.long_ref, ",
-                      "f.url, ",
-                      "f.title, ",
-                      "f.pmid, ",
-                      "f.guideline, ",
-                      "f.record_source_level, ",
-                      "f.record_source_type, ",
-                      "f.priority, ",
-                      "f.clowder_doc_id, ",
-                      "f.quality, ",
-                      "b.source_hash, ",
-                      "b.study_group, ",
-                      "b.qc_status, ",
-                      "b.experimental_record, ",
-                      "a.cleaned_casrn, a.cleaned_name ",
-                      "FROM ",
-                      "toxval b ",
-                      "INNER JOIN source_chemical a on a.chemical_id=b.chemical_id ",
-                      "LEFT JOIN species d on b.species_id=d.species_id ",
-                      "INNER JOIN toxval_type_dictionary e on b.toxval_type=e.toxval_type ",
-                      "INNER JOIN record_source f on b.toxval_id=f.toxval_id ",
-                      "WHERE ",
-                      "b.source='", src, "' ",
-                      "and b.qc_status NOT LIKE '%fail%' ",
-                      # "and b.human_eco='human health' ",
-                      "and e.toxval_type_supercategory in ('Point of Departure') ",
-                      "and b.toxval_units='mg/kg-day' ",
-                      "and b.exposure_route='oral'",
-                      pesticide_addition,
-                      # " and f.priority='", priority, "'",
-                      iuclid_addition
-                     )
+                   "b.toxval_id, ",
+                   "a.dtxsid, a.casrn, a.name, ",
+                   "b.source, ",
+                   "b.toxval_type, ",
+                   "b.toxval_subtype, ",
+                   "b.toxval_numeric_qualifier, ",
+                   "b.toxval_numeric, ",
+                   "b.toxval_units, ",
+                   "b.study_type, ",
+                   "b.study_duration_value, ",
+                   "b.study_duration_units, ",
+                   "b.study_duration_class, ",
+                   "b.supersource, ",
+                   "d.common_name, ",
+                   "b.strain, ",
+                   "b.sex, ",
+                   "b.lifestage, ",
+                   "b.generation, ",
+                   "b.exposure_route, ",
+                   "b.exposure_method, ",
+                   "b.exposure_form, ",
+                   "b.critical_effect, ",
+                   "b.year, ",
+                   # "f.long_ref, ",
+                   # "f.url, ",
+                   # "f.title, ",
+                   # "f.pmid, ",
+                   # "f.guideline, ",
+                   # "f.record_source_level, ",
+                   # "f.record_source_type, ",
+                   # "f.priority, ",
+                   # "f.clowder_doc_id, ",
+                   # "f.quality, ",
+                   "b.source_hash, ",
+                   "b.study_group, ",
+                   "b.qc_status, ",
+                   "b.experimental_record, ",
+                   "a.cleaned_casrn, a.cleaned_name ",
+                   "FROM ",
+                   "toxval b ",
+                   "INNER JOIN source_chemical a on a.chemical_id=b.chemical_id ",
+                   "LEFT JOIN species d on b.species_id=d.species_id ",
+                   "INNER JOIN toxval_type_dictionary e on b.toxval_type=e.toxval_type ",
+                   # "INNER JOIN record_source f on b.toxval_id=f.toxval_id ",
+                   "WHERE ",
+                   "b.source='", src, "' ",
+                   "and b.qc_status NOT LIKE '%fail%' ",
+                   # "and b.human_eco='human health' ",
+                   "and e.toxval_type_supercategory in ('Point of Departure') ",
+                   "and b.toxval_units='mg/kg-day' ",
+                   "and b.exposure_route='oral'",
+                   pesticide_addition,
+                   # " and f.priority='", priority, "'",
+                   iuclid_addition
+    )
 
     # Get unique entries using query
     mat = runQuery(query, toxval.db) %>%
       dplyr::distinct()
+
+    # Pull record_source records and collapse into JSON list
+    # Expand reference information rowwise() with as.data.frame(jsonlite::fromJSON(mat$record_source_info[1]))
+    mat_refs = runQuery(paste0("SELECT ",
+                        "toxval_id, ",
+                        "long_ref, ",
+                        "url, ",
+                        "title, ",
+                        "external_source_id, ",
+                        "external_source_id_desc, ",
+                        "pmid, ",
+                        "guideline, ",
+                        "record_source_level, ",
+                        "record_source_type, ",
+                        "priority, ",
+                        "clowder_doc_id, ",
+                        "quality ",
+                        "FROM record_source ",
+                        "WHERE toxval_id in (", toString(mat$toxval_id), ")"),
+                        toxval.db) %>%
+      dplyr::mutate(record_source_info = convert.fields.to.json(dplyr::select(.,
+                                                                              -tidyr::any_of(c("toxval_id"))))) %>%
+      dplyr::select(toxval_id, record_source_info) %>%
+      dplyr::group_by(toxval_id) %>%
+      # Convert into JSON array/list
+      dplyr::mutate(record_source_info = paste0(record_source_info %>% gsub("\\]|\\[", "", .),
+                                                collapse=", ") %>%
+                      paste0("[", ., "]")) %>%
+      dplyr::ungroup() %>%
+      dplyr::distinct()
+
+    # Join to main ToxVal data
+    mat = mat %>%
+      dplyr::left_join(mat_refs,
+                       by="toxval_id")
 
     cat("[1]",src,":",nrow(mat),"\n")
 
@@ -211,14 +247,15 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       # Remove non-experimental records
       dplyr::filter(!experimental_record %in% c("no", "No", "not experimental", "Not experimental"))
 
-    # Filter out critical_effect values with "accumulation" if source is ECOTOX
+    # Source specific filtering
     if(src == "ECOTOX") {
+      # Filter out critical_effect values with "accumulation" if source is ECOTOX
       mat = mat %>%
         dplyr::filter(!grepl("accumulation", critical_effect, ignore.case=TRUE))
     } else if(src == "ECHA IUCLID") {
       # Filter out records with quality rating of "3 (not reliable)" for IUCLID
       mat = mat %>%
-        dplyr::filter(!grepl("3 \\(not reliable\\)", quality, ignore.case=TRUE))
+        dplyr::filter(!grepl('"quality":"3 (not reliable)"', record_source_info, fixed = TRUE))
     } else if(src == "EFSA"){
       # Filter out undetermined experimental record for EFSA (concern for surrogate and read-across records)
       mat = mat %>%
