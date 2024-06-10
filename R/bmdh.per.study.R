@@ -153,18 +153,6 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
     else if(x=="28-day") res[i,"study_type_standard"] = "subchronic"
     else if(x=="short-term") res[i,"study_type_standard"] = "short-term"
 
-    else if(x=="neurotoxicity chronic") res[i,"study_type_standard"] = "chronic"
-    else if(x=="neurotoxicity subchronic") res[i,"study_type_standard"] = "subchronic"
-    else if(x=="neurotoxicity 28-day") res[i,"study_type_standard"] = "subchronic"
-    else if(x=="neurotoxicity short-term") res[i,"study_type_standard"] = "short-term"
-    else if(x=="neurotoxicity") res[i,"study_type_standard"] = "short-term"
-
-    else if(x=="immunotoxicity chronic") res[i,"study_type_standard"] = "chronic"
-    else if(x=="immunotoxicity subchronic") res[i,"study_type_standard"] = "subchronic"
-    else if(x=="immunotoxicity 28-day") res[i,"study_type_standard"] = "subchronic"
-    else if(x=="immunotoxicity short-term") res[i,"study_type_standard"] = "short-term"
-    else if(x=="immunotoxicity") res[i,"study_type_standard"] = "short-term"
-
     else if(x=="developmental") res[i,"study_type_standard"] = "reproductive developmental"
     else if(x=="reproduction") res[i,"study_type_standard"] = "reproductive developmental"
     else if(x=="reproduction developmental") res[i,"study_type_standard"] = "reproductive developmental"
