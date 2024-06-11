@@ -123,7 +123,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
           "toxval_numeric_qualifier",
           "study_duration_value","study_duration_units","study_duration_class",
           "exposure_route",
-          "year","long_ref","url","source_hash",
+          "year", "record_source_info","source_hash",
           "study_group","key")
   res = res[,nlist]
 

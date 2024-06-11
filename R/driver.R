@@ -20,7 +20,8 @@ driver <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),user="user",pa
   printCurrentFunction()
   setDBConn(user=user, password=password)
   export.for.bmdh(toxval.db)
-  filter.for.bmdh(toxval.db,sys.date)
+  # Skip filter.for.bmdh() with improved JSON storage of record_source entries
+  # filter.for.bmdh(toxval.db,sys.date)
   filter.for.lel(toxval.db,sys.date)
   filter.for.multi.noel(toxval.db,sys.date)
   filter.summary(toxval.db,sys.date,do.load=T)
