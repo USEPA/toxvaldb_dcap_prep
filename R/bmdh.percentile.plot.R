@@ -68,10 +68,10 @@ bmdh.percentile.plot <- function(to.file=FALSE, toxval.db="res_toxval_v95", sys.
     x = log10(tmat[[col]])
     y = log10(tmat$pod_hra)
 
-    ptemp = tmat[,c(col,"pod_hra","log.sd")]
+    ptemp = tmat[,c(col,"pod_hra","log.sd","name")]
     ptemp[,1] = log10(ptemp[,1])
     ptemp[,2] = log10(ptemp[,2])
-    names(ptemp) = c("experiment","RA","log.sd")
+    names(ptemp) = c("experiment","RA","log.sd","name")
     ptemp$col = hlist[i]
     ptemp$highsd = "N"
     ptemp[ptemp$log.sd>cutoff.logsd,"highsd"] = "Y"
@@ -105,6 +105,17 @@ bmdh.percentile.plot <- function(to.file=FALSE, toxval.db="res_toxval_v95", sys.
     ggplot2::geom_segment(ggplot2::aes(x=-4,xend=4,y=-4,yend=4))
   print(p)
 
+  p_labeled = ggplot2::ggplot(data=pdata,ggplot2::aes(x=experiment,y=RA,label=name))  +
+    ggplot2::ggtitle(paste0("BMDh Percentiles")) +
+    ggplot2::geom_point(size=0.1) +
+    ggplot2::theme_bw() +
+    ggplot2::facet_grid(~col) +
+    ggplot2::xlim(-4,4) + ggplot2::ylim(-4,4) +
+    ggplot2::xlab("Experimental") +
+    ggplot2::ylab("Human RA") +
+    ggplot2::geom_segment(ggplot2::aes(x=-4,xend=4,y=-4,yend=4)) +
+    ggplot2::geom_text(check_overlap=T)
+
   # Write results to file
   file = paste0(dir,"results/ToxValDB BMDh per chemical percentiles ",toxval.db," ",sys.date,".xlsx")
   writexl::write_xlsx(res,file)
@@ -114,6 +125,11 @@ bmdh.percentile.plot <- function(to.file=FALSE, toxval.db="res_toxval_v95", sys.
     fname = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".pdf")
     #fname = paste0(dir,"bmdh.percentile.plot.pdf")
     ggplot2::ggsave(plot = p, width = 8, height = 2.5, dpi = 300, filename =fname)
+    grDevices::dev.off()
+
+    fname = paste0(dir,"results/ToxValDB BMDh per chemical LABELED ",toxval.db," ",sys.date,".pdf")
+    #fname = paste0(dir,"bmdh.percentile.plot.pdf")
+    ggplot2::ggsave(plot = p_labeled, width = 49, height = 20, dpi = 700, filename =fname)
     grDevices::dev.off()
   }
   else browser()
