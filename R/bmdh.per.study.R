@@ -45,7 +45,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   }
   cat("Humanized POD types:\n")
   print(humanized.list)
-  browser()
+
   res[is.element(res$toxval_type,humanized.list),"common_name"] = "Human"
   file = paste0(dir,"Aurisano S1.xlsx")
   print(file)
@@ -124,7 +124,8 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
           "study_duration_value","study_duration_units","study_duration_class",
           "exposure_route",
           "year", "record_source_info","source_hash",
-          "study_group","key")
+          "study_group","key",
+          "toxval_numeric_hed", "final_model1", "final_model2")
   res = res[,nlist]
 
   # Set appropriate values in res
@@ -144,7 +145,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
     else if(substr(x,1,3)=="POD")  res[i,"toxval_type_standard"] = "BMD"
     else if(substr(x,1,4)=="BMCL")  res[i,"toxval_type_standard"] = "BMCL"
     else if(substr(x,1,3)=="BMC")  res[i,"toxval_type_standard"] = "BMC"
-    else browser()
+    # else browser()
 
     # Map the study types to standard study types
     x = res[i,"study_type"]
@@ -210,8 +211,8 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
       if(tts=="LOAEL") F2 = 3
       if(tts=="BMDL" && sts2=="repeat dose") F2 = 0.5
 
-      cm1 = res[i,"conceptual_model_1"]
-      cm2 = res[i,"conceptual_model_2"]
+      cm1 = res[i,"final_model1"]
+      cm2 = res[i,"final_model2"]
       if(!is.na(cm1) && !is.na(cm2)) {
         F31 = 1
         F32 = 1
@@ -226,10 +227,12 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
 
         species = res[i,"common_name"]
         F4 = 1
-        if(species=="Rat") F4 = 4.1
-        if(species=="Mouse") F4 = 7.3
-        if(species=="Rabbit") F4 = 2.4
-        if(species=="Dog") F4 = 1.5
+        if(res[i, "toxval_numeric_hed"] != 1) {
+          if(species=="Rat") F4 = 4.1
+          if(species=="Mouse") F4 = 7.3
+          if(species=="Rabbit") F4 = 2.4
+          if(species=="Dog") F4 = 1.5
+        }
         F5 = 1
 
         denom1 = F1*F2*F31*F4*F5
@@ -250,18 +253,19 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
         res[i,"F4"] = F4
         res[i,"F5"] = F5
       }
-      else browser()
+      # else browser()
     }
     if(!is.na(res[i,"bmdh_aurisano"])) res[i,"bmdh_ratio"] = res[i,"bmdh"]/res[i,"bmdh_aurisano"]
     if(i%%1000==0) cat(i,"out of",nrow(res),"\n")
   }
   res = res[res$study_type!="acute",]
 
-  x = res$bmdh
-  y = res$bmdh_aurisano
-  x = x[!is.na(y)]
-  y = y[!is.na(y)]
-  graphics::plot(y~x)
+  plot_res = res %>%
+    dplyr::select(bmdh, bmdh_aurisano) %>%
+    tidyr::drop_na(bmdh_aurisano)
+  p = ggplot2::ggplot(data=plot_res, ggplot2::aes(x=bmdh, y=bmdh_aurisano))
+  fname = paste0("data/results/toxvaldb.bmdh.per.study.plot.pdf")
+  ggplot2::ggsave(plot = p, width = 5, height = 6, dpi = 300, filename =fname)
 
   # Write output to file
   sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")

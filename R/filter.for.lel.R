@@ -20,7 +20,7 @@
 filter.for.lel <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   printCurrentFunction(toxval.db)
   dir = "data/"
-  file = paste0(dir,"results/ToxValDB for BMDh filtered ",toxval.db," ",sys.date,".xlsx")
+  file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," ",sys.date,".xlsx")
   print(file)
   res = openxlsx::read.xlsx(file)
   t1 = res[is.element(res$toxval_type,c("NEL","LEL","LOEL","NOEL")),]

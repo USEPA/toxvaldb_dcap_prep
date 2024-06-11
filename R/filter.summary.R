@@ -29,9 +29,9 @@ filter.summary <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),do.loa
     print(file)
     t1 = openxlsx::read.xlsx(file)
 
-    file = paste0(dir,"results/ToxValDB for BMDh filtered ",toxval.db," ",sys.date,".xlsx")
-    print(file)
-    t2 = openxlsx::read.xlsx(file)
+    # file = paste0(dir,"results/ToxValDB for BMDh filtered ",toxval.db," ",sys.date,".xlsx")
+    # print(file)
+    # t2 = openxlsx::read.xlsx(file)
 
     file = paste0(dir,"results/ToxValDB for BMDh LEL NEL filtered ",toxval.db," ",sys.date,".xlsx")
     print(file)
@@ -41,7 +41,7 @@ filter.summary <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),do.loa
     print(file)
     t4 = openxlsx::read.xlsx(file)
     T1 <<- t1
-    T2 <<- t2
+    # T2 <<- t2
     T3 <<- t3
     T4 <<- t4
   }
@@ -63,9 +63,9 @@ filter.summary <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),do.loa
     chems[i,"sg1"] = length(unique(t1$study_group))
     chems[i,"pod1"] = nrow(t1)
 
-    t2 = T2[is.element(T2$dtxsid,dtxsid),]
-    chems[i,"sg2"] = length(unique(t2$study_group))
-    chems[i,"pod2"] = nrow(t2)
+    # t2 = T2[is.element(T2$dtxsid,dtxsid),]
+    # chems[i,"sg2"] = length(unique(t2$study_group))
+    # chems[i,"pod2"] = nrow(t2)
 
     t3 = T3[is.element(T3$dtxsid,dtxsid),]
     chems[i,"sg3"] = length(unique(t3$study_group))

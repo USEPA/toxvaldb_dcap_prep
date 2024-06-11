@@ -36,6 +36,9 @@ toxvaldb.statplots <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=Sys
   print(file)
   res = openxlsx::read.xlsx(file)
   #-----------------------------------------------------------------------------
+  res$sg2 = res$sg1
+  res$pod2 = res$pod1
+
   x1 = res$pod1/res$sg1
   x2 = res$pod2/res$sg2
   x3 = res$pod3/res$sg3
