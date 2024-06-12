@@ -10,14 +10,14 @@
 #' percentage of read-across values. Species are filtered to only include Human,
 #' Dog, Mouse, Rat and Rabbit. If more species are to be included, then allometric
 #' scaling factors for those need to added to the function bmd.per.study().
-#' @export 
-#' @examples 
+#' @export
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname export.for.bmdh
 #' @importFrom openxlsx createStyle write.xlsx
@@ -81,7 +81,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                                "'source_iuclid_developmentaltoxicityteratogenicity', ",
                                "'source_iuclid_carcinogenicity', ",
                                "'source_iuclid_immunotoxicity', ",
-                               "'source_iuclid_neurotoxicity')")
+                               "'source_iuclid_neurotoxicity', ",
+                               "'source_iuclid_toxicityreproduction')")
     }
 
     query = paste0("SELECT ",
