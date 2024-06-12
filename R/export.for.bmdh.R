@@ -306,7 +306,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                        by="source_hash") %>%
       dplyr::mutate(critical_effect_category = dplyr::case_when(
         # Set to "none" if no critical_effect present
-        critical_effect %in% c(NA, "-") ! "none",
+        critical_effect %in% c(NA, "-") ~ "none",
         TRUE ~ critical_effect_category
       ))
 
