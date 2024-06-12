@@ -5,8 +5,8 @@
 #' @export 
 #' @title filter.for.lel
 #' @description Filter the exported records for redundancy
-#' @details Filters LEL, NEL values wihere a LOAEL/NOAEL value exists
-#' @examples 
+#' @details Filters LEL, NEL values where a LOAEL/NOAEL value exists
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
@@ -20,30 +20,40 @@
 filter.for.lel <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   printCurrentFunction(toxval.db)
   dir = "data/"
-  file = paste0(dir,"results/ToxValDB for BMDh filtered ",toxval.db," ",sys.date,".xlsx")
+  file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," ",sys.date,".xlsx")
   print(file)
-  res = openxlsx::read.xlsx(file)
-  t1 = res[is.element(res$toxval_type,c("NEL","LEL","LOEL","NOEL")),]
+  res = readxl::read_xlsx(file)
 
-  sgin = unique(t1$study_group)
-  t2a = res[is.element(res$study_group,sgin),]
-  t2b = res[!is.element(res$study_group,sgin),]
+  # Get study_groups to perform filtering on
+  loael_study_groups = res %>%
+    dplyr::filter(toxval_type == "LOAEL") %>%
+    dplyr::pull(study_group) %>%
+    unique()
+  noael_study_groups = res %>%
+    dplyr::filter(toxval_type == "NOAEL") %>%
+    dplyr::pull(study_group) %>%
+    unique()
 
-  t2c = NULL
-  for(sg in sgin) {
-    t3 = t2a[is.element(t2a$study_group,sg),]
-    ttlist = unique(t3$toxval_type)
-    #cat(t3[1,"source"],":",paste(ttlist,collapse="|"),"\n")
-    if(is.element("LOAEL",ttlist) || is.element("NOAEL",ttlist)) {
-      if(is.element("LOAEL",ttlist)) t3 = t3[!is.element(t3$toxval_type,c("LEL","LOEL")),]
-      if(is.element("NOAEL",ttlist)) t3 = t3[!is.element(t3$toxval_type,c("NEL","NOEL")),]
-      t2c = rbind(t2c,t3)
-    }
-    else t2c = rbind(t2c,t3)
-  }
+  # Perform filtering
+  no_changes = res %>%
+    dplyr::filter(!(study_group %in% loael_study_groups | study_group %in% noael_study_groups))
+  loael_filtered = res %>%
+    dplyr::filter(study_group %in% loael_study_groups,
+                  !(study_group %in% noael_study_groups),
+                  !(toxval_type %in% c("LEL","LOEL")))
+  noael_filtered = res %>%
+    dplyr::filter(study_group %in% noael_study_groups,
+                  !(study_group %in% loael_study_groups),
+                  !(toxval_type %in% c("NEL","NOEL")))
+  both_filtered = res %>%
+    dplyr::filter(study_group %in% noael_study_groups,
+                  study_group %in% loael_study_groups,
+                  !(toxval_type %in% c("NEL","NOEL","LEL","LOEL")))
 
-  t4 = rbind(t2b,t2c)
+  # Combine final data
+  output = dplyr::bind_rows(no_changes, loael_filtered, noael_filtered, both_filtered) %>%
+    dplyr::distinct()
+
   file = paste0(dir,"results/ToxValDB for BMDh LEL NEL filtered ",toxval.db," ",sys.date,".xlsx")
-  sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
-  openxlsx::write.xlsx(t4,file,firstRow=T,headerStyle=sty)
+  writexl::write_xlsx(output, file)
 }

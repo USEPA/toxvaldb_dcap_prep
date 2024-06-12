@@ -31,89 +31,92 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   dir = "data/"
   file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
   print(file)
-  res = openxlsx::read.xlsx(file)
-  res = res[res$toxval_numeric>0,]
 
-  # Remove entries related to specified studies
-  exclude.list = c("epidemiology","human","genetics","occupational")
-  res = res[!is.element(res$study_type,exclude.list),]
+  res = readxl::read_xlsx(file) %>%
+    # Filter out entries with invalid study_type or toxval_numeric
+    dplyr::filter(toxval_numeric > 0,
+                  !(study_type %in% c("epidemiology","human","genetics","occupational"))) %>%
+    # Handle humanized pod types
+    dplyr::mutate(
+      common_name = dplyr::case_when(
+        grepl("HED|ADJ", toxval_type) ~ "Human",
+        TRUE ~ common_name
+      )
+    )
 
-  # Get list of toxval_type values related to "human" and set common_name accordingly
-  humanized.list = NULL
-  ttlist = unique(res$toxval_type)
-  for(tt in ttlist) {
-    if(grepl("HED|ADJ", tt)) humanized.list = c(humanized.list,tt)
-  }
-  cat("Humanized POD types:\n")
-  print(humanized.list)
-  browser()
-  res[is.element(res$toxval_type,humanized.list),"common_name"] = "Human"
   file = paste0(dir,"Aurisano S1.xlsx")
   print(file)
-  s1 = openxlsx::read.xlsx(file)
+  s1 = readxl::read_xlsx(file)
   file = paste0(dir,"Aurisano S2.xlsx")
   print(file)
-  s2 = openxlsx::read.xlsx(file)
+  s2 = readxl::read_xlsx(file)
 
-  # Fix test species/study type values
-  s1[is.element(s1$tested_species_curated,"rat"),"tested_species_curated"] = "Rat"
-  s1[is.element(s1$tested_species_curated,"rat*"),"tested_species_curated"] = "Rat"
-  s1[is.element(s1$tested_species_curated,"mouse"),"tested_species_curated"] = "Mouse"
-  s1[is.element(s1$tested_species_curated,"human"),"tested_species_curated"] = "Human"
-  s1[is.element(s1$tested_species_curated,"dog"),"tested_species_curated"] = "Dog"
-  s1[is.element(s1$tested_species_curated,"rabbit"),"tested_species_curated"] = "Rabbit"
-  s1[s1$study_type_curated=="subacute","study_type_curated"] = "short-term"
-
-  s2[is.element(s2$tested_species_curated,"rat"),"tested_species_curated"] = "Rat"
-  s2[is.element(s2$tested_species_curated,"rat*"),"tested_species_curated"] = "Rat"
-  s2[is.element(s2$tested_species_curated,"mouse"),"tested_species_curated"] = "Mouse"
-  s2[is.element(s2$tested_species_curated,"human"),"tested_species_curated"] = "Human"
-  s2[is.element(s2$tested_species_curated,"dog"),"tested_species_curated"] = "Dog"
-  s2[is.element(s2$tested_species_curated,"rabbit"),"tested_species_curated"] = "Rabbit"
-
-  # Prepare res for calculations
-  s1$key = paste(s1$dtxsid,s1$source,s1$toxval_numeric,s1$tested_species_curated,s1$toxval_type_curated,s1$study_type_curated)
-  s2$key = paste(s2$dtxsid,s2$source,s2$toxval_numeric,s2$tested_species_curated,s2$toxval_type_curated,s2$study_type_curated)
-  s1 = unique(s1)
-  s2 = unique(s2)
-  res = res %>%
+  # Fix test species/study type values, get key
+  s1 = s1 %>%
     dplyr::mutate(
-      study_type_standard = NA,
-      effect_category_standard = NA,
-      toxval_type_standard = NA,
-      conceptual_model_1 = "-",
-      conceptual_model_2 = "-",
-      conceptual_model_1_aurisano = "-",
-      conceptual_model_2_aurisano = "-",
-      bmdh1 = NA,
-      bmdh2 = NA,
-      bmdh = NA,
-      bmdh1_aurisano = NA,
-      bmdh2_aurisano = NA,
-      bmdh_aurisano = NA,
-      bmdh_ratio = NA,
-      F1 = NA,
-      F2 = NA,
-      F31 = NA,
-      F32 = NA,
-      F4 = NA,
-      F5 = NA
-    )
+      tested_species_curated = dplyr::case_when(
+        tested_species_curated %in% c("rat", "rat*") ~ "Rat",
+        tested_species_curated == "mouse" ~ "Mouse",
+        tested_species_curated == "human" ~ "Human",
+        tested_species_curated == "dog" ~ "Dog",
+        tested_species_curated == "rabbit" ~ "Rabbit",
+        TRUE ~ tested_species_curated
+      ),
+      study_type_curated = dplyr::case_when(
+        study_type_curated == "subacute" ~ "short-term",
+        TRUE ~ study_type_curated
+      ),
+      key = paste(dtxsid, source, toxval_numeric, tested_species_curated, toxval_type_curated, study_type_curated)
+    ) %>%
+    dplyr::select(c("key", "log_BMDh_nrd_1 [mg/kg-d]", "log_BMDh_nrd_2 [mg/kg-d]", "log_BMDh_nrd_avg [mg/kg-d]",
+                    "conceptual_model_nrd_1", "conceptual_model_nrd_2", "standardized_effect_categories")) %>%
+    dplyr::rename(s1_standardized_effect_categories = standardized_effect_categories) %>%
+    dplyr::distinct() %>%
+    dplyr::group_by(key) %>%
+    dplyr::slice_head(n=1) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct() %>%
+    dplyr::mutate(has_s1=1)
+  s2 = s2 %>%
+    dplyr::mutate(
+      tested_species_curated = dplyr::case_when(
+        tested_species_curated %in% c("rat", "rat*") ~ "Rat",
+        tested_species_curated == "mouse" ~ "Mouse",
+        tested_species_curated == "human" ~ "Human",
+        tested_species_curated == "dog" ~ "Dog",
+        tested_species_curated == "rabbit" ~ "Rabbit",
+        TRUE ~ tested_species_curated
+      ),
+      key = paste(dtxsid, source, toxval_numeric, tested_species_curated, toxval_type_curated, study_type_curated)
+    ) %>%
+    dplyr::select(c("key", "log_BMDh_rd_1 [mg/kg-d]", "log_BMDh_rd_2 [mg/kg-d]", "log_BMDh_rd_avg [mg/kg-d]",
+                    "conceptual_model_rd_1", "conceptual_model_rd_2", "standardized_effect_categories")) %>%
+    dplyr::rename(s2_standardized_effect_categories = standardized_effect_categories) %>%
+    dplyr::distinct() %>%
+    dplyr::group_by(key) %>%
+    dplyr::slice_head(n=1) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct() %>%
+    dplyr::mutate(has_s2=1)
 
   file = paste0(dir,"effect category dictionary.xlsx")
   print(file)
-  dict = openxlsx::read.xlsx(file)
-  rownames(dict) = dict$critical_effect
+  dict = readxl::read_xlsx(file)
+
   file = paste0(dir,"study type dictionary.xlsx")
   print(file)
-  sdict = openxlsx::read.xlsx(file)
-  rownames(sdict) = sdict$study_type_original
+  sdict = readxl::read_xlsx(file) %>%
+    dplyr::rename(study_type=study_type_original, sdict_study_type=study_type)
 
   file = paste0(dir,"conceptual model dictionary 2.xlsx")
   print(file)
-  cdict = openxlsx::read.xlsx(file)
-  res$key = NA
-  nlist=c("dtxsid","casrn","name","source","toxval_type","toxval_type_standard","study_type","study_type_standard",
+  cdict = readxl::read_xlsx(file) %>%
+    dplyr::rename(sts2=study_type_standard)
+
+  res = res %>%
+    dplyr::select(
+      tidyselect::any_of(
+        c("dtxsid","casrn","name","source","toxval_type","toxval_type_standard","study_type","study_type_standard",
           "critical_effect",
           "effect_category_standard","conceptual_model_1","conceptual_model_2",
           "conceptual_model_1_aurisano","conceptual_model_2_aurisano",
@@ -125,147 +128,187 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
           "study_duration_value","study_duration_units","study_duration_class",
           "exposure_route",
           "year", "record_source_info","source_hash",
-          "study_group","key")
-  res = res[,nlist]
+          "study_group","key",
+          "toxval_numeric_hed", "final_model1", "final_model2")
+      )
+    ) %>%
+    dplyr::left_join(sdict, by=c("study_type")) %>%
+    dplyr::left_join(dict, by=c("critical_effect")) %>%
+    dplyr::mutate(
+      study_type = dplyr::case_when(
+        !sdict_study_type %in% c(as.character(NA), "", "-") ~ sdict_study_type,
+        TRUE ~ study_type
+      ),
 
-  # Set appropriate values in res
-  res[res$critical_effect=="-","effect_category_standard"] = "none"
-  for(i in seq_len(nrow(res))) {
-    x = res[i,"toxval_type"]
-    if(is.element(res[i,"study_type"],sdict$study_type_original)) {
-      st = sdict[res[i,"study_type"],"study_type"]
-      res[i,"study_type"] = st
-    }
+      toxval_type_standard = dplyr::case_when(
+        substr(toxval_type,1,1) == "N" ~ "NOAEL",
+        substr(toxval_type,1,1) == "L" ~ "LOAEL",
+        substr(toxval_type,1,4) == "BMDL" ~ "BMDL",
+        substr(toxval_type,1,3) == "BMD" | substr(toxval_type,1,3) == "POD" ~ "BMD",
+        substr(toxval_type,1,4) == "BMCL" ~ "BMCL",
+        substr(toxval_type,1,3) == "BMC" ~ "BMC",
+        TRUE ~ as.character(NA)
+      ),
 
-    # Map the toxval types to standard toxval types
-    if(substr(x,1,1)=="N")  res[i,"toxval_type_standard"] = "NOAEL"
-    else if(substr(x,1,1)=="L")  res[i,"toxval_type_standard"] = "LOAEL"
-    else if(substr(x,1,4)=="BMDL")  res[i,"toxval_type_standard"] = "BMDL"
-    else if(substr(x,1,3)=="BMD")  res[i,"toxval_type_standard"] = "BMD"
-    else if(substr(x,1,3)=="POD")  res[i,"toxval_type_standard"] = "BMD"
-    else if(substr(x,1,4)=="BMCL")  res[i,"toxval_type_standard"] = "BMCL"
-    else if(substr(x,1,3)=="BMC")  res[i,"toxval_type_standard"] = "BMC"
-    else browser()
+      study_type_standard = dplyr::case_when(
+        study_type == "chronic" ~ "chronic",
+        study_type == "subchronic" | study_type == "28-day" ~ "subchronic",
+        study_type == "short-term" ~ "short-term",
+        study_type %in% c("developmental", "reproduction", "reproduction developmental") ~ "reproductive developmental",
+        study_type == "repeat dose other" ~ "subchronic",
+        TRUE ~ as.character(NA)
+      ),
 
-    # Map the study types to standard study types
-    x = res[i,"study_type"]
-    if(x=="chronic") res[i,"study_type_standard"] = "chronic"
-    else if(x=="subchronic") res[i,"study_type_standard"] = "subchronic"
-    else if(x=="28-day") res[i,"study_type_standard"] = "subchronic"
-    else if(x=="short-term") res[i,"study_type_standard"] = "short-term"
+      effect_category_standard = dplyr::case_when(
+        !standardized_effect_category %in% c(as.character(NA), "", "-") ~ standardized_effect_category,
+        TRUE ~ "other"
+      ),
 
-    else if(x=="developmental") res[i,"study_type_standard"] = "reproductive developmental"
-    else if(x=="reproduction") res[i,"study_type_standard"] = "reproductive developmental"
-    else if(x=="reproduction developmental") res[i,"study_type_standard"] = "reproductive developmental"
+      key = paste(dtxsid, source, toxval_numeric, common_name, toxval_type, study_type_standard)
+    ) %>%
+    dplyr::left_join(s1, by=c("key")) %>%
+    dplyr::left_join(s2, by=c("key")) %>%
+    dplyr::mutate(
+      # Assign values from s1 and s2 (checked - no overlap)
+      bmdh1_aurisano = dplyr::case_when(
+        has_s1==1 ~ 10**`log_BMDh_nrd_1 [mg/kg-d]`,
+        has_s2==1 ~ 10**`log_BMDh_rd_1 [mg/kg-d]`,
+        TRUE ~ NA
+      ),
+      bmdh2_aurisano = dplyr::case_when(
+        has_s1==1 ~ 10**`log_BMDh_nrd_2 [mg/kg-d]`,
+        has_s2==1 ~ 10**`log_BMDh_rd_2 [mg/kg-d]`,
+        TRUE ~ NA
+      ),
+      bmdh_aurisano = dplyr::case_when(
+        has_s1==1 ~ 10**`log_BMDh_nrd_avg [mg/kg-d]`,
+        has_s2==1 ~ 10**`log_BMDh_rd_avg [mg/kg-d]`,
+        TRUE ~ NA
+      ),
+      conceptual_model_1_aurisano = dplyr::case_when(
+        has_s1==1 ~ conceptual_model_nrd_1,
+        has_s2==1 ~ conceptual_model_rd_1,
+        TRUE ~ "-"
+      ),
+      conceptual_model_2_aurisano = dplyr::case_when(
+        has_s1==1 ~ conceptual_model_nrd_2,
+        has_s2==1 ~ conceptual_model_rd_2,
+        TRUE ~ "-"
+      ),
+      effect_category_standard = dplyr::case_when(
+        has_s1==1 ~ s1_standardized_effect_categories,
+        has_s2==1 ~ s2_standardized_effect_categories,
+        TRUE ~ "-"
+      )
+    )
 
-    else if(x=="repeat dose other") res[i,"study_type_standard"] = "subchronic"
+  # Perform calculations on appropriate entries
+  calc_res = res %>%
+    dplyr::filter(!is.na(effect_category_standard) & !is.na(study_type_standard)) %>%
+    dplyr::mutate(
+      sts2 = dplyr::case_when(
+        study_type_standard %in% c("chronic", "subchronic", "short-term") ~ "repeat dose",
+        TRUE ~ "reproductive developmental"
+      )
+    ) %>%
+    dplyr::left_join(cdict, by=c("sts2", "effect_category_standard")) %>%
+    dplyr::mutate(
+      F1 = dplyr::case_when(
+        study_type_standard == "subchronic" ~ 2,
+        study_type_standard == "short-term" ~ 5,
+        TRUE ~ 1
+      ),
 
-    ce = res[i,"critical_effect"]
-    if(is.element(ce,dict$critical_effect)) res[i,"effect_category_standard"] = dict[ce,"standardized_effect_category"]
-    else res[i,"effect_category_standard"] = "other"
+      F2 = dplyr::case_when(
+        toxval_type_standard == "LOAEL" ~ 3,
+        study_type_standard == "BMDL" & sts2 == "repeat dose" ~ 0.5,
+        TRUE ~ 1
+      ),
 
-    res[i,"key"] = paste(res[i,"dtxsid"],res[i,"source"],res[i,"toxval_numeric"],res[i,"common_name"],res[i,"toxval_type"],res[i,"study_type_standard"])
-    key = res[i,"key"]
-    if(is.element(key,s1$key)) {
-      temp = unique(s1[s1$key==key,])
-      #browser()
-      res[i,"bmdh1_aurisano"] = 10**(temp[1,"log_BMDh_nrd_1.[mg/kg-d]"])
-      res[i,"bmdh2_aurisano"] = 10**(temp[1,"log_BMDh_nrd_2.[mg/kg-d]"])
-      res[i,"bmdh_aurisano"] = 10**(temp[1,"log_BMDh_nrd_avg.[mg/kg-d]"])
-      res[i,"conceptual_model_1_aurisano"] = temp[1,"conceptual_model_nrd_1"]
-      res[i,"conceptual_model_2_aurisano"] = temp[1,"conceptual_model_nrd_2"]
-      res[i,"effect_category_standard"] = temp[1,"standardized_effect_categories"]
-      #browser()
-    }
-    else if(is.element(key,s2$key)) {
-      temp = unique(s2[s2$key==key,])
-      #browser()
-      res[i,"bmdh1_aurisano"] = 10**(temp[1,"log_BMDh_rd_1.[mg/kg-d]"])
-      res[i,"bmdh2_aurisano"] = 10**(temp[1,"log_BMDh_rd_2.[mg/kg-d]"])
-      res[i,"bmdh_aurisano"] = 10**(temp[1,"log_BMDh_rd_avg.[mg/kg-d]"])
-      res[i,"conceptual_model_1_aurisano"] = temp[1,"conceptual_model_rd_1"]
-      res[i,"conceptual_model_2_aurisano"] = temp[1,"conceptual_model_rd_2"]
-      res[i,"effect_category_standard"] = temp[1,"standardized_effect_categories"]
-    }
+      F31 = dplyr::case_when(
+        is.na(final_model1) | is.na(final_model2) ~ NA,
+        final_model1 == "Continuous" & toxval_type_standard == "BMDL" & sts2 == "repeat dose" ~ 2/3,
+        final_model1 == "Continuous" ~ 1/3,
+        final_model1 == "Quantal-Deterministic" ~ 2/9,
+        final_model1 == "Quantal-Stochastic" ~ 2/3,
+        TRUE ~ 1
+      ),
 
-    if(!is.na(res[i,"effect_category_standard"]) && !is.na(res[i,"study_type_standard"])) {
-      ecs = res[i,"effect_category_standard"]
-      sts = res[i,"study_type_standard"]
+      F32 = dplyr::case_when(
+        is.na(final_model1) | is.na(final_model2) ~ NA,
+        final_model1 == "Continuous" ~ 1/3,
+        final_model1 == "Quantal-Deterministic" ~ 2/9,
+        final_model1 == "Quantal-Stochastic" & toxval_type_standard == "BMDL" ~ 1/3,
+        final_model1 == "Quantal-Stochastic" ~ 2/3,
+        TRUE ~ 1
+      ),
 
-      if(is.element(sts,c("chronic","subchronic","short-term"))) sts2 = "repeat dose"
-      else sts2 = "reproductive developmental"
+      F4 = dplyr::case_when(
+        is.na(final_model1) | is.na(final_model2) ~ NA,
+        toxval_numeric_hed == 1 ~ 1,
+        common_name == "Rat" ~ 4.1,
+        common_name == "Mouse" ~ 7.3,
+        common_name == "Rabbit" ~ 2.4,
+        common_name == "Dog" ~ 1.5,
+        TRUE ~ 1
+      ),
 
-      st = res[i,"study_type"]
-      tts = res[i,"toxval_type_standard"]
+      F5 = 1,
 
-      temp = cdict[cdict$study_type_standard==sts2,]
-      temp = temp[temp$effect_category_standard==ecs,]
-      res[i,"conceptual_model_1"] = temp[1,"conceptual_model_1"]
-      res[i,"conceptual_model_2"] = temp[1,"conceptual_model_2"]
+      denom1 = F1*F2*F31*F4*F5,
+      denom2 = F1*F2*F32*F4*F5,
 
-      F1 = 1
-      if(sts=="subchronic") F1 = 2
-      if(sts=="short-term") F1 = 5
+      bmdh1 = toxval_numeric / denom1,
+      bmdh2 = toxval_numeric / denom2,
 
-      F2 = 1
-      if(tts=="LOAEL") F2 = 3
-      if(tts=="BMDL" && sts2=="repeat dose") F2 = 0.5
+      bmdh = dplyr::case_when(
+        final_model2 != "-" ~ 10**(0.5*(log10(bmdh1)+log10(bmdh2))),
+        TRUE ~ bmdh1
+      ),
 
-      cm1 = res[i,"conceptual_model_1"]
-      cm2 = res[i,"conceptual_model_2"]
-      if(!is.na(cm1) && !is.na(cm2)) {
-        F31 = 1
-        F32 = 1
-        if(cm1=="Continuous") F31 = 1/3
-        if(cm1=="Continuous" && tts=="BMDL" && sts2=="repeat dose") F31 = 2/3
-        if(cm1=="Quantal-Deterministic") F31 = 2/9
-        if(cm1=="Quantal-Stochastic") F31 = 2/3
-        if(cm2=="Continuous") F32 = 1/3
-        if(cm2=="Quantal-Deterministic") F32 = 2/9
-        if(cm2=="Quantal-Stochastic") F32 = 2/3
-        if(cm2=="Quantal-Stochastic" && tts=="BMDL") F32 = 1/3
+      bmdh2 = dplyr::case_when(
+        final_model2 == "-" ~ NA,
+        TRUE ~ bmdh2
+      )
+    )
 
-        species = res[i,"common_name"]
-        F4 = 1
-        if(species=="Rat") F4 = 4.1
-        if(species=="Mouse") F4 = 7.3
-        if(species=="Rabbit") F4 = 2.4
-        if(species=="Dog") F4 = 1.5
-        F5 = 1
+  res = res %>%
+    dplyr::filter(is.na(effect_category_standard) | is.na(study_type_standard)) %>%
+    dplyr::bind_rows(calc_res) %>%
+    dplyr::mutate(
+      bmdh_ratio = dplyr::case_when(
+        !is.na(bmdh_aurisano) ~ bmdh / bmdh_aurisano,
+        TRUE ~ NA
+      )
+    ) %>%
+    dplyr::filter(study_type != "acute") %>%
+    dplyr::select(
+      tidyselect::any_of(
+        c("dtxsid","casrn","name","source","toxval_type","toxval_type_standard","study_type","study_type_standard",
+          "critical_effect",
+          "effect_category_standard","conceptual_model_1","conceptual_model_2",
+          "conceptual_model_1_aurisano","conceptual_model_2_aurisano",
+          "bmdh1","bmdh2","bmdh",
+          "bmdh1_aurisano","bmdh2_aurisano","bmdh_aurisano","bmdh_ratio",
+          "F1","F2","F31","F32","F4","F5",
+          "common_name","toxval_numeric","toxval_units",
+          "toxval_numeric_qualifier",
+          "study_duration_value","study_duration_units","study_duration_class",
+          "exposure_route",
+          "year", "record_source_info","source_hash",
+          "study_group","key",
+          "toxval_numeric_hed", "final_model1", "final_model2")
+      )
+    )
 
-        denom1 = F1*F2*F31*F4*F5
-        denom2 = F1*F2*F32*F4*F5
-        pod = res[i,"toxval_numeric"]
-
-        bmdh1 = pod / denom1
-        bmdh2 = pod / denom2
-        if(cm2!="-") bmdh = 10**(0.5*(log10(bmdh1)+log10(bmdh2)))
-        else bmdh = bmdh1
-        res[i,"bmdh1"] = bmdh1
-        if(cm2!="-") res[i,"bmdh2"] = bmdh2
-        res[i,"bmdh"] = bmdh
-        res[i,"F1"] = F1
-        res[i,"F2"] = F2
-        res[i,"F31"] = F31
-        res[i,"F32"] = F32
-        res[i,"F4"] = F4
-        res[i,"F5"] = F5
-      }
-      else browser()
-    }
-    if(!is.na(res[i,"bmdh_aurisano"])) res[i,"bmdh_ratio"] = res[i,"bmdh"]/res[i,"bmdh_aurisano"]
-    if(i%%1000==0) cat(i,"out of",nrow(res),"\n")
-  }
-  res = res[res$study_type!="acute",]
-
-  x = res$bmdh
-  y = res$bmdh_aurisano
-  x = x[!is.na(y)]
-  y = y[!is.na(y)]
-  graphics::plot(y~x)
+  plot_res = res %>%
+    dplyr::select(bmdh, bmdh_aurisano) %>%
+    tidyr::drop_na(bmdh_aurisano)
+  p = ggplot2::ggplot(data=plot_res, ggplot2::aes(x=bmdh, y=bmdh_aurisano))
+  fname = paste0("data/results/toxvaldb.bmdh.per.study.plot.pdf")
+  ggplot2::ggsave(plot = p, width = 5, height = 6, dpi = 300, filename =fname)
 
   # Write output to file
-  sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
   file = paste0(dir,"results/ToxValDB BMDh per study ",toxval.db," ",sys.date,".xlsx")
-  openxlsx::write.xlsx(res,file,firstRow=T,headerStyle=sty)
+  writexl::write_xlsx(res,file)
 }

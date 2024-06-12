@@ -23,40 +23,41 @@ dcap.counts <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   dir = "data/"
   file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
   print(file)
-  res = openxlsx::read.xlsx(file)
+  res = readxl::read_xlsx(file)
   cat("Find all combinations of toxval_types per study\n")
 
   # Record study_group counts
-  t1 = res$study_group
-  t2 = as.data.frame(table(t1))
-  names(t2) = c("study_group","count")
-  t2$dtxsid = NA
-  t2$name = NA
-  t2$source = NA
-  t2 = t2[,c("dtxsid","name","source","study_group","count")]
-  t2 = t2[t2$count>2,]
-  t2 = t2[order(t2$count,decreasing=T),]
-  for(i in seq_len(nrow(t2))) {
-    sg = t2[i,"study_group"]
-    x = res[is.element(res$study_group,sg),]
-    t2[i,"source"] = x[1,"source"]
-    t2[i,"dtxsid"] = x[1,"dtxsid"]
-    t2[i,"name"] = x[1,"name"]
-  }
+  counts = res %>%
+    dplyr::select(study_group) %>%
+    dplyr::group_by(study_group) %>%
+    dplyr::summarize(count = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(count > 2) %>%
+    dplyr::arrange(dplyr::desc(count))
+
+  t2 = res %>%
+    dplyr::left_join(counts, by=c("study_group")) %>%
+    tidyr::drop_na(count) %>%
+    dplyr::group_by(study_group) %>%
+    dplyr::slice(1) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(c("dtxsid", "name", "source", "study_group", "count")) %>%
+    dplyr::distinct()
+
   file = paste0(dir,"DCAP/big_study_group.xlsx")
   writexl::write_xlsx(t2,file)
 
-  # Record POD combination counts
-  sglist = unique(res$study_group)
-  ttlist = NULL
-  for(sg in sglist) {
-    t1 = res[is.element(res$study_group,sg),]
-    t2 = paste0(t1[1,"source"],": ",paste(sort(t1$toxval_type),collapse="|"))
-    ttlist = c(ttlist,t2)
-  }
-  t3 = as.data.frame(table(ttlist))
-  names(t3) = c("pod.combination","studies")
-  t3 = t3[order(t3$studies,decreasing=T),]
+  t3 = res %>%
+    dplyr::group_by(study_group) %>%
+    dplyr::summarize(
+      pod.combination = paste0(unique(source), ": ", paste(sort(toxval_type),collapse="|"))
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-study_group) %>%
+    dplyr::group_by(pod.combination) %>%
+    dplyr::summarize(studies = dplyr::n()) %>%
+    dplyr::arrange(dplyr::desc(studies))
+
   file = paste0(dir,"results/pod_combinations.xlsx")
   writexl::write_xlsx(t3,file)
 }

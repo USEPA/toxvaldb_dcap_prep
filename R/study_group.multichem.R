@@ -23,31 +23,26 @@ study_group.multichem <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()
 
   file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," ",sys.date,".xlsx")
   print(file)
-  t1 = openxlsx::read.xlsx(file)
-  sglist = unique(t1$study_group)
-  nlist = c("source","dtxsid","name","study_group")
-  row = as.data.frame(matrix(nrow=1,ncol=length(nlist)))
-  names(row) = nlist
-  res = NULL
-  for(i in seq_len(length(sglist))) {
-    sg =sglist[i]
-    t2 = t1[is.element(t1$study_group,sg),]
-    dlist = unique(t2$dtxsid)
-    if(length(dlist)>1) {
-      for(dtxsid in dlist) {
-        t3 = t2[is.element(t2$dtxsid,dtxsid),]
-        row[1,"study_group"] = sg
-        row[1,"source"] = t3[1,"source"]
-        row[1,"dtxsid"] = dtxsid
-        row[1,"name"] = t3[1,"name"]
-        res = rbind(res,row)
-        print(row)
-      }
-    }
-    if(i%%100==0) cat("finished",i,"out of",length(sglist),"\n")
+  res = readxl::read_xlsx(file)
+
+  # Check for study_groups that span multiple chemicals
+  num_study_group = res %>%
+    dplyr::select(source, dtxsid, name, study_group) %>%
+    dplyr::distinct() %>%
+    dplyr::group_by(study_group) %>%
+    dplyr::summarise(n = dplyr::n()) %>%
+    dplyr::filter(n > 1)
+
+  # If study_groups are identified, prepare relevant information
+  res = data.frame()
+  if(nrow(num_study_group)) {
+    res = mat %>%
+      dplyr::left_join(res, by=c("study_group")) %>%
+      tidyr::drop_na(n) %>%
+      dplyr::select(source, dtxsid, name, study_group) %>%
+      dplyr::distinct()
   }
 
   file = paste0(dir,"results/ToxValDB study_group.multichem ",toxval.db," ",sys.date,".xlsx")
-  sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
-  openxlsx::write.xlsx(res,file,firstRow=T,headerStyle=sty)
+  writexl::write_xlsx(res, file)
 }

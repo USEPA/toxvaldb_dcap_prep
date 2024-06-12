@@ -7,13 +7,13 @@
 #' @param sys.date The date of the database export
 #' @return None; plots are generated
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}
 #'  \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{aes}}, \code{\link[ggplot2]{labs}}, \code{\link[ggplot2]{geom_boxplot}}, \code{\link[ggplot2]{scale_continuous}}, \code{\link[ggplot2]{scale_manual}}, \code{\link[ggplot2]{coord_flip}}, \code{\link[ggplot2]{ggtheme}}, \code{\link[ggplot2]{theme}}, \code{\link[ggplot2]{element}}, \code{\link[ggplot2]{geom_jitter}}, \code{\link[ggplot2]{geom_freqpoly}}, \code{\link[ggplot2]{facet_wrap}}, \code{\link[ggplot2]{lims}}, \code{\link[ggplot2]{ggsave}}
 #'  \code{\link[forcats]{fct_rev}}
@@ -21,7 +21,7 @@
 #'  \code{\link[gridExtra]{arrangeGrob}}
 #'  \code{\link[grDevices]{dev}}
 #' @rdname toxvaldb.statplots
-#' @export 
+#' @export
 #' @importFrom openxlsx read.xlsx
 #' @importFrom ggplot2 ggplot aes ggtitle geom_boxplot scale_y_continuous scale_fill_manual coord_flip theme_bw ylab xlab theme element_text margin geom_jitter geom_histogram facet_wrap scale_x_continuous ylim element_rect ggsave
 #' @importFrom forcats fct_rev
@@ -36,6 +36,10 @@ toxvaldb.statplots <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=Sys
   print(file)
   res = openxlsx::read.xlsx(file)
   #-----------------------------------------------------------------------------
+  # Removed Level 2 filter (filter.for.bmdh.R), so setting to same as Level 1
+  res$sg2 = res$sg1
+  res$pod2 = res$pod1
+
   x1 = res$pod1/res$sg1
   x2 = res$pod2/res$sg2
   x3 = res$pod3/res$sg3
