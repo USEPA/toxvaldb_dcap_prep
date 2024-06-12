@@ -8,7 +8,12 @@ get.conceptual_model.by.critical_effect_category <- function(df){
 
   df_dcap <- df %>%
     dplyr::select(source_hash, study_type, critical_effect_category) %>%
-    dplyr::distinct()
+    dplyr::distinct() %>%
+    dplyr::mutate(hash_group = 1:dplyr::n()) %>%
+    # Spread out collapsed source_hash
+    tidyr::separate_rows(source_hash, sep = ",") %>%
+    dplyr::mutate(source_hash = source_hash %>%
+                    stringr::str_squish())
 
   df2_dcap <- df_dcap %>%
     tidyr::separate_rows(critical_effect_category, sep = "\\|") %>%
@@ -87,6 +92,14 @@ get.conceptual_model.by.critical_effect_category <- function(df){
       TRUE ~ NA_character_)
     ) %>%
     distinct()
+
+  # Collapse source_hash again
+  final = final %>%
+    dplyr::group_by(hash_group) %>%
+    dplyr::mutate(source_hash = paste0(source_hash, collapse=",")) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct() %>%
+    dplyr::select(-hash_group)
 
   return(final)
 }

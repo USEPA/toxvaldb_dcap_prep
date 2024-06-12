@@ -153,21 +153,21 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     # Pull record_source records and collapse into JSON list
     # Expand reference information rowwise() with as.data.frame(jsonlite::fromJSON(mat$record_source_info[1]))
     mat_refs = runQuery(paste0("SELECT ",
-                        "toxval_id, ",
-                        "long_ref, ",
-                        "url, ",
-                        "title, ",
-                        "external_source_id, ",
-                        "external_source_id_desc, ",
-                        "pmid, ",
-                        "guideline, ",
-                        "record_source_level, ",
-                        "record_source_type, ",
-                        "priority, ",
-                        "clowder_doc_id, ",
-                        "quality ",
-                        "FROM record_source ",
-                        "WHERE toxval_id in (", toString(mat$toxval_id), ")"),
+                               "toxval_id, ",
+                               "long_ref, ",
+                               "url, ",
+                               "title, ",
+                               "external_source_id, ",
+                               "external_source_id_desc, ",
+                               "pmid, ",
+                               "guideline, ",
+                               "record_source_level, ",
+                               "record_source_type, ",
+                               "priority, ",
+                               "clowder_doc_id, ",
+                               "quality ",
+                               "FROM record_source ",
+                               "WHERE toxval_id in (", toString(mat$toxval_id), ")"),
                         toxval.db) %>%
       dplyr::mutate(record_source_info = convert.fields.to.json(dplyr::select(.,
                                                                               -tidyr::any_of(c("toxval_id"))))) %>%
@@ -355,9 +355,13 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   writexl::write_xlsx(unique_toxval_type, file)
 
   # Write full data to file
-  if(include.pesticides) file = paste0(dir,"results/ToxValDB for BMDh WITH PESTICIDES ",
-                                       toxval.db," ",Sys.Date(),".xlsx")
-  else file = paste0(dir,"results/ToxValDB for BMDh ", toxval.db," ",Sys.Date(),".xlsx")
+  if(include.pesticides) {
+    file = paste0(dir,"results/ToxValDB for BMDh WITH PESTICIDES ",
+                  toxval.db," ",Sys.Date(),".xlsx")
+  } else {
+    file = paste0(dir,"results/ToxValDB for BMDh ",
+                  toxval.db," ",Sys.Date(),".xlsx")
+  }
 
   writexl::write_xlsx(res, file)
   return(res)
