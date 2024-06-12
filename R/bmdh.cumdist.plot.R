@@ -3,17 +3,17 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the database export
 #' @return writes a plot to a file
-#' @export
+#' @export 
 #' @title bmdh.cumdist.plot
 #' @description Plot the cumulative distribution of number of studies
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{read.xlsx}}
 #'  \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{aes}}, \code{\link[ggplot2]{labs}}, \code{\link[ggplot2]{stat_ecdf}}, \code{\link[ggplot2]{ggtheme}}, \code{\link[ggplot2]{lims}}, \code{\link[ggplot2]{ggsave}}
 #'  \code{\link[ggpubr]{ggarrange}}

@@ -2,7 +2,7 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
 #' @title filter.for.lel
 #' @description Filter the exported records for redundancy
 #' @details Filters LEL, NEL values where a LOAEL/NOAEL value exists
@@ -12,7 +12,7 @@
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname filter.for.lel
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx

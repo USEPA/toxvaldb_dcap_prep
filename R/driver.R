@@ -7,7 +7,7 @@
 #' @description Run all of the calculations to go from database export to calculation of final BMDh values
 #' @return None
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1

@@ -2,20 +2,21 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
 #' @title dcap.counts
 #' @description Calculate some stats for DCAP
 #' @details Gets some statistics for the DCAP project off of the current ToxValDB export
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname dcap.counts
 #' @importFrom openxlsx read.xlsx write.xlsx
+#' @importFrom writexl write_xlsx
 #-----------------------------------------------------------------------------------
 dcap.counts <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   printCurrentFunction(toxval.db)

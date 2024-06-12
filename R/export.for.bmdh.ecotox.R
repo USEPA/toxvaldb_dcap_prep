@@ -3,7 +3,7 @@
 #' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
-#' @export
+#' @export 
 #' @title export.for.bmdh.ecotox
 #' @description Export records required for calculating BMDh values.
 #' @details Exports all of the data required for the BMDh calculations.
@@ -12,13 +12,13 @@
 #' percentage of read-across values. Species are filtered to only include Human,
 #' Dog, Mouse, Rat and Rabbit. If more species are to be included, then allometric
 #' scaling factors for those need to added to the function bmd.per.study().
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname export.for.bmdh.ecotox
 #' @importFrom openxlsx createStyle write.xlsx

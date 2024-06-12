@@ -3,17 +3,17 @@
 #' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @return Write a file with the results
-#' @export
+#' @export 
 #' @title toxval.redundancies
 #' @description Detect potential redundancies in ToxValDB.
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname toxval.redundancies
 #' @importFrom openxlsx createStyle write.xlsx

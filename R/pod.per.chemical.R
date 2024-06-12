@@ -1,21 +1,23 @@
 #-------------------------------------------------------------------------------
 #' @param toxval.db The version of ToxValDB to use
+#' @param toxval.db The version of ToxValDB to use
+#' @param sys.date Date of the most recent data export #' Make the rule #' filter LOELs when NOELs are present for the same study #' filter out redundant values for the same study group #' Perform the allometric scaling
 #' @param sys.date Date of the most recent data export #' Make the rule #' filter LOELs when NOELs are present for the same study #' filter out redundant values for the same study group #' Perform the allometric scaling
 #' @title pod.per.chemical
 #' @description Explore different methods for calculating PODs
-#' @param toxval.db Database version
-#' @param sys.date The date of the database export
 #' @return Writes output to file
 #' @details Explore different methods for calculating PODs
 #' This uses the same input as the function bmdh.perstudy / bmdh.per.chemical
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
 #' @rdname pod.per.chemical
-#' @export
+#' @export 
+#' @param t2 PARAM_DESCRIPTION
+#' @param scale.mat PARAM_DESCRIPTION
 #-------------------------------------------------------------------------------
 pod.per.chemical <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   printCurrentFunction()

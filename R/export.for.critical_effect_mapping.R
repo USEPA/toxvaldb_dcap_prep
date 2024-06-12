@@ -3,18 +3,18 @@
 #' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
-#' @export
+#' @export 
 #' @title export.for.critical_effect_mapping
 #' @description Export records required for managing the critical effect categories for the BMD calculations.
 #' @details Exports all of the data required for
 #' performing the critical effect mapping for the BMDh calculations
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname export.for.critical_effect_mapping
 #' @importFrom openxlsx createStyle write.xlsx

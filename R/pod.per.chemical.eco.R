@@ -5,17 +5,17 @@
 #' @description Calculate the eco PODs
 #' @return Writes output to file
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 #'  \code{\link[stats]{quantile}}, \code{\link[stats]{sd}}
 #' @rdname toxvaldbPodsEco
-#' @export
+#' @export 
 #' @importFrom openxlsx read.xlsx write.xlsx
 #' @importFrom stats quantile sd
 #-------------------------------------------------------------------------------

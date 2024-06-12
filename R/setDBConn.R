@@ -7,14 +7,14 @@
 #' @param port Port to be used for connection, Default: -1
 #' @return None
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
 #' @rdname setDBConn
-#' @export
+#' @export 
 #--------------------------------------------------------------------------------------
 setDBConn <- function(server="ccte-mysql-res.epa.gov",user="user",password=NA,port=-1) {
   printCurrentFunction()

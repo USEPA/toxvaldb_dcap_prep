@@ -5,18 +5,18 @@
 #' @param minstudies - only chemicals with this minimum number of studies will be used in the calculation
 #' @param cutoff.logsd Only chemicals with their log SD of BMDh values will be used in the calculation
 #' @return Write a file with the results: toxval_PODs_for_BMDh chemical level {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
 #' @title bmdh.percentile.plot
 #' @description Plot the BMDs vs the regulatory values for different percentiles and determine the best fit
 #' @details Helps determine the optimal percentile. The output file shows the
 #' fit statistics for different percentiles, and one should select the one with the lowest RMSE and highest R2.
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 #'  \code{\link[stats]{lm}}
 #'  \code{\link[RMySQL]{character(0)}}
@@ -28,6 +28,10 @@
 #' @importFrom RMySQL summary
 #' @importFrom ggplot2 ggplot aes ggtitle geom_point theme_bw facet_grid xlim ylim xlab ylab geom_segment ggsave
 #' @importFrom grDevices dev.off
+#' @importFrom readxl read_xlsx
+#' @importFrom dplyr filter mutate case_when
+#' @importFrom tidyr drop_na
+#' @importFrom writexl write_xlsx
 #-------------------------------------------------------------------------------
 bmdh.percentile.plot <- function(to.file=FALSE, toxval.db="res_toxval_v95", sys.date=Sys.Date(),
                                  minstudies=3, cutoff.logsd=2) {

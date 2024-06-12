@@ -1,14 +1,36 @@
 #' @title get.conceptual_model.by.critical_effect_category
 #' @description Get the conceptual model based on critical_effect_category
 #' @param df Input dataframe of study_type and critical_effect data.
-#' @export
+#' @export 
 #' @return DataFrame map of models by critical_effect and study_type
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[dplyr]{select}}, \code{\link[dplyr]{distinct}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{context}}, \code{\link[dplyr]{case_when}}, \code{\link[dplyr]{mutate-joins}}, \code{\link[dplyr]{rename}}, \code{\link[dplyr]{across}}, \code{\link[dplyr]{reexports}}, \code{\link[dplyr]{group_by}}, \code{\link[dplyr]{na_if}}
+#'  \code{\link[tidyr]{separate_rows}}, \code{\link[tidyr]{replace_na}}
+#'  \code{\link[stringr]{str_trim}}
+#'  \code{\link[readr]{read_delim}}, \code{\link[readr]{cols}}
+#' @rdname set.conceptual_model.by.critical_effect_category
+#' @importFrom dplyr select distinct mutate n case_when left_join rename across where group_by any_of na_if ungroup
+#' @importFrom tidyr separate_rows replace_na
+#' @importFrom stringr str_squish
+#' @importFrom readr read_csv cols
 get.conceptual_model.by.critical_effect_category <- function(df){
   dir = "data/"
 
   df_dcap <- df %>%
     dplyr::select(source_hash, study_type, critical_effect_category) %>%
-    dplyr::distinct()
+    dplyr::distinct() %>%
+    dplyr::mutate(hash_group = 1:dplyr::n()) %>%
+    # Spread out collapsed source_hash
+    tidyr::separate_rows(source_hash, sep = ",") %>%
+    dplyr::mutate(source_hash = source_hash %>%
+                    stringr::str_squish())
 
   df2_dcap <- df_dcap %>%
     tidyr::separate_rows(critical_effect_category, sep = "\\|") %>%
@@ -87,6 +109,14 @@ get.conceptual_model.by.critical_effect_category <- function(df){
       TRUE ~ NA_character_)
     ) %>%
     distinct()
+
+  # Collapse source_hash again
+  final = final %>%
+    dplyr::group_by(hash_group) %>%
+    dplyr::mutate(source_hash = paste0(source_hash, collapse=",")) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct() %>%
+    dplyr::select(-hash_group)
 
   return(final)
 }
