@@ -5,7 +5,7 @@
 \title{bmdh.percentile.plot}
 \usage{
 bmdh.percentile.plot(
-  to.file = F,
+  to.file = FALSE,
   toxval.db = "res_toxval_v95",
   sys.date = Sys.Date(),
   minstudies = 3,

@@ -2,18 +2,18 @@
 #' @param to.file If TRUE, send the plot to a file
 #' @param toxval.db Database version
 #' @param sys.date The date of the database export
-#' @export
+#' @export 
 #' @title bmdh.aurisano.check.plot
 #' @description Plot the difference between the Aurisano and current BMDh values
 #' @return None; writes plot to PDF
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{read.xlsx}}
 #'  \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{aes}}, \code{\link[ggplot2]{labs}}, \code{\link[ggplot2]{geom_point}}, \code{\link[ggplot2]{ggtheme}}, \code{\link[ggplot2]{scale_continuous}}, \code{\link[ggplot2]{ggsave}}
 #'  \code{\link[grDevices]{dev}}

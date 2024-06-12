@@ -10,14 +10,14 @@
 #' percentage of read-across values. Species are filtered to only include Human,
 #' Dog, Mouse, Rat and Rabbit. If more species are to be included, then allometric
 #' scaling factors for those need to added to the function bmd.per.study().
-#' @export
-#' @examples
+#' @export 
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname export.for.bmdh
 #' @importFrom openxlsx createStyle write.xlsx
@@ -25,6 +25,7 @@
 #' @importFrom dplyr distinct filter mutate case_when select
 #' @importFrom tidyr replace_na
 #' @importFrom writexl write_xlsx
+#' @importFrom readxl read_xls
 #-----------------------------------------------------------------------------------
 export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE) {
   printCurrentFunction(toxval.db)
@@ -98,6 +99,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    "b.study_duration_class, ",
                    "b.supersource, ",
                    "d.common_name, ",
+                   "b.species_original, ",
                    "b.strain, ",
                    "b.sex, ",
                    "b.lifestage, ",
@@ -153,21 +155,21 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     # Pull record_source records and collapse into JSON list
     # Expand reference information rowwise() with as.data.frame(jsonlite::fromJSON(mat$record_source_info[1]))
     mat_refs = runQuery(paste0("SELECT ",
-                        "toxval_id, ",
-                        "long_ref, ",
-                        "url, ",
-                        "title, ",
-                        "external_source_id, ",
-                        "external_source_id_desc, ",
-                        "pmid, ",
-                        "guideline, ",
-                        "record_source_level, ",
-                        "record_source_type, ",
-                        "priority, ",
-                        "clowder_doc_id, ",
-                        "quality ",
-                        "FROM record_source ",
-                        "WHERE toxval_id in (", toString(mat$toxval_id), ")"),
+                               "toxval_id, ",
+                               "long_ref, ",
+                               "url, ",
+                               "title, ",
+                               "external_source_id, ",
+                               "external_source_id_desc, ",
+                               "pmid, ",
+                               "guideline, ",
+                               "record_source_level, ",
+                               "record_source_type, ",
+                               "priority, ",
+                               "clowder_doc_id, ",
+                               "quality ",
+                               "FROM record_source ",
+                               "WHERE toxval_id in (", toString(mat$toxval_id), ")"),
                         toxval.db) %>%
       dplyr::mutate(record_source_info = convert.fields.to.json(dplyr::select(.,
                                                                               -tidyr::any_of(c("toxval_id"))))) %>%
@@ -217,7 +219,13 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     # Remove entries with invalid study_types
     mat = mat %>%
       dplyr::filter(study_type %in% !!stlist)
+
     cat("[3]",src,":",nrow(mat),"\n")
+
+    # Split species list if present
+    mat = split.species.list(df=mat) %>%
+      # Remove species_original used for species list splitting
+      dplyr::select(-species_original)
 
     mat = mat %>%
       # Clean common_name values
@@ -355,9 +363,13 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   writexl::write_xlsx(unique_toxval_type, file)
 
   # Write full data to file
-  if(include.pesticides) file = paste0(dir,"results/ToxValDB for BMDh WITH PESTICIDES ",
-                                       toxval.db," ",Sys.Date(),".xlsx")
-  else file = paste0(dir,"results/ToxValDB for BMDh ", toxval.db," ",Sys.Date(),".xlsx")
+  if(include.pesticides) {
+    file = paste0(dir,"results/ToxValDB for BMDh WITH PESTICIDES ",
+                  toxval.db," ",Sys.Date(),".xlsx")
+  } else {
+    file = paste0(dir,"results/ToxValDB for BMDh ",
+                  toxval.db," ",Sys.Date(),".xlsx")
+  }
 
   writexl::write_xlsx(res, file)
   return(res)

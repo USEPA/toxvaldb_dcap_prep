@@ -3,7 +3,7 @@
 #' @param sys.date The date of the database export
 #' @param regulatory.sources This is the list of sources that will be used to select the #' optimal quantile to use for selecting the final chemical-level BMDh.
 #' @return Write a file with the results: toxval_PODs_for_BMDh chemical level {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
 #' @title bmdh.per.chemical
 #' @description Calculate BMDh values one per chemical
 #' @details Calculates one BMDh value per chemical. This is done by taking
@@ -11,13 +11,13 @@
 #' with one column per percentile per chemical. The values are calibrated
 #' against regulatory values. The list of high-quality, regulator sources is given
 #' as one of the calling arguments.
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #'  \code{\link[stats]{sd}}, \code{\link[stats]{quantile}}
 #' @rdname bmdh.per.chemical

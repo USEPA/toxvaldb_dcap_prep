@@ -2,7 +2,7 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the database export
 #' @return Write a file with the results: toxval_PODs_for_BMDh {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
 #' @title bmdh.per.study
 #' @description Calculate the BMDh values per study
 #' @details Calculates one BMDh value per study using the Aurisano algorithm.
@@ -12,18 +12,19 @@
 #' required mappings, and thos may need to be updated.For records in both the old and new
 #' databases, an on-the-fly plot is produced to show the corresponded between study-level
 #' BMDh values.
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #'  \code{\link[graphics]{plot.default}}
 #' @rdname bmdh.per.study
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #' @importFrom graphics plot
+#' @importFrom dplyr mutate
 #-----------------------------------------------------------------------------------
 bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   printCurrentFunction(toxval.db)

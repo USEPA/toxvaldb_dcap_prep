@@ -3,18 +3,18 @@
 #' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
-#' @export
+#' @export 
 #' @title property.counter
 #' @description Count proerties of records
 #' @param sys.date The date of the database export
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}, \code{\link[openxlsx]{createStyle}}
 #' @rdname property.counter
 #' @importFrom openxlsx read.xlsx write.xlsx createStyle

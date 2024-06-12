@@ -16,3 +16,19 @@ DataFrame map of models by critical_effect and study_type
 \description{
 Get the conceptual model based on critical_effect_category
 }
+\details{
+DETAILS
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[dplyr]{select}}, \code{\link[dplyr]{distinct}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{context}}, \code{\link[dplyr]{case_when}}, \code{\link[dplyr]{mutate-joins}}, \code{\link[dplyr]{rename}}, \code{\link[dplyr]{across}}, \code{\link[dplyr]{reexports}}, \code{\link[dplyr]{group_by}}, \code{\link[dplyr]{na_if}}
+ \code{\link[tidyr]{separate_rows}}, \code{\link[tidyr]{replace_na}}
+ \code{\link[stringr]{str_trim}}
+ \code{\link[readr]{read_delim}}, \code{\link[readr]{cols}}
+}

@@ -5,20 +5,20 @@
 #' @param sys.date The date of the export to use, Default: Sys.Date()
 #' @return None; writes summary reports to file
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  [read_xlsx][readxl::read_xlsx]
 #'  [mutate][dplyr::mutate], [filter][dplyr::filter], [select][dplyr::select], [distinct][dplyr::distinct], [left_join][dplyr::left_join], [pull][dplyr::pull], [ensym][dplyr::ensym]
 #'  [replace_na][tidyr::replace_na]
 #'  [tibble][tibble::tibble]
 #'  [write.xlsx][openxlsx::write.xlsx]
 #' @rdname write_dcap_summary
-#' @export
+#' @export 
 #' @importFrom readxl read_xlsx
 #' @importFrom dplyr mutate filter select distinct left_join pull ensym
 #' @importFrom tidyr replace_na

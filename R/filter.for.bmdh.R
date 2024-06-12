@@ -2,7 +2,7 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
 #' @title filter.for.bmdh
 #' @description Filter the exported records for redundancy
 #' @details Filters redundant rows in the raw database export. There are
@@ -14,18 +14,20 @@
 #' processing issues. These will be solved there, but the filtering
 #' in this function takes care of this issue
 #' for the moment.
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #'  \code{\link[digest]{digest}}
 #' @rdname filter.for.bmdh
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #' @importFrom digest digest
+#' @importFrom readxl read_xlsx
+#' @importFrom dplyr mutate case_when
 
 #-----------------------------------------------------------------------------------
 filter.for.bmdh <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
