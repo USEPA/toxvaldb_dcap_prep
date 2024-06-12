@@ -1,8 +1,7 @@
 #-------------------------------------------------------------------------------
 #' @param toxval.db Database version
 #' @param sys.date The date of the database export
-#' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
-#' @param password The user's MySQL database password.
+#' @param run.export Whether to run the export.for.bmdh function (Default: TRUE)
 #' @export
 #' @title driver
 #' @description Run all of the calculations to go from database export to calculation of final BMDh values
@@ -16,10 +15,9 @@
 #' }
 #' @rdname driver
 #-------------------------------------------------------------------------------
-driver <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),user="user",password="password") {
+driver <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date(), run.export=TRUE) {
   printCurrentFunction()
-  setDBConn(user=user, password=password)
-  export.for.bmdh(toxval.db)
+  if(run.export) export.for.bmdh(toxval.db)
   # Skip filter.for.bmdh() with improved JSON storage of record_source entries
   # filter.for.bmdh(toxval.db,sys.date)
   filter.for.lel(toxval.db,sys.date)
