@@ -93,6 +93,10 @@ bmdh.percentile.plot <- function(to.file=FALSE, toxval.db="res_toxval_v95", sys.
   pdata = pdata[!is.na(pdata$RA),]
   print(res)
 
+  final_model = stats::lm(RA~experiment, data=pdata)
+  residuals = as.data.frame(final_model$residuals) %>%
+    dplyr::rename(residuals=`final_model$residuals`)
+
   # Plot results
   p = ggplot2::ggplot(data=pdata,ggplot2::aes(x=experiment,y=RA))  +
     ggplot2::ggtitle(paste0("BMDh Percentiles")) +
@@ -120,17 +124,28 @@ bmdh.percentile.plot <- function(to.file=FALSE, toxval.db="res_toxval_v95", sys.
   file = paste0(dir,"results/ToxValDB BMDh per chemical percentiles ",toxval.db," ",sys.date,".xlsx")
   writexl::write_xlsx(res,file)
 
+  file = paste0(dir,"results/ToxValDB BMDh per chemical RESIDUALS ",toxval.db," ",sys.date,".xlsx")
+  writexl::write_xlsx(residuals,file)
+
   # Save or view resulting plot
   if(to.file) {
     fname = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".pdf")
     #fname = paste0(dir,"bmdh.percentile.plot.pdf")
     ggplot2::ggsave(plot = p, width = 8, height = 2.5, dpi = 300, filename =fname)
-    grDevices::dev.off()
+    tryCatch({
+      grDevices::dev.off()
+    }, error = function(err) {
+      cat("Failed to shut down device\n")
+    })
 
     fname = paste0(dir,"results/ToxValDB BMDh per chemical LABELED ",toxval.db," ",sys.date,".pdf")
     #fname = paste0(dir,"bmdh.percentile.plot.pdf")
     ggplot2::ggsave(plot = p_labeled, width = 49, height = 20, dpi = 700, filename =fname)
-    grDevices::dev.off()
+    tryCatch({
+      grDevices::dev.off()
+    }, error = function(err) {
+      cat("Failed to shut down device\n")
+    })
   }
   else browser()
 }
