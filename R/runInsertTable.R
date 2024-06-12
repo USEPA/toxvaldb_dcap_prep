@@ -9,16 +9,16 @@
 #' @param get.id PARAM_DESCRIPTION, Default: T
 #' @return None; inserts data into DB
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[RMySQL]{character(0)}}, \code{\link[RMySQL]{MySQLDriver-class}}
 #' @rdname runInsertTable
-#' @export
+#' @export 
 #' @importFrom RMySQL dbConnect MySQL dbWriteTable dbSendQuery dbFetch dbHasCompleted dbClearResult dbDisconnect
 #--------------------------------------------------------------------------------------
 runInsertTable <- function(mat,table,db,do.halt=T,verbose=F,get.id=T) {

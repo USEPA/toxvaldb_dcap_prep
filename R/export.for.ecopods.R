@@ -8,17 +8,17 @@
 #' @param password The user's MySQL database password.
 #' @details The data is exported as a xlsx and csv file because some records may cause the Excel format
 #' to break. You can then open the csv (always works) and save as Excel
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #'  \code{\link[utils]{write.table}}
 #' @rdname export.for.ecopods
-#' @export
+#' @export 
 #' @importFrom openxlsx createStyle write.xlsx
 #' @importFrom utils write.csv
 #-----------------------------------------------------------------------------------

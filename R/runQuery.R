@@ -3,18 +3,18 @@
 #' @param db the name of the database
 #' @param do.halt if TRUE, halt on errors or warnings
 #' @param verbose if TRUE, print diagnostic information
-#' @export
+#' @export 
 #' @title runQuery
 #' @description Runs a database query and returns a result set
 #' @return Result set from query
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[RMySQL]{character(0)}}, \code{\link[RMySQL]{MySQLDriver-class}}
 #'  \code{\link[utils]{flush.console}}
 #' @rdname runQuery

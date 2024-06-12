@@ -5,17 +5,17 @@
 #' @title export.for.eco.qsar
 #' @description Build a data frame of the data for the toxval manuscript
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[utils]{write.table}}
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname export.for.eco.qsar
-#' @export
+#' @export 
 #' @importFrom utils write.csv
 #' @importFrom openxlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------

@@ -2,17 +2,17 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
 #' @title studies.per.chemical
 #' @description Calculate some stats for DCAP
 #' @details Gets the number of studies per chemical from the current ToxValDB export
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname studies.per.chemical
 #' @importFrom openxlsx read.xlsx write.xlsx

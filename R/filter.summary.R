@@ -2,20 +2,20 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
 #' @title filter.summary
 #' @description Summarize the filtering steps
 #' @param do.load Whether to load data from Excel, Default: TRUE
 #' @details Filters where multiple NOEL/NOEL etc. exist. For each study_group
 #' this will select the highest NO(A)EL below the lowest LO(A)EL and the lowest LO(A)EL.
 #' In all cases, all BMDx values are included
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname filter.summary
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx

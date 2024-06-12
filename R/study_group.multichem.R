@@ -2,17 +2,17 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx
-#' @export
+#' @export 
 #' @title study_group.multichem
 #' @description Find study groups that span multiple chemicals
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname study_group.multichem
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx

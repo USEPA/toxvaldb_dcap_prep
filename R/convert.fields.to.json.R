@@ -3,17 +3,17 @@
 #' @param in_dat data to translate to JSON format
 #' @return Values in JSON format
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[dplyr]{summarise}}, \code{\link[dplyr]{select}}, \code{\link[dplyr]{bind}}
 #'  \code{\link[jsonlite]{toJSON, fromJSON}}
 #' @rdname convert.fields.to.json
-#' @export
+#' @export 
 #' @importFrom dplyr summarise select bind_rows
 #' @importFrom jsonlite toJSON
 convert.fields.to.json <- function(in_dat){
