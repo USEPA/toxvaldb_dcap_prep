@@ -27,10 +27,12 @@
 bmdh.per.chemical <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),
                               regulatory.sources=c("IRIS",
                                                    "PPRTV (CPHEA)",
-                                                   "ATSDR MRLs 2022",
                                                    "ATSDR MRLs",
+                                                   "EFSA",
+                                                   "Health Canada",
+                                                   "EPA HHTV",
                                                    "ATSDR PFAS 2021",
-                                                   "EPA OPP",
+                                                   "Cal OEHHA",
                                                    "HEAST")) {
   printCurrentFunction()
   dir = "data/"
