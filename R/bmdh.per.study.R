@@ -39,7 +39,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
     # Handle humanized pod types
     dplyr::mutate(
       common_name = dplyr::case_when(
-        grepl("HED|ADJ", toxval_type) ~ "Human",
+        grepl("HED", toxval_type) ~ "Human",
         TRUE ~ common_name
       )
     )
