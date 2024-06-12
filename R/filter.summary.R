@@ -2,20 +2,20 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx
-#' @export 
+#' @export
 #' @title filter.summary
 #' @description Summarize the filtering steps
 #' @param do.load Whether to load data from Excel, Default: TRUE
 #' @details Filters where multiple NOEL/NOEL etc. exist. For each study_group
 #' this will select the highest NO(A)EL below the lowest LO(A)EL and the lowest LO(A)EL.
 #' In all cases, all BMDx values are included
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname filter.summary
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
@@ -29,6 +29,7 @@ filter.summary <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),do.loa
     print(file)
     t1 = openxlsx::read.xlsx(file)
 
+    # Removed Level 2 filter (filter.for.bmdh.R)
     # file = paste0(dir,"results/ToxValDB for BMDh filtered ",toxval.db," ",sys.date,".xlsx")
     # print(file)
     # t2 = openxlsx::read.xlsx(file)
@@ -41,6 +42,7 @@ filter.summary <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),do.loa
     print(file)
     t4 = openxlsx::read.xlsx(file)
     T1 <<- t1
+    # Removed Level 2 filter (filter.for.bmdh.R)
     # T2 <<- t2
     T3 <<- t3
     T4 <<- t4
@@ -63,6 +65,7 @@ filter.summary <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),do.loa
     chems[i,"sg1"] = length(unique(t1$study_group))
     chems[i,"pod1"] = nrow(t1)
 
+    # Removed Level 2 filter (filter.for.bmdh.R)
     # t2 = T2[is.element(T2$dtxsid,dtxsid),]
     # chems[i,"sg2"] = length(unique(t2$study_group))
     # chems[i,"pod2"] = nrow(t2)
