@@ -272,7 +272,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
     )
 
   res = res %>%
-    dplyr::filter(!is.na(effect_category_standard) | !is.na(study_type_standard)) %>%
+    dplyr::filter(is.na(effect_category_standard) | is.na(study_type_standard)) %>%
     dplyr::bind_rows(calc_res) %>%
     dplyr::mutate(
       bmdh_ratio = dplyr::case_when(
