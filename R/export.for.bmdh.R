@@ -10,14 +10,14 @@
 #' percentage of read-across values. Species are filtered to only include Human,
 #' Dog, Mouse, Rat and Rabbit. If more species are to be included, then allometric
 #' scaling factors for those need to added to the function bmd.per.study().
-#' @export 
-#' @examples 
+#' @export
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname export.for.bmdh
 #' @importFrom openxlsx createStyle write.xlsx
@@ -81,7 +81,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                                "'source_iuclid_developmentaltoxicityteratogenicity', ",
                                "'source_iuclid_carcinogenicity', ",
                                "'source_iuclid_immunotoxicity', ",
-                               "'source_iuclid_neurotoxicity')")
+                               "'source_iuclid_neurotoxicity', ",
+                               "'source_iuclid_toxicityreproduction')")
     }
 
     query = paste0("SELECT ",
@@ -302,11 +303,16 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
     mat = mat %>%
       dplyr::left_join(crit_cat_map,
-                       by="source_hash")
+                       by="source_hash") %>%
+      dplyr::mutate(critical_effect_category = dplyr::case_when(
+        # Set to "none" if no critical_effect present
+        critical_effect %in% c(NA, "-") ~ "none",
+        TRUE ~ critical_effect_category
+      ))
 
     rm(crit_cat_map)
 
-    if(src %in% c("NTP PFAS", "ECHA IUCLID", "HAWC Project",  "PFAS 150 SEM v2")){
+    if(src %in% slist[!slist %in% c("ECHA IUCLID", "ECOTOX")]){#c("NTP PFAS", "ECHA IUCLID", "HAWC Project",  "PFAS 150 SEM v2")){
       # Special logic implemented for now to further collapse source records post-ToxVal
       mat = toxval.source.import.dedup(mat %>%
                                          dplyr::rename(source_hash_toxval=source_hash),
@@ -343,8 +349,16 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
         TRUE ~ critical_effect_category
       ),
       # Set all toxval_numeric_qualifier values to "=".
-      toxval_numeric_qualifier = "="
-    )
+      toxval_numeric_qualifier = "=",
+
+      # Create critical_effect_category field w/o "cancer" for conceptual model mapping
+      critical_effect_category_temp = critical_effect_category,
+      critical_effect_category = critical_effect_category %>%
+        gsub("\\|cancer\\|", "|", .) %>%
+        gsub("\\|cancer|cancer\\|", "", .)
+    ) %>%
+    # Drop records with critical_effect_category "cancer"
+    dplyr::filter(critical_effect_category_temp != "cancer")
 
   # Get conceptual model by critical_effect_category
   conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res) %>%
@@ -352,7 +366,9 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   # Map conceptual models
   res = res %>%
     dplyr::left_join(conceptual_model_map,
-                     by = "source_hash")
+                     by = "source_hash") %>%
+    dplyr::select(-critical_effect_category) %>%
+    dplyr::rename(critical_effect_category = critical_effect_category_temp)
 
   cat("Exporting results...\n")
   # Write unique toxval_type values included in full data
