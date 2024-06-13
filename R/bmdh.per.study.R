@@ -90,7 +90,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
       ),
 
       F31 = dplyr::case_when(
-        is.na(final_model1) | is.na(final_model2) ~ NA,
+        is.na(final_model1) ~ NA,
         final_model1 == "continuous" & toxval_type_standard == "BMDL" & sts2 == "repeat dose" ~ 2/3,
         final_model1 == "continuous" ~ 1/3,
         final_model1 == "quantal-deterministic" ~ 2/9,
@@ -108,7 +108,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
       ),
 
       F4 = dplyr::case_when(
-        is.na(final_model1) | is.na(final_model2) ~ NA,
+        is.na(final_model1) ~ NA,
         toxval_numeric_hed == 1 ~ 1,
         common_name == "Rat" ~ 4.1,
         common_name == "Mouse" ~ 7.3,
@@ -120,18 +120,24 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
       F5 = 1,
 
       denom1 = F1*F2*F31*F4*F5,
-      denom2 = F1*F2*F32*F4*F5,
+      denom2 = dplyr::case_when(
+        is.na(final_model2) ~ NA,
+        TRUE ~ F1*F2*F32*F4*F5
+      ),
 
       bmdh1 = toxval_numeric / denom1,
-      bmdh2 = toxval_numeric / denom2,
+      bmdh2 = dplyr::case_when(
+        is.na(final_model2) ~ NA,
+        TRUE ~ toxval_numeric / denom2
+      ),
 
       bmdh = dplyr::case_when(
-        final_model2 != "-" ~ 10**(0.5*(log10(bmdh1)+log10(bmdh2))),
+        !(final_model2 %in% c("-", "", as.character(NA))) ~ 10**(0.5*(log10(bmdh1)+log10(bmdh2))),
         TRUE ~ bmdh1
       ),
 
       bmdh2 = dplyr::case_when(
-        final_model2 == "-" ~ NA,
+        final_model2 %in% c("-", "", as.character(NA)) ~ NA,
         TRUE ~ bmdh2
       )
     )
