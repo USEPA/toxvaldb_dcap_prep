@@ -30,12 +30,6 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   printCurrentFunction(toxval.db)
   dir = "data/"
 
-  # Read in study_type mapping dictionary
-  file = paste0(dir,"study type dictionary.xlsx")
-  print(file)
-  sdict = readxl::read_xlsx(file) %>%
-    dplyr::rename(study_type=study_type_original, sdict_study_type=study_type)
-
   # Read in initial data
   file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
   print(file)
@@ -51,13 +45,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
         TRUE ~ common_name
       )
     ) %>%
-    dplyr::left_join(sdict, by=c("study_type")) %>%
     dplyr::mutate(
-      study_type = dplyr::case_when(
-        !sdict_study_type %in% c(as.character(NA), "", "-") ~ sdict_study_type,
-        TRUE ~ study_type
-      ),
-
       toxval_type_standard = dplyr::case_when(
         substr(toxval_type,1,1) == "N" ~ "NOAEL",
         substr(toxval_type,1,1) == "L" ~ "LOAEL",
