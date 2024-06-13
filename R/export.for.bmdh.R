@@ -349,10 +349,16 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
         TRUE ~ critical_effect_category
       ),
       # Set all toxval_numeric_qualifier values to "=".
-      toxval_numeric_qualifier = "="
+      toxval_numeric_qualifier = "=",
+
+      # Create critical_effect_category field w/o "cancer" for conceptual model mapping
+      critical_effect_category_temp = critical_effect_category,
+      critical_effect_category = critical_effect_category %>%
+        gsub("\\|cancer\\|", "|", .) %>%
+        gsub("\\|cancer|cancer\\|", "", .)
     ) %>%
     # Drop records with critical_effect_category "cancer"
-    dplyr::filter(critical_effect_category != "cancer")
+    dplyr::filter(critical_effect_category_temp != "cancer")
 
   # Get conceptual model by critical_effect_category
   conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res) %>%
@@ -360,7 +366,9 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   # Map conceptual models
   res = res %>%
     dplyr::left_join(conceptual_model_map,
-                     by = "source_hash")
+                     by = "source_hash") %>%
+    dplyr::select(-critical_effect_category) %>%
+    dplyr::rename(critical_effect_category = critical_effect_category_temp)
 
   cat("Exporting results...\n")
   # Write unique toxval_type values included in full data
