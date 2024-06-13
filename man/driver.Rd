@@ -4,21 +4,14 @@
 \alias{driver}
 \title{driver}
 \usage{
-driver(
-  toxval.db = "res_toxval_v95",
-  sys.date = Sys.Date(),
-  user = "user",
-  password = "password"
-)
+driver(toxval.db = "res_toxval_v95", sys.date = Sys.Date(), run.export = TRUE)
 }
 \arguments{
 \item{toxval.db}{Database version}
 
 \item{sys.date}{The date of the database export}
 
-\item{user}{The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().}
-
-\item{password}{The user's MySQL database password.}
+\item{run.export}{Whether to run the export.for.bmdh function (Default: TRUE)}
 }
 \value{
 None

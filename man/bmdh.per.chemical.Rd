@@ -7,8 +7,8 @@
 bmdh.per.chemical(
   toxval.db = "res_toxval_v95",
   sys.date = Sys.Date(),
-  regulatory.sources = c("IRIS", "PPRTV (CPHEA)", "ATSDR MRLs 2022", "ATSDR MRLs",
-    "ATSDR PFAS 2021", "EPA OPP", "HEAST")
+  regulatory.sources = c("IRIS", "PPRTV (CPHEA)", "ATSDR MRLs", "EFSA", "Health Canada",
+    "EPA HHTV", "ATSDR PFAS 2021", "Cal OEHHA", "HEAST")
 )
 }
 \arguments{

@@ -18,7 +18,7 @@ Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {s
 Filter the exported records for redundancy
 }
 \details{
-Filters LEL, NEL values wihere a LOAEL/NOAEL value exists
+Filters LEL, NEL values where a LOAEL/NOAEL value exists
 }
 \examples{
 \dontrun{

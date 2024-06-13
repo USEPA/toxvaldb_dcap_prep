@@ -1,16 +1,16 @@
 #' @title get.conceptual_model.by.critical_effect_category
 #' @description Get the conceptual model based on critical_effect_category
 #' @param df Input dataframe of study_type and critical_effect data.
-#' @export 
+#' @export
 #' @return DataFrame map of models by critical_effect and study_type
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[dplyr]{select}}, \code{\link[dplyr]{distinct}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{context}}, \code{\link[dplyr]{case_when}}, \code{\link[dplyr]{mutate-joins}}, \code{\link[dplyr]{rename}}, \code{\link[dplyr]{across}}, \code{\link[dplyr]{reexports}}, \code{\link[dplyr]{group_by}}, \code{\link[dplyr]{na_if}}
 #'  \code{\link[tidyr]{separate_rows}}, \code{\link[tidyr]{replace_na}}
 #'  \code{\link[stringr]{str_trim}}
@@ -25,6 +25,7 @@ get.conceptual_model.by.critical_effect_category <- function(df){
 
   df_dcap <- df %>%
     dplyr::select(source_hash, study_type, critical_effect_category) %>%
+    dplyr::mutate(critical_effect_category = fix.replace.unicode(critical_effect_category)) %>%
     dplyr::distinct() %>%
     dplyr::mutate(hash_group = 1:dplyr::n()) %>%
     # Spread out collapsed source_hash
