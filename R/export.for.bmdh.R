@@ -350,7 +350,9 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       ),
       # Set all toxval_numeric_qualifier values to "=".
       toxval_numeric_qualifier = "="
-    )
+    ) %>%
+    # Drop records with critical_effect_category "cancer"
+    dplyr::filter(critical_effect_category != "cancer")
 
   # Get conceptual model by critical_effect_category
   conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res) %>%
