@@ -2,19 +2,19 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
 #' @return Write a file with the filtered results
-#' @export 
+#' @export
 #' @title filter.for.multi.noel
 #' @description Filter the exported records for redundancy of NO(A)EL / LO(A)EL PODs in a study group
 #' @details Filters where multiple NOEL/NOEL etc. exist. For each study_group
 #' this will select the highest NO(A)EL below the lowest LO(A)EL and the lowest LO(A)EL.
 #' In all cases, all BMDx values are included
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #' @rdname filter.for.multi.noel
@@ -25,11 +25,12 @@
 #-----------------------------------------------------------------------------------
 filter.for.multi.noel <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date()) {
   input_file = paste0("data/results/ToxValDB for BMDh LEL NEL filtered ", toxval.db, " ", sys.date, ".xlsx")
-  if(!exists("T3") & file.exists(input_file)) {
+  if(!exists("T3")) {
+    if(!file.exists(input_file)){
+      stop("filter.for.multi.noel missing input file '", input_file, "'")
+      return()
+    }
     T3 = readxl::read_xlsx(input_file)
-  } else {
-    stop("filter.for.multi.noel missing input file '", input_file, "'")
-    return()
   }
 
   T4 = T3 %>%

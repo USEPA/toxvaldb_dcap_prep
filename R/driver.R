@@ -7,7 +7,7 @@
 #' @description Run all of the calculations to go from database export to calculation of final BMDh values
 #' @return None
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
@@ -30,5 +30,6 @@ driver <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date(), run.export=T
   bmdh.per.study(toxval.db,sys.date)
   bmdh.per.chemical(toxval.db,sys.date)
   bmdh.percentile.plot(T,toxval.db,sys.date,minstudies=3,cutoff.logsd=2)
-  bmdh.aurisano.check.plot(T,toxval.db,sys.date)
+  # No longer used. Aurisano logic removed from bmdh.per.study
+  # bmdh.aurisano.check.plot(T,toxval.db,sys.date)
 }
