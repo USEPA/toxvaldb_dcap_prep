@@ -145,7 +145,23 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
     # Get unique entries using query
     mat = runQuery(query, toxval.db) %>%
-      dplyr::distinct() %>%
+      dplyr::distinct()
+
+    # Special source_hash fixes
+    hash_specific_changes = readxl::read_xlsx("data/input/dictionary conversions for DCAP_20240614.xlsx") %>%
+      dplyr::filter(source_hash %in% mat$source_hash)
+
+    if(nrow(hash_specific_changes)){
+      for(j in seq_len(nrow(hash_specific_changes))){
+        field = hash_specific_changes$`corrected field`[j]
+        hash = hash_specific_changes$source_hash[j]
+        correction = hash_specific_changes$correction[j]
+        # Apply special correction
+        mat[mat$source_hash==hash, field] = correction
+      }
+    }
+
+    mat = mat %>%
       # Special rule to convert toxval_type to correct type (see data/input/dictionary conversions for DCAP_20240614.xlsx)
       dplyr::mutate(
         toxval_type = dplyr::case_when(
