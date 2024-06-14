@@ -137,7 +137,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    # "and b.human_eco='human health' ",
                    "and e.toxval_type_supercategory in ('Point of Departure') ",
                    "and b.toxval_units='mg/kg-day' ",
-                   "and b.exposure_route='oral'",
+                   # "and b.exposure_route='oral'",
                    pesticide_addition,
                    # " and f.priority='", priority, "'",
                    iuclid_addition
@@ -145,6 +145,42 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
     # Get unique entries using query
     mat = runQuery(query, toxval.db) %>%
+      dplyr::distinct()
+
+    # Special source_hash fixes
+    hash_specific_changes = readxl::read_xlsx("data/input/dictionary conversions for DCAP_20240614.xlsx") %>%
+      dplyr::filter(source_hash %in% mat$source_hash)
+
+    if(nrow(hash_specific_changes)){
+      for(j in seq_len(nrow(hash_specific_changes))){
+        field = hash_specific_changes$`corrected field`[j]
+        hash = hash_specific_changes$source_hash[j]
+        correction = hash_specific_changes$correction[j]
+        # Apply special correction
+        mat[mat$source_hash==hash, field] = correction
+      }
+    }
+
+    mat = mat %>%
+      # Special rule to convert toxval_type to correct type (see data/input/dictionary conversions for DCAP_20240614.xlsx)
+      dplyr::mutate(
+        toxval_type = dplyr::case_when(
+          toxval_type %in% c('NOEC', 'LOEC', 'NOAEC', 'LOAEC') &
+            exposure_route == 'oral' &
+            # Replace ending "C" with "L" instead
+            toxval_units == 'mg/kg-day' ~ gsub("C$", "L", toxval_type),
+          TRUE ~ toxval_type
+        ),
+        # Special rule to set missing exposure_route to 'oral' (see data/input/dictionary conversions for DCAP_20240614.xlsx)
+        exposure_route = dplyr::case_when(
+          exposure_route %in% c(NA, "-") &
+            toxval_units == 'mg/kg-day' &
+            (toxval_type %in% c('NEL', 'LEL', 'LOEL', 'NOEL', 'NOAEL', 'LOAEL') |
+               grepl('^BMD', toxval_type)) ~ "oral",
+          TRUE ~ exposure_route
+        )
+      ) %>%
+      dplyr::filter(exposure_route == "oral") %>%
       dplyr::distinct()
 
     if(!nrow(mat)){
