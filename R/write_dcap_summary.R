@@ -5,20 +5,20 @@
 #' @param sys.date The date of the export to use, Default: Sys.Date()
 #' @return None; writes summary reports to file
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  [read_xlsx][readxl::read_xlsx]
 #'  [mutate][dplyr::mutate], [filter][dplyr::filter], [select][dplyr::select], [distinct][dplyr::distinct], [left_join][dplyr::left_join], [pull][dplyr::pull], [ensym][dplyr::ensym]
 #'  [replace_na][tidyr::replace_na]
 #'  [tibble][tibble::tibble]
 #'  [write.xlsx][openxlsx::write.xlsx]
 #' @rdname write_dcap_summary
-#' @export 
+#' @export
 #' @importFrom readxl read_xlsx
 #' @importFrom dplyr mutate filter select distinct left_join pull ensym
 #' @importFrom tidyr replace_na
@@ -31,10 +31,10 @@ write_dcap_summary <- function(toxval.db, sys.date=Sys.Date()) {
     dplyr::mutate(toxval_type_supercategory = "Point of Departure")
 
   # Write list containing all DCAP sources
-  dcap_list = c("ATSDR PFAS 2021", "ATSDR MRLs", "Cal OEHHA", "Copper Manufacturers",
-                "ECHA IUCLID", "ECOTOX", "EFSA", "HAWC PFAS 430",
-                "HAWC Project", "Health Canada", "HESS", "HPVIS", "IRIS",
-                "NTP PFAS", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
+  dcap_list = c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
+                "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
+                "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
+                "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
 
   # Write list of key fields
   key_fields = c("study_type", "common_name", "exposure_route", "toxval_units", "toxval_type_supercategory")
