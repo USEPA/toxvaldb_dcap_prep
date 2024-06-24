@@ -4,7 +4,7 @@
 #' @description Plot statistics for ToxValDB for DCAP sources
 #' @param to.file Whether to write plots to file or simply view them, Default: F
 #' @param toxval.db Database version
-#' @param sys.date The date of the database export
+#' @param run_name The desired name for the output directory (Default: current date)
 #' @return None; plots are generated
 #' @details DETAILS
 #' @examples
@@ -29,10 +29,10 @@
 #' @importFrom gridExtra grid.arrange
 #' @importFrom grDevices dev.off
 #-------------------------------------------------------------------------------
-toxvaldb.statplots <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
+toxvaldb.statplots <- function(to.file=F,toxval.db="res_toxval_v95",run_name=Sys.Date()) {
   printCurrentFunction()
-  dir = "data/"
-  file = paste0(dir,"results/ToxValDB summary stats ",toxval.db," ",sys.date,".xlsx")
+  dir = paste0("data/results/", run_name, "/")
+  file = paste0(dir,"results/ToxValDB summary stats ",toxval.db,".xlsx")
   print(file)
   res = openxlsx::read.xlsx(file)
   #-----------------------------------------------------------------------------
@@ -127,7 +127,7 @@ toxvaldb.statplots <- function(to.file=F,toxval.db="res_toxval_v95",sys.date=Sys
   if(!to.file) browser()
 
   if(to.file) {
-    fname = paste0("data/results/toxvaldb.statplots.pdf")
+    fname = paste0(dir, "results/toxvaldb.statplots.pdf")
     ggplot2::ggsave(plot = p, width = 5, height = 6, dpi = 300, filename =fname)
     grDevices::dev.off()
   }

@@ -1,9 +1,9 @@
 #-------------------------------------------------------------------------------
 #' @param toxval.db Database version
-#' @param sys.date The date of the database export
+#' @param run_name The desired name for the output directory (Default: current date)
 #' @param regulatory.sources This is the list of sources that will be used to select the #' optimal quantile to use for selecting the final chemical-level BMDh.
 #' @return Write a file with the results: toxval_PODs_for_BMDh chemical level {toxval.db} {sys.date}.xlsx
-#' @export 
+#' @export
 #' @title bmdh.per.chemical
 #' @description Calculate BMDh values one per chemical
 #' @details Calculates one BMDh value per chemical. This is done by taking
@@ -11,20 +11,20 @@
 #' with one column per percentile per chemical. The values are calibrated
 #' against regulatory values. The list of high-quality, regulator sources is given
 #' as one of the calling arguments.
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #'  \code{\link[stats]{sd}}, \code{\link[stats]{quantile}}
 #' @rdname bmdh.per.chemical
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #' @importFrom stats sd quantile
 #-------------------------------------------------------------------------------
-bmdh.per.chemical <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),
+bmdh.per.chemical <- function(toxval.db="res_toxval_v95",run_name=Sys.Date(),
                               regulatory.sources=c("IRIS",
                                                    "PPRTV (CPHEA)",
                                                    "ATSDR MRLs",
@@ -35,9 +35,9 @@ bmdh.per.chemical <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),
                                                    "Cal OEHHA",
                                                    "HEAST")) {
   printCurrentFunction()
-  dir = "data/"
+  dir = paste0("data/results/", run_name, "/")
 
-  file = paste0(dir,"results/ToxValDB BMDh per study ",toxval.db," ",sys.date,".xlsx")
+  file = paste0(dir,"results/ToxValDB BMDh per study ",toxval.db,".xlsx")
   print(file)
   mat = openxlsx::read.xlsx(file)
   mat = mat[!is.na(mat$bmdh),]
@@ -123,6 +123,6 @@ bmdh.per.chemical <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),
     if(i%%1000==0) cat("finished",i,"out of",nrow(res),"\n")
   }
   sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
-  file = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".xlsx")
+  file = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db,".xlsx")
   openxlsx::write.xlsx(res,file,firstRow=T,headerStyle=sty)
 }

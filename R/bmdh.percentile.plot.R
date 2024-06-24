@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 #' @param to.file If TRUE, send the plot to a file
 #' @param toxval.db Database version
-#' @param sys.date The date of the database export
+#' @param run_name The desired name for the output directory (Default: current date)
 #' @param minstudies - only chemicals with this minimum number of studies will be used in the calculation
 #' @param cutoff.logsd Only chemicals with their log SD of BMDh values will be used in the calculation
 #' @return Write a file with the results: toxval_PODs_for_BMDh chemical level {toxval.db} {sys.date}.xlsx
@@ -33,11 +33,11 @@
 #' @importFrom tidyr drop_na
 #' @importFrom writexl write_xlsx
 #-------------------------------------------------------------------------------
-bmdh.percentile.plot <- function(to.file=FALSE, toxval.db="res_toxval_v95", sys.date=Sys.Date(),
+bmdh.percentile.plot <- function(to.file=FALSE, toxval.db="res_toxval_v95", run_name=Sys.Date(),
                                  minstudies=3, cutoff.logsd=2) {
   printCurrentFunction()
-  dir = "data/"
-  file = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".xlsx")
+  dir = paste0("data/results/", run_name, "/")
+  file = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db,".xlsx")
 
   mat = readxl::read_xlsx(file) %>%
     # Filter out entries with less than minstudies
@@ -144,7 +144,7 @@ bmdh.percentile.plot <- function(to.file=FALSE, toxval.db="res_toxval_v95", sys.
       cat("Failed to shut down device\n")
     })
 
-    fname = paste0(dir,"results/ToxValDB BMDh per chemical LABELED ",toxval.db," ",sys.date,".pdf")
+    fname = paste0(dir,"results/ToxValDB BMDh per chemical LABELED ",toxval.db,".pdf")
     #fname = paste0(dir,"bmdh.percentile.plot.pdf")
     ggplot2::ggsave(plot = p_labeled, width = 49, height = 20, dpi = 700, filename =fname)
     tryCatch({
