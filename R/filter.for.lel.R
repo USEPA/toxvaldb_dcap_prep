@@ -1,8 +1,8 @@
 #-----------------------------------------------------------------------------------
 #' @param toxval.db Database version
-#' @param sys.date The date of the export
+#' @param run_name The desired name for the output directory (Default: current date)
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
-#' @export 
+#' @export
 #' @title filter.for.lel
 #' @description Filter the exported records for redundancy
 #' @details Filters LEL, NEL values where a LOAEL/NOAEL value exists
@@ -12,15 +12,16 @@
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname filter.for.lel
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
-filter.for.lel <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
+filter.for.lel <- function(toxval.db="res_toxval_v95",run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
-  dir = "data/"
-  file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," ",sys.date,".xlsx")
+  dir = paste0("data/results/", run_name, "/")
+
+  file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db,".xlsx")
   print(file)
   res = readxl::read_xlsx(file)
 
@@ -54,6 +55,6 @@ filter.for.lel <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
   output = dplyr::bind_rows(no_changes, loael_filtered, noael_filtered, both_filtered) %>%
     dplyr::distinct()
 
-  file = paste0(dir,"results/ToxValDB for BMDh LEL NEL filtered ",toxval.db," ",sys.date,".xlsx")
+  file = paste0(dir,"results/ToxValDB for BMDh LEL NEL filtered ",toxval.db,".xlsx")
   writexl::write_xlsx(output, file)
 }

@@ -1,26 +1,26 @@
 #-----------------------------------------------------------------------------------
 #' @param toxval.db Database version
-#' @param sys.date The date of the export
+#' @param run_name The desired name for the output directory (Default: current date)
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
-#' @export 
+#' @export
 #' @title studies.per.chemical
 #' @description Calculate some stats for DCAP
 #' @details Gets the number of studies per chemical from the current ToxValDB export
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname studies.per.chemical
 #' @importFrom openxlsx read.xlsx write.xlsx
 #-----------------------------------------------------------------------------------
-studies.per.chemical <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
+studies.per.chemical <- function(toxval.db="res_toxval_v95",run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
-  dir = "data/"
-  file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
+  dir = paste0("data/results/", run_name, "/")
+  file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db,".xlsx")
   print(file)
   res = openxlsx::read.xlsx(file)
 

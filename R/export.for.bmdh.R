@@ -3,6 +3,7 @@
 #' @description Export records required for calculating BMDh values.
 #' @param toxval.db Database version
 #' @param include.pesticides Flag to include pesticides in output or not
+#' @param run_name The desired name for the output directory (Default: current date)
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
 #' @details Exports all of the data required for the BMDh calculations.
 #' The main query may need to be modified to extract more columns if needed for
@@ -27,9 +28,10 @@
 #' @importFrom writexl write_xlsx
 #' @importFrom readxl read_xls
 #-----------------------------------------------------------------------------------
-export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE) {
+export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE, run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
-  dir = "data/"
+  input_dir = "data/input/"
+  output_dir = paste0("data/results/", run_name, "/")
 
   slist =  c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
              "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
@@ -38,7 +40,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
   # Read in pesticide DTXSID values to exclude
   # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
-  pesticide_file = paste0(dir, "input/list_chemicals-2024-06-07-08-25-08.xls")
+  pesticide_file = paste0(input_dir, "list_chemicals-2024-06-07-08-25-08.xls")
   pesticide_dtxsid = readxl::read_xls(pesticide_file) %>%
     dplyr::pull(DTXSID) %>%
     unique() %>%
@@ -148,7 +150,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       dplyr::distinct()
 
     # Special source_hash fixes
-    hash_specific_changes = readxl::read_xlsx("data/input/dictionary conversions for DCAP_20240614.xlsx") %>%
+    hash_specific_changes = readxl::read_xlsx(paste0(input_dir, "dictionary conversions for DCAP_20240614.xlsx")) %>%
       dplyr::filter(source_hash %in% mat$source_hash)
 
     if(nrow(hash_specific_changes)){
@@ -401,7 +403,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     dplyr::select(-study_type, -critical_effect_category)
 
   # Get grouped_dtxsid information
-  grouped_dtxsid = readxl::read_xlsx(paste0(dir, "input/ToxVal_DTXSIDs_Grouped.xlsx")) %>%
+  grouped_dtxsid = readxl::read_xlsx(paste0(input_dir, "ToxVal_DTXSIDs_Grouped.xlsx")) %>%
     dplyr::rename(Grouped_DTXSID = Parent_DTXSID, dtxsid = DTXSID) %>%
     dplyr::select(-DCAP_INDEX)
 
@@ -418,18 +420,12 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   unique_toxval_type = res %>%
     dplyr::select(source, toxval_type) %>%
     dplyr::distinct()
-  file = paste0(dir,"results/bmdh_export_toxval_type_",Sys.Date(),".xlsx")
+  file = paste0(output_dir,"results/bmdh_export_toxval_type.xlsx")
   writexl::write_xlsx(unique_toxval_type, file)
 
   # Write full data to file
-  if(include.pesticides) {
-    file = paste0(dir,"results/ToxValDB for BMDh WITH PESTICIDES ",
-                  toxval.db," ",Sys.Date(),".xlsx")
-  } else {
-    file = paste0(dir,"results/ToxValDB for BMDh ",
-                  toxval.db," ",Sys.Date(),".xlsx")
-  }
-
+  file = paste0(output_dir,"results/ToxValDB for BMDh ",toxval.db,".xlsx")
   writexl::write_xlsx(res, file)
+
   return(res)
 }

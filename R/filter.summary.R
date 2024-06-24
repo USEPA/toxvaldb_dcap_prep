@@ -1,6 +1,6 @@
 #-----------------------------------------------------------------------------------
 #' @param toxval.db Database version
-#' @param sys.date The date of the export
+#' @param run_name The desired name for the output directory (Default: current date)
 #' @return Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx
 #' @export
 #' @title filter.summary
@@ -20,12 +20,12 @@
 #' @rdname filter.summary
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
-filter.summary <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),do.load=TRUE) {
+filter.summary <- function(toxval.db="res_toxval_v95",run_name=Sys.Date(),do.load=TRUE) {
   printCurrentFunction(toxval.db)
-  dir = "data/"
+  dir = paste0("data/results/", run_name, "/")
 
   if(do.load) {
-    file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," ",sys.date,".xlsx")
+    file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db,".xlsx")
     print(file)
     t1 = openxlsx::read.xlsx(file)
 
@@ -34,11 +34,11 @@ filter.summary <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),do.loa
     # print(file)
     # t2 = openxlsx::read.xlsx(file)
 
-    file = paste0(dir,"results/ToxValDB for BMDh LEL NEL filtered ",toxval.db," ",sys.date,".xlsx")
+    file = paste0(dir,"results/ToxValDB for BMDh LEL NEL filtered ",toxval.db,".xlsx")
     print(file)
     t3 = openxlsx::read.xlsx(file)
 
-    file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
+    file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db,".xlsx")
     print(file)
     t4 = openxlsx::read.xlsx(file)
     T1 <<- t1
@@ -80,7 +80,7 @@ filter.summary <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date(),do.loa
     if(i%%100==0) cat("finished",i,"out of",nrow(chems),"\n")
   }
 
-  file = paste0(dir,"results/ToxValDB summary stats ",toxval.db," ",sys.date,".xlsx")
+  file = paste0(dir,"results/ToxValDB summary stats ",toxval.db,".xlsx")
   sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
   openxlsx::write.xlsx(chems,file,firstRow=T,headerStyle=sty)
 }
