@@ -127,15 +127,15 @@ bmdh.percentile.plot <- function(to.file=FALSE, toxval.db="res_toxval_v95", run_
     ggplot2::geom_text(check_overlap=T)
 
   # Write results to file
-  file = paste0(dir,"results/ToxValDB BMDh per chemical percentiles ",toxval.db," ",sys.date,".xlsx")
+  file = paste0(dir,"results/ToxValDB BMDh per chemical percentiles ",toxval.db, ".xlsx")
   writexl::write_xlsx(res,file)
 
-  file = paste0(dir,"results/ToxValDB BMDh per chemical RESIDUALS ",toxval.db," ",sys.date,".xlsx")
+  file = paste0(dir,"results/ToxValDB BMDh per chemical RESIDUALS ",toxval.db," ", ".xlsx")
   writexl::write_xlsx(residuals,file)
 
   # Save or view resulting plot
   if(to.file) {
-    fname = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ",sys.date,".pdf")
+    fname = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db," ", ".pdf")
     #fname = paste0(dir,"bmdh.percentile.plot.pdf")
     ggplot2::ggsave(plot = p, width = 8, height = 2.5, dpi = 300, filename =fname)
     tryCatch({
