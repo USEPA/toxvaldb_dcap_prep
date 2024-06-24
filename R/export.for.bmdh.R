@@ -399,12 +399,19 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   # Get conceptual model by critical_effect_category
   conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res) %>%
     dplyr::select(-study_type, -critical_effect_category)
-  # Map conceptual models
+
+  # Get grouped_dtxsid information
+  grouped_dtxsid = readxl::read_xlsx(paste0(dir, "input/ToxVal_DTXSIDs_Grouped.xlsx")) %>%
+    dplyr::rename(Grouped_DTXSID = Parent_DTXSID, dtxsid = DTXSID) %>%
+    dplyr::select(-DCAP_INDEX)
+
+  # Map conceptual models and DTXSID group
   res = res %>%
     dplyr::left_join(conceptual_model_map,
                      by = "source_hash") %>%
     dplyr::select(-critical_effect_category) %>%
-    dplyr::rename(critical_effect_category = critical_effect_category_temp)
+    dplyr::rename(critical_effect_category = critical_effect_category_temp) %>%
+    dplyr::left_join(grouped_dtxsid, by="dtxsid")
 
   cat("Exporting results...\n")
   # Write unique toxval_type values included in full data
