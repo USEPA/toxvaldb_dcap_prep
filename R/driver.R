@@ -15,9 +15,9 @@
 #' }
 #' @rdname driver
 #-------------------------------------------------------------------------------
-driver <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date(), run.export=TRUE) {
+driver <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date(), run.export=TRUE, include.pesticides=FALSE) {
   printCurrentFunction()
-  if(run.export) export.for.bmdh(toxval.db)
+  if(run.export) export.for.bmdh(toxval.db, include.pesticides)
   # Skip filter.for.bmdh() with improved JSON storage of record_source entries
   # filter.for.bmdh(toxval.db,sys.date)
   filter.for.lel(toxval.db,sys.date)
