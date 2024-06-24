@@ -1,27 +1,27 @@
 #-----------------------------------------------------------------------------------
 #' @param toxval.db Database version
-#' @param sys.date The date of the export
+#' @param run_name The desired name for the output directory (Default: current date)
 #' @return Write a file with the filtered results:ToxValDB for BMDh LEL NEL multiNOEL filtered {toxval.db} {sys.date}.xlsx
-#' @export 
+#' @export
 #' @title study_group.multichem
 #' @description Find study groups that span multiple chemicals
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname study_group.multichem
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
-study_group.multichem <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
+study_group.multichem <- function(toxval.db="res_toxval_v95",run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
-  dir = "data/"
+  dir = paste0("data/results/", run_name, "/")
 
-  file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," ",sys.date,".xlsx")
+  file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db,".xlsx")
   print(file)
   res = readxl::read_xlsx(file)
 
@@ -43,6 +43,6 @@ study_group.multichem <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()
       dplyr::distinct()
   }
 
-  file = paste0(dir,"results/ToxValDB study_group.multichem ",toxval.db," ",sys.date,".xlsx")
+  file = paste0(dir,"results/ToxValDB study_group.multichem ",toxval.db,".xlsx")
   writexl::write_xlsx(res, file)
 }

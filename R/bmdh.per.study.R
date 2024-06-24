@@ -1,6 +1,6 @@
 #-----------------------------------------------------------------------------------
 #' @param toxval.db Database version
-#' @param sys.date The date of the database export
+#' @param run_name The desired name for the output directory (Default: current date)
 #' @return Write a file with the results: toxval_PODs_for_BMDh {toxval.db} {sys.date}.xlsx
 #' @export
 #' @title bmdh.per.study
@@ -26,12 +26,12 @@
 #' @importFrom graphics plot
 #' @importFrom dplyr mutate
 #-----------------------------------------------------------------------------------
-bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
+bmdh.per.study <- function(toxval.db="res_toxval_v95",run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
-  dir = "data/"
+  dir = paste0("data/results/", run_name, "/")
 
   # Read in initial data
-  file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
+  file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db,".xlsx")
   print(file)
 
   res = readxl::read_xlsx(file) %>%
@@ -163,6 +163,6 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
     )
 
   # Write output to file
-  file = paste0(dir,"results/ToxValDB BMDh per study ",toxval.db," ",sys.date,".xlsx")
+  file = paste0(dir,"results/ToxValDB BMDh per study ",toxval.db,".xlsx")
   writexl::write_xlsx(res,file)
 }

@@ -1,7 +1,8 @@
 #-------------------------------------------------------------------------------
 #' @param toxval.db Database version
-#' @param sys.date The date of the database export
+#' @param run_name The desired name for the output directory (Default: current date)
 #' @param run.export Whether to run the export.for.bmdh function (Default: TRUE)
+#' @param include.pesticides Flag to include pesticides in output or not
 #' @export
 #' @title driver
 #' @description Run all of the calculations to go from database export to calculation of final BMDh values
@@ -15,21 +16,29 @@
 #' }
 #' @rdname driver
 #-------------------------------------------------------------------------------
+<<<<<<< HEAD
 driver <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date(), run.export=TRUE, include.pesticides=FALSE) {
   printCurrentFunction()
   if(run.export) export.for.bmdh(toxval.db, include.pesticides)
+=======
+driver <- function(toxval.db="res_toxval_v95", run_name=Sys.Date(), run.export=TRUE, include.pesticides=FALSE) {
+  printCurrentFunction()
+  if(include.pesticides) run_name = paste0(run_name, "_pesticides")
+  init.current.run.directory(run_name)
+  if(run.export) export.for.bmdh(toxval.db, run_name=run_name, include.pesticides=include.pesticides)
+>>>>>>> 5054e30ba5b44ccbd6bda9315b8329107fb61ec2
   # Skip filter.for.bmdh() with improved JSON storage of record_source entries
   # filter.for.bmdh(toxval.db,sys.date)
-  filter.for.lel(toxval.db,sys.date)
-  filter.for.multi.noel(toxval.db,sys.date)
-  filter.summary(toxval.db,sys.date,do.load=T)
-  study_group.multichem(toxval.db,sys.date)
-  dcap.counts(toxval.db,sys.date)
-  studies.per.chemical(toxval.db,sys.date)
-  toxvaldb.statplots(to.file=T,toxval.db,sys.date)
-  bmdh.per.study(toxval.db,sys.date)
-  bmdh.per.chemical(toxval.db,sys.date)
-  bmdh.percentile.plot(T,toxval.db,sys.date,minstudies=3,cutoff.logsd=2)
+  filter.for.lel(toxval.db,run_name=run_name)
+  filter.for.multi.noel(toxval.db,run_name=run_name)
+  filter.summary(toxval.db,do.load=T,run_name=run_name)
+  study_group.multichem(toxval.db,run_name=run_name)
+  dcap.counts(toxval.db,run_name=run_name)
+  studies.per.chemical(toxval.db,run_name=run_name)
+  toxvaldb.statplots(to.file=T,toxval.db,run_name=run_name)
+  bmdh.per.study(toxval.db,run_name=run_name)
+  bmdh.per.chemical(toxval.db,run_name=run_name)
+  bmdh.percentile.plot(T,toxval.db,minstudies=3,cutoff.logsd=2,run_name=run_name)
   # No longer used. Aurisano logic removed from bmdh.per.study
   # bmdh.aurisano.check.plot(T,toxval.db,sys.date)
 }

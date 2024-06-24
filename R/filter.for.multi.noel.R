@@ -1,6 +1,6 @@
 #-----------------------------------------------------------------------------------
 #' @param toxval.db Database version
-#' @param sys.date The date of the export
+#' @param run_name The desired name for the output directory (Default: current date)
 #' @return Write a file with the filtered results
 #' @export
 #' @title filter.for.multi.noel
@@ -23,8 +23,10 @@
 #' @importFrom tidyr fill replace_na
 #' @importFrom writexl write_xlsx
 #-----------------------------------------------------------------------------------
-filter.for.multi.noel <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date()) {
-  input_file = paste0("data/results/ToxValDB for BMDh LEL NEL filtered ", toxval.db, " ", sys.date, ".xlsx")
+filter.for.multi.noel <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
+  dir = paste0("data/results/", run_name, "/")
+
+  input_file = paste0(dir, "results/ToxValDB for BMDh LEL NEL filtered ", toxval.db, ".xlsx")
   if(!exists("T3")) {
     if(!file.exists(input_file)){
       stop("filter.for.multi.noel missing input file '", input_file, "'")
@@ -88,6 +90,6 @@ filter.for.multi.noel <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date(
     dplyr::distinct()
 
   # Write output
-  output_file = paste0("data/results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db," ",sys.date,".xlsx")
+  output_file = paste0(dir, "results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db,".xlsx")
   writexl::write_xlsx(T4, output_file)
 }
