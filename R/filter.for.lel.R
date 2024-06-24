@@ -1,8 +1,9 @@
 #-----------------------------------------------------------------------------------
 #' @param toxval.db Database version
 #' @param sys.date The date of the export
+#' @param include.pesticides Flag to include pesticides in output or not
 #' @return Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx
-#' @export 
+#' @export
 #' @title filter.for.lel
 #' @description Filter the exported records for redundancy
 #' @details Filters LEL, NEL values where a LOAEL/NOAEL value exists
@@ -12,15 +13,17 @@
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname filter.for.lel
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
-filter.for.lel <- function(toxval.db="res_toxval_v95",sys.date=Sys.Date()) {
+filter.for.lel <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date(), include.pesticides=FALSE) {
   printCurrentFunction(toxval.db)
   dir = "data/"
   file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," ",sys.date,".xlsx")
+  if(include.pesticides) file = paste0(dir,"results/ToxValDB for BMDh WITH PESTICIDES ",
+                                       toxval.db," ",sys.date,".xlsx")
   print(file)
   res = readxl::read_xlsx(file)
 

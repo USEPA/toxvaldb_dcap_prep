@@ -2,6 +2,7 @@
 #' @param toxval.db Database version
 #' @param sys.date The date of the database export
 #' @param run.export Whether to run the export.for.bmdh function (Default: TRUE)
+#' @param include.pesticides Flag to include pesticides in output or not
 #' @export
 #' @title driver
 #' @description Run all of the calculations to go from database export to calculation of final BMDh values
@@ -15,15 +16,15 @@
 #' }
 #' @rdname driver
 #-------------------------------------------------------------------------------
-driver <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date(), run.export=TRUE) {
+driver <- function(toxval.db="res_toxval_v95", sys.date=Sys.Date(), run.export=TRUE, include.pesticides=FALSE) {
   printCurrentFunction()
   if(run.export) export.for.bmdh(toxval.db)
   # Skip filter.for.bmdh() with improved JSON storage of record_source entries
   # filter.for.bmdh(toxval.db,sys.date)
-  filter.for.lel(toxval.db,sys.date)
+  filter.for.lel(toxval.db,sys.date,include.pesticides)
   filter.for.multi.noel(toxval.db,sys.date)
-  filter.summary(toxval.db,sys.date,do.load=T)
-  study_group.multichem(toxval.db,sys.date)
+  filter.summary(toxval.db,sys.date,do.load=T,include.pesticides)
+  study_group.multichem(toxval.db,sys.date,include.pesticides)
   dcap.counts(toxval.db,sys.date)
   studies.per.chemical(toxval.db,sys.date)
   toxvaldb.statplots(to.file=T,toxval.db,sys.date)
