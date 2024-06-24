@@ -150,11 +150,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       dplyr::distinct()
 
     # Special source_hash fixes
-<<<<<<< HEAD
     hash_specific_changes = readxl::read_xlsx("data/input/dictionary conversions for DCAP.xlsx") %>%
-=======
-    hash_specific_changes = readxl::read_xlsx(paste0(input_dir, "dictionary conversions for DCAP_20240614.xlsx")) %>%
->>>>>>> 5054e30ba5b44ccbd6bda9315b8329107fb61ec2
       dplyr::filter(source_hash %in% mat$source_hash)
 
     if(nrow(hash_specific_changes)){
