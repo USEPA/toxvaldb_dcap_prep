@@ -34,9 +34,8 @@ study_group.multichem <- function(toxval.db="res_toxval_v95",run_name=Sys.Date()
     dplyr::filter(n > 1)
 
   # If study_groups are identified, prepare relevant information
-  res = data.frame()
   if(nrow(num_study_group)) {
-    res = mat %>%
+    res = num_study_group %>%
       dplyr::left_join(res, by=c("study_group")) %>%
       tidyr::drop_na(n) %>%
       dplyr::select(source, dtxsid, name, study_group) %>%
