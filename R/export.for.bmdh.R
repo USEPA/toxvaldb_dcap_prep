@@ -187,7 +187,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
     if(!nrow(mat)){
       cat("No data pulled for: ", src, "\n")
-      browser()
+      # browser()
       next
     }
 
