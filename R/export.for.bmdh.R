@@ -40,7 +40,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
   # Read in pesticide DTXSID values to exclude
   # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
-  pesticide_file = paste0(input_dir, "list_chemicals-2024-06-07-08-25-08.xls")
+  # Updates list: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/BCPCPEST
+  pesticide_file = Sys.getenv("pesticide_file")
   pesticide_dtxsid = readxl::read_xls(pesticide_file) %>%
     dplyr::pull(DTXSID) %>%
     unique() %>%
