@@ -88,6 +88,7 @@ get.conceptual_model.by.critical_effect_category <- function(df){
     ) %>%
     dplyr::mutate(multiple_flag = dplyr::case_when(
       # Add a flag for multiples to use in model2
+      grepl("\\|", critical_effect_category) ~ "multiple",
       (grepl("cont", model1_all, ignore.case=TRUE) & grepl("det", model1_all, ignore.case=TRUE)) ~ "multiple",
       (grepl("cont", model1_all, ignore.case=TRUE) & grepl("stoch", model1_all, ignore.case=TRUE)) ~ "multiple",
       (grepl("det", model1_all, ignore.case=TRUE) & grepl("stoch", model1_all, ignore.case=TRUE)) ~ "multiple",

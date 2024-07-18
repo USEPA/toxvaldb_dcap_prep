@@ -126,6 +126,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    "b.study_group, ",
                    "b.qc_status, ",
                    "b.experimental_record, ",
+                   "b.key_finding, ",
                    "a.cleaned_casrn, a.cleaned_name ",
                    "FROM ",
                    "toxval b ",

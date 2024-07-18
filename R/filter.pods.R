@@ -15,6 +15,11 @@
 #' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
+#' @rdname filter.pods
+#' @importFrom readxl read_xlsx
+#' @importFrom dplyr mutate filter case_when group_by ungroup select bind_rows
+#' @importFrom stringr str_trim str_extract
+#' @importFrom writexl write_xlsx
 #-----------------------------------------------------------------------------------
 filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
@@ -35,6 +40,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     "HEAST",
     "PPRTV (CPHEA)"
   )
+  cat("Filtering authoritative sources:", paste0(auth_sources, collapse=", "), "\n")
 
   # Get key_finding PODs from authoritative sources
   res_auth = res0 %>%
@@ -53,6 +59,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
       reason_for_filtering = "from authoritative source but not key finding"
     )
 
+  cat("Filtering non-authoritative sources\n")
   # Filter non-authoritative sources
   res0_non_auth = res0 %>%
     dplyr::filter(!source %in% auth_sources) %>%

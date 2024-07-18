@@ -31,7 +31,7 @@ bmdh.per.study <- function(toxval.db="res_toxval_v95",run_name=Sys.Date()) {
   dir = paste0("data/results/", run_name, "/")
 
   # Read in initial data
-  file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db,".xlsx")
+  file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx")
   print(file)
 
   res = readxl::read_xlsx(file) %>%

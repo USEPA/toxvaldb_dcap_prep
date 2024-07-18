@@ -36,27 +36,16 @@ toxvaldb.statplots <- function(to.file=F,toxval.db="res_toxval_v95",run_name=Sys
   print(file)
   res = openxlsx::read.xlsx(file)
   #-----------------------------------------------------------------------------
-  # Removed Level 2 filter (filter.for.bmdh.R), so setting to same as Level 1
-  res$sg2 = res$sg1
-  res$pod2 = res$pod1
 
   x1 = res$pod1/res$sg1
   x2 = res$pod2/res$sg2
-  x3 = res$pod3/res$sg3
-  x4 = res$pod4/res$sg4
   n1 = x1
   n2 = x2
-  n3 = x3
-  n4 = x4
   n1[] = "Level 1"
   n2[] = "Level 2"
-  n3[] = "Level 3"
-  n4[] = "Level 4"
   z1 = cbind(n1,x1)
   z2 = cbind(n2,x2)
-  z3 = cbind(n3,x3)
-  z4 = cbind(n4,x4)
-  z = as.data.frame(rbind(z1,z2,z3,z4))
+  z = as.data.frame(rbind(z1,z2))
   names(z) = c("Level","PODs")
   z$PODs = as.numeric(z$PODs)
   title = paste0("")
@@ -83,21 +72,13 @@ toxvaldb.statplots <- function(to.file=F,toxval.db="res_toxval_v95",run_name=Sys
   #-----------------------------------------------------------------------------
   x1 = res$pod1
   x2 = res$pod2
-  x3 = res$pod3
-  x4 = res$pod4
   n1 = x1
   n2 = x2
-  n3 = x3
-  n4 = x4
   n1[] = "Level 1"
   n2[] = "Level 2"
-  n3[] = "Level 3"
-  n4[] = "Level 4"
   z1 = cbind(n1,x1)
   z2 = cbind(n2,x2)
-  z3 = cbind(n3,x3)
-  z4 = cbind(n4,x4)
-  z = as.data.frame(rbind(z1,z2,z3,z4))
+  z = as.data.frame(rbind(z1,z2))
   names(z) = c("Level","PODs")
   z$PODs = as.numeric(z$PODs)
 
