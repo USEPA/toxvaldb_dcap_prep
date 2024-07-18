@@ -61,8 +61,9 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
 
   cat("Filtering non-authoritative sources\n")
   # Filter non-authoritative sources
-  res0_non_auth = res0 %>%
+  res_init = res0 %>%
     dplyr::filter(!source %in% auth_sources) %>%
+    dplyr::bind_rows(res_auth) %>%
     dplyr::mutate(
       # Standardize toxval_type values to "{TYPE} {MODIFIER}"
       tts = dplyr::case_when(
@@ -182,20 +183,19 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     dplyr::ungroup()
 
   # Select chosen rows
-  res_non_auth = res0_non_auth %>%
+  res = res_init %>%
     dplyr::filter(selected_row == keep_flag,
                   remove_flag != 1) %>%
     dplyr::select(-c("tts", "ttr", "low_loael", "low_lel", "min_val", "max_val",
                      "remove_flag", "keep_flag", "selected_row", "reason_for_filtering"))
 
   # Select rows that were filtered out
-  filtered_out_non_auth = res0_non_auth %>%
+  filtered_out_non_auth = res_init %>%
     dplyr::filter(remove_flag == 1 | keep_flag != selected_row) %>%
     dplyr::select(-c("tts", "ttr", "low_loael", "low_lel", "min_val", "max_val",
                      "remove_flag", "keep_flag", "selected_row"))
 
-  # Combine data from authoritative and non-authoritative sources
-  res = dplyr::bind_rows(res_auth, res_non_auth)
+  # Combine filtered out data from authoritative and non-authoritative sources
   filtered_out = dplyr::bind_rows(filtered_out_auth, filtered_out_non_auth)
 
   # Write results to Excel
