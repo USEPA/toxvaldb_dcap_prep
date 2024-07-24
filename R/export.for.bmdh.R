@@ -42,7 +42,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
   # Updates list: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/BCPCPEST
   pesticide_file = Sys.getenv("pesticide_file")
-  pesticide_dtxsid = readxl::read_xlsx(pesticide_file) %>%
+  pesticide_dtxsid = readxl::read_xls(pesticide_file) %>%
     dplyr::pull(DTXSID) %>%
     unique() %>%
     paste0(., collapse="', '")
