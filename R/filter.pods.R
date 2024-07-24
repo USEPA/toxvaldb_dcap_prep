@@ -188,7 +188,8 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
   non_hashing_cols = c("source_hash", "record_source_info", "critical_effect", "name",
                        "toxval_subtype", "critical_effect_category", "multiple_flag")
   # Add flag fields to non_hashing_cols
-  non_hashing_cols = c(non_hashing_cols, names(res %>% dplyr::select(tidyselect::contains("model")))) %>%
+  model_non_hash_cols = names(res %>% dplyr::select(tidyselect::contains("model")))
+  non_hashing_cols = c(non_hashing_cols, model_non_hash_cols) %>%
     unique()
   hashing_cols = names(res %>% dplyr::select(-dplyr::any_of(!!non_hashing_cols)))
 
@@ -214,15 +215,15 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     dplyr::group_by(source_hash_temp, study_group) %>%
     dplyr::mutate(dplyr::across(dplyr::any_of(!!non_hashing_cols),
                                 # Ensure unique entries in alphabetic order
-                                ~paste0(sort(unique(.[!is.na(.)])), collapse=" |::| ") %>%
+                                ~paste0(sort(unique(.[!is.na(.)])), collapse="|") %>%
                                   dplyr::na_if("NA") %>%
                                   dplyr::na_if("") %>%
                                   dplyr::na_if("-")
     )) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(
-      critical_effect = gsub(" \\|::\\| ", "|", critical_effect),
-      critical_effect_category = gsub(" \\|::\\| ", "|", critical_effect_category),
+      dplyr::across(!dplyr::any_of(c(!!model_non_hash_cols, "critical_effect", "critical_effect_category")),
+                    ~gsub("\\|", " |::| ", .))
     ) %>%
     dplyr::distinct() %>%
     dplyr::select(-source_hash_temp)
