@@ -186,7 +186,9 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
 
   # Perform deduping on identical records with different source_hash values
   non_hashing_cols = c("source_hash", "record_source_info", "critical_effect", "name",
-                       "toxval_subtype", "critical_effect_category", "multiple_flag")
+                       "toxval_subtype", "critical_effect_category", "multiple_flag",
+                       # Temporarily include common_name, strain to handle HPVIS
+                       "common_name", "strain")
   # Add flag fields to non_hashing_cols
   model_non_hash_cols = names(res %>% dplyr::select(tidyselect::contains("model")))
   non_hashing_cols = c(non_hashing_cols, model_non_hash_cols) %>%
@@ -212,18 +214,24 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
 
   # Collapse deduping fields
   res = res %>%
+    dplyr::mutate(
+      # Replace previously set | delimeters to help with deduping
+      dplyr::across(dplyr::any_of(!!non_hashing_cols), ~gsub("\\|", " |::| ", .))
+    ) %>%
     dplyr::group_by(source_hash_temp, study_group) %>%
     dplyr::mutate(dplyr::across(dplyr::any_of(!!non_hashing_cols),
                                 # Ensure unique entries in alphabetic order
-                                ~paste0(sort(unique(.[!is.na(.)])), collapse="|") %>%
+                                ~paste0(sort(unique(.[!is.na(.)])), collapse=" |::| ") %>%
                                   dplyr::na_if("NA") %>%
                                   dplyr::na_if("") %>%
                                   dplyr::na_if("-")
     )) %>%
     dplyr::ungroup() %>%
+    # Replace |::| with | where appropriate
     dplyr::mutate(
-      dplyr::across(!dplyr::any_of(c(!!model_non_hash_cols, "critical_effect", "critical_effect_category")),
-                    ~gsub("\\|", " |::| ", .))
+      critical_effect = gsub(" \\|::\\| ", "|", critical_effect),
+      critical_effect_category = gsub(" \\|::\\| ", "|", critical_effect_category),
+      dplyr::across(!!model_non_hash_cols, ~gsub(" \\|::\\| ", "|", .))
     ) %>%
     dplyr::distinct() %>%
     dplyr::select(-source_hash_temp)
