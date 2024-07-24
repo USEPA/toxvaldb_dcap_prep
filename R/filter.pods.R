@@ -185,9 +185,8 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
   filtered_out = dplyr::bind_rows(filtered_out_auth, filtered_out_non_auth)
 
   # Perform deduping on identical records with different source_hash values
-  non_hashing_cols = c("source_hash", "record_source_info", "critical_effect",
-                       "name", "toxval_subtype", "critical_effect_category",
-                       "common_name", "strain", "multiple_flag")
+  non_hashing_cols = c("source_hash", "record_source_info", "critical_effect", "name",
+                       "toxval_subtype", "critical_effect_category", "multiple_flag")
   # Add flag fields to non_hashing_cols
   non_hashing_cols = c(non_hashing_cols, names(res %>% dplyr::select(tidyselect::contains("model")))) %>%
     unique()
