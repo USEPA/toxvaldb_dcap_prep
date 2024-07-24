@@ -27,8 +27,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
   # Read in initial export data
   dir = paste0("data/results/", run_name, "/")
   file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db,".xlsx")
-  res0 = readxl::read_xlsx(file) %>%
-    dplyr::mutate(key_finding = as.character(NA))
+  res0 = readxl::read_xlsx(file)
 
   # Establish list of authoritative sources
   auth_sources = c(
@@ -46,14 +45,14 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
   res_auth = res0 %>%
     dplyr::filter(
       source %in% auth_sources,
-      grepl("key", key_finding, ignore.case=TRUE)
+      grepl("key|yes", key_finding, ignore.case=TRUE)
     )
 
   # Track filtered out entries (with reason for filtering)
   filtered_out_auth = res0 %>%
     dplyr::filter(
       source %in% auth_sources,
-      !grepl("key", key_finding, ignore.case=TRUE)
+      !grepl("key|yes", key_finding, ignore.case=TRUE)
     ) %>%
     dplyr::mutate(
       reason_for_filtering = "from authoritative source but not key finding"
