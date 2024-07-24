@@ -121,19 +121,6 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     dplyr::ungroup() %>%
     dplyr::group_by(study_group, remove_flag) %>%
     dplyr::mutate(
-      # Get minimum LOAEL/LEL values for comparison
-      low_loael = dplyr::case_when(
-        ttr == "LOAEL" ~ toxval_numeric,
-        TRUE ~ 999
-      ),
-      low_loael = min(low_loael),
-
-      low_lel = dplyr::case_when(
-        ttr == "LEL" ~ toxval_numeric,
-        TRUE ~ 999
-      ),
-      low_lel = min(low_lel),
-
       # Tag each entry in every study_group with filter step it corresponds to
       keep_flag = dplyr::case_when(
         # Tag appropriate number based on priority
@@ -196,6 +183,50 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
 
   # Combine filtered out data from authoritative and non-authoritative sources
   filtered_out = dplyr::bind_rows(filtered_out_auth, filtered_out_non_auth)
+
+  # Perform deduping on identical records with different source_hash values
+  non_hashing_cols = c("source_hash", "record_source_info", "critical_effect",
+                       "name", "toxval_subtype", "critical_effect_category",
+                       "common_name", "strain", "multiple_flag")
+  # Add flag fields to non_hashing_cols
+  non_hashing_cols = c(non_hashing_cols, names(res %>% dplyr::select(tidyselect::contains("model")))) %>%
+    unique()
+  hashing_cols = names(res %>% dplyr::select(-dplyr::any_of(!!non_hashing_cols)))
+
+  # Manually handle LOEL > LEL edge case for ECHA IUCLID_dup_Repeated Dose Toxicity Oral_11183:M/F:--
+  res = res %>%
+    dplyr::mutate(
+      toxval_type = dplyr::case_when(
+        study_group == "ECHA IUCLID_dup_Repeated Dose Toxicity Oral_11183:M/F:--" ~ "LOEL",
+        TRUE ~ toxval_type
+      )
+    )
+
+  # Hash to identify duplicate groups
+  res.temp = res %>%
+    tidyr::unite(hash_col, dplyr::all_of(sort(names(.)[!names(.) %in% non_hashing_cols])), sep="") %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(source_hash_temp = paste0("ToxValhc_", digest::digest(hash_col, serialize = FALSE))) %>%
+    dplyr::ungroup()
+  res$source_hash_temp = res.temp$source_hash_temp
+
+  # Collapse deduping fields
+  res = res %>%
+    dplyr::group_by(source_hash_temp, study_group) %>%
+    dplyr::mutate(dplyr::across(dplyr::any_of(!!non_hashing_cols),
+                                # Ensure unique entries in alphabetic order
+                                ~paste0(sort(unique(.[!is.na(.)])), collapse=" |::| ") %>%
+                                  dplyr::na_if("NA") %>%
+                                  dplyr::na_if("") %>%
+                                  dplyr::na_if("-")
+    )) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(
+      critical_effect = gsub(" \\|::\\| ", "|", critical_effect),
+      critical_effect_category = gsub(" \\|::\\| ", "|", critical_effect_category),
+    ) %>%
+    dplyr::distinct() %>%
+    dplyr::select(-source_hash_temp)
 
   # Write results to Excel
   writexl::write_xlsx(res, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx"))
