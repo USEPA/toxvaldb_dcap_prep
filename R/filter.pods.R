@@ -227,8 +227,15 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
                                   dplyr::na_if("-")
     )) %>%
     dplyr::ungroup() %>%
-    # Replace |::| with | where appropriate
+    dplyr::rowwise() %>%
+    # Create unique list of entries, then collapse
+    dplyr::mutate(dplyr::across(dplyr::any_of(!!non_hashing_cols), ~stringr::str_split(., " \\|::\\| ") %>%
+                                  unlist() %>%
+                                  unique() %>%
+                                  paste0(collapse=" |::| "))) %>%
+    dplyr::ungroup() %>%
     dplyr::mutate(
+      # Replace |::| with | where appropriate
       critical_effect = gsub(" \\|::\\| ", "|", critical_effect),
       critical_effect_category = gsub(" \\|::\\| ", "|", critical_effect_category),
       dplyr::across(!!model_non_hash_cols, ~gsub(" \\|::\\| ", "|", .))
