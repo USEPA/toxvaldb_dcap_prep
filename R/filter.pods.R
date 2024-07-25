@@ -186,9 +186,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
 
   # Perform deduping on identical records with different source_hash values
   non_hashing_cols = c("source_hash", "record_source_info", "critical_effect", "name",
-                       "toxval_subtype", "critical_effect_category", "multiple_flag",
-                       # Temporarily include common_name, strain to handle HPVIS
-                       "common_name", "strain")
+                       "toxval_subtype", "critical_effect_category", "multiple_flag")
   # Add flag fields to non_hashing_cols
   model_non_hash_cols = names(res %>% dplyr::select(tidyselect::contains("model")))
   non_hashing_cols = c(non_hashing_cols, model_non_hash_cols) %>%
