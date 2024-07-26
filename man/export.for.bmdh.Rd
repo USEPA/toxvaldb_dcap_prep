@@ -4,12 +4,18 @@
 \alias{export.for.bmdh}
 \title{export.for.bmdh}
 \usage{
-export.for.bmdh(toxval.db = "res_toxval_v95", include.pesticides = FALSE)
+export.for.bmdh(
+  toxval.db = "res_toxval_v95",
+  include.pesticides = FALSE,
+  run_name = Sys.Date()
+)
 }
 \arguments{
 \item{toxval.db}{Database version}
 
 \item{include.pesticides}{Flag to include pesticides in output or not}
+
+\item{run_name}{The desired name for the output directory (Default: current date)}
 }
 \value{
 Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx

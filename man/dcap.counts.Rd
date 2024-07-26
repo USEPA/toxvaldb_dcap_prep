@@ -4,12 +4,12 @@
 \alias{dcap.counts}
 \title{dcap.counts}
 \usage{
-dcap.counts(toxval.db = "res_toxval_v95", sys.date = Sys.Date())
+dcap.counts(toxval.db = "res_toxval_v95", run_name = Sys.Date())
 }
 \arguments{
 \item{toxval.db}{Database version}
 
-\item{sys.date}{The date of the export}
+\item{run_name}{The desired name for the output directory (Default: current date)}
 }
 \value{
 Write a file with the filtered results:ToxValDB for BMDh filtered {toxval.db} {sys.date}.xlsx

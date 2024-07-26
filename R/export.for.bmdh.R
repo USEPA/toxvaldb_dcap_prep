@@ -384,6 +384,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
         TRUE ~ toxval_type
       ),
       # Set critical_effect_category values for NOAEL/related toxval_type to none
+      # critical_effect_category_original = critical_effect_category,
       critical_effect_category = dplyr::case_when(
         grepl("NO?A?EL", toxval_type) ~ "none",
         TRUE ~ critical_effect_category
@@ -399,32 +400,6 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     ) %>%
     # Drop records with critical_effect_category "cancer"
     dplyr::filter(critical_effect_category_temp != "cancer")
-
-  # Hardcode fix for: "ToxValhc_27c4dcbe97e134ac7969c0c3174fe5cd" species split,
-  #                   "ToxValhc_d88dab473af9973591167f94f8d1086a" common_name/strain
-  info_query = paste0("SELECT species_id, common_name FROM species WHERE common_name IN ('Rat', 'Mouse') ",
-                      "AND genus IN ('Mus', 'Rattus')")
-  species_id_info = runQuery(info_query, toxval.db)
-  hardcode_records = res %>%
-    dplyr::filter(source_hash %in% c("ToxValhc_27c4dcbe97e134ac7969c0c3174fe5cd",
-                                     "ToxValhc_d88dab473af9973591167f94f8d1086a")) %>%
-    tidyr::separate_rows(common_name, sep=" \\|::\\| ") %>%
-    dplyr::mutate(
-      strain = dplyr::case_when(
-        common_name == "Rat" ~ stringr::str_extract(strain, "Rat: (.+);", group=1),
-        common_name == "Mouse" ~ stringr::str_extract(strain, "Mice: (.+)", group=1),
-        TRUE ~ strain
-      )
-    ) %>%
-    dplyr::select(-species_id) %>%
-    dplyr::left_join(species_id_info, by=c("common_name")) %>%
-    dplyr::mutate(species_id = as.character(species_id))
-
-  # Add hardcoded entries back into export data
-  res = res %>%
-    dplyr::filter(!source_hash %in% c("ToxValhc_27c4dcbe97e134ac7969c0c3174fe5cd",
-                                      "ToxValhc_d88dab473af9973591167f94f8d1086a")) %>%
-    dplyr::bind_rows(hardcode_records)
 
   # Get conceptual model by critical_effect_category
   conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res) %>%
