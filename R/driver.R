@@ -3,6 +3,7 @@
 #' @param run_name The desired name for the output directory (Default: current date)
 #' @param run.export Whether to run the export.for.bmdh function (Default: TRUE)
 #' @param include.pesticides Flag to include pesticides in output or not
+#' @param include.drugs Flag to include drugs in output or not
 #' @export
 #' @title driver
 #' @description Run all of the calculations to go from database export to calculation of final BMDh values
@@ -16,13 +17,15 @@
 #' }
 #' @rdname driver
 #-------------------------------------------------------------------------------
-driver <- function(toxval.db="res_toxval_v95", run_name=Sys.Date(), run.export=TRUE, include.pesticides=FALSE) {
+driver <- function(toxval.db="res_toxval_v95", run_name=Sys.Date(), run.export=TRUE,
+                   include.pesticides=FALSE, include.drugs=FALSE) {
   printCurrentFunction()
   if(include.pesticides) run_name = paste0(run_name, "_pesticides")
 
   if(run.export) {
     init.current.run.directory(run_name)
-    export.for.bmdh(toxval.db, run_name=run_name, include.pesticides=include.pesticides)
+    export.for.bmdh(toxval.db, run_name=run_name,
+                    include.pesticides=include.pesticides, include.drugs=include.drugs)
   }
   filter.pods(toxval.db, run_name=run_name)
   filter.summary(toxval.db, run_name=run_name, do.load=TRUE)

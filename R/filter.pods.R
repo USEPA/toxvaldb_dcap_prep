@@ -59,10 +59,28 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     )
 
   cat("Filtering non-authoritative sources\n")
+  # Extract entries with key_finding for non_authoritative sources
+  non_auth_key_findings = res0 %>%
+    dplyr::filter(!source %in% auth_sources,
+                  key_finding %in% c("yes", "key"))
+
+  key_finding_study_groups = non_auth_key_findings %>%
+    dplyr::pull(study_group) %>%
+    unique()
+
+  non_auth_key_findings_filtered = res0 %>%
+    dplyr::filter(study_group %in% key_finding_study_groups,
+                  !key_finding %in% c("yes", "key")) %>%
+    dplyr::mutate(
+      reason_for_filtering = "from non-auth study group that had key_finding"
+    )
+
   # Filter non-authoritative sources
   res_init = res0 %>%
-    dplyr::filter(!source %in% auth_sources) %>%
+    dplyr::filter(!source %in% auth_sources,
+                  !study_group %in% key_finding_study_groups) %>%
     dplyr::bind_rows(res_auth) %>%
+    dplyr::bind_rows(non_auth_key_findings) %>%
     dplyr::mutate(
       # Standardize toxval_type values to "{TYPE} {MODIFIER}"
       tts = dplyr::case_when(
@@ -182,14 +200,16 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
                      "remove_flag", "keep_flag", "selected_row"))
 
   # Combine filtered out data from authoritative and non-authoritative sources
-  filtered_out = dplyr::bind_rows(filtered_out_auth, filtered_out_non_auth)
+  filtered_out = dplyr::bind_rows(filtered_out_auth, filtered_out_non_auth, non_auth_key_findings_filtered)
 
   # Perform deduping on identical records with different source_hash values
   non_hashing_cols = c("source_hash", "record_source_info", "critical_effect", "name",
                        "toxval_subtype", "critical_effect_category", "multiple_flag")
-  # Add flag fields to non_hashing_cols
+  # Add model and record_source fields to non_hashing_cols
+  record_source_cols = runQuery("DESC record_source", toxval.db) %>%
+    dplyr::pull(Field)
   model_non_hash_cols = names(res %>% dplyr::select(tidyselect::contains("model")))
-  non_hashing_cols = c(non_hashing_cols, model_non_hash_cols) %>%
+  non_hashing_cols = c(non_hashing_cols, model_non_hash_cols, record_source_cols) %>%
     unique()
   hashing_cols = names(res %>% dplyr::select(-dplyr::any_of(!!non_hashing_cols)))
 

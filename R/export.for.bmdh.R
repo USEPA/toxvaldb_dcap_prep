@@ -3,6 +3,7 @@
 #' @description Export records required for calculating BMDh values.
 #' @param toxval.db Database version
 #' @param include.pesticides Flag to include pesticides in output or not
+#' @param include.drugs Flag to include drugs in output or not
 #' @param run_name The desired name for the output directory (Default: current date)
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
 #' @details Exports all of the data required for the BMDh calculations.
@@ -28,7 +29,8 @@
 #' @importFrom writexl write_xlsx
 #' @importFrom readxl read_xls
 #-----------------------------------------------------------------------------------
-export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE, run_name=Sys.Date()) {
+export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE,
+                            include.drugs=FALSE, run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
   input_dir = "data/input/"
   output_dir = paste0("data/results/", run_name, "/")
@@ -40,7 +42,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
   # Read in pesticide DTXSID values to exclude
   # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
-  # Updates list: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/BCPCPEST
+  # Updated list: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/BCPCPEST
+  # Current approach combines original and updated lists
   pesticide_file = Sys.getenv("pesticide_file")
   pesticide_dtxsid = readxl::read_xls(pesticide_file) %>%
     dplyr::pull(DTXSID) %>%
@@ -52,6 +55,21 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     pesticide_addition = ""
   } else {
     pesticide_addition = paste0(" and b.dtxsid NOT IN ('", pesticide_dtxsid, "')")
+  }
+
+  # Read in drug DTXSID values to exclude
+  # List of drugs found at: https://comptox.epa.gov/dashboard/chemical-lists/FDAORANGE
+  drug_file = Sys.getenv("drug_file")
+  drug_dtxsid = readxl::read_xlsx(drug_file) %>%
+    dplyr::pull(DTXSID) %>%
+    unique() %>%
+    paste0(., collapse="', '")
+
+  # Set drug addition according to parameter
+  if(include.drugs) {
+    drug_addition = ""
+  } else {
+    drug_addition = paste0(" and b.dtxsid NOT IN ('", drug_dtxsid, "')")
   }
 
   # Get priority values for each specified source
@@ -143,6 +161,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    "and b.toxval_units='mg/kg-day' ",
                    # "and b.exposure_route='oral'",
                    pesticide_addition,
+                   drug_addition,
                    # " and f.priority='", priority, "'",
                    iuclid_addition
     )
