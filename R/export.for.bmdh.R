@@ -445,6 +445,10 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   file = paste0(output_dir,"results/bmdh_export_toxval_type.xlsx")
   writexl::write_xlsx(unique_toxval_type, file)
 
+  # Trim string size to fit Excel character limit
+  res = res %>%
+    dplyr::mutate(dplyr::across(dplyr::where(is.character), ~stringr::str_sub(., 1, 32000)))
+
   # Write full data to file
   file = paste0(output_dir,"results/ToxValDB for BMDh ",toxval.db,".xlsx")
   writexl::write_xlsx(res, file)
