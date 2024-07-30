@@ -159,6 +159,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    # "and b.human_eco='human health' ",
                    "and e.toxval_type_supercategory in ('Dose Response Summary Value') ",
                    "and b.toxval_units='mg/kg-day' ",
+                   "and b.toxval_type NOT LIKE '%TAD%' ",
+                   "and b.toxval_units NOT LIKE '%TAD%' ",
                    # "and b.exposure_route='oral'",
                    pesticide_addition,
                    drug_addition,
