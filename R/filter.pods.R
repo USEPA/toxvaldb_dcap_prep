@@ -157,6 +157,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
         tts == "LEL HED" & toxval_numeric == min_val ~ 13,
         tts == "LEL ADJ" & toxval_numeric == min_val ~ 14,
         tts == "LEL" & toxval_numeric == min_val ~ 15,
+        ttr %in% c("BMDL", "NOAEL", "LOAEL", "NEL", "LEL") & study_type == "reproduction developmental" ~ 16,
         TRUE ~ 999
       ),
 
@@ -181,6 +182,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
         selected_row == 13 ~ "LEL (HED) selected for this group",
         selected_row == 14 ~ "LEL (ADJ) selected for this group",
         selected_row == 15 ~ "LEL selected for this group",
+        selected_row == 16 ~ "reproduction developmental selected for this group",
         TRUE ~ "no selection from this group"
       )
     ) %>%
