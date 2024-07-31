@@ -157,8 +157,12 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
         tts == "LEL HED" & toxval_numeric == min_val ~ 13,
         tts == "LEL ADJ" & toxval_numeric == min_val ~ 14,
         tts == "LEL" & toxval_numeric == min_val ~ 15,
-        ttr %in% c("BMDL", "NOAEL", "LOAEL", "NEL", "LEL") & study_type == "reproduction developmental" ~ 16,
         TRUE ~ 999
+      ),
+
+      repro_dev_fix = dplyr::case_when(
+        ttr %in% c("BMDL", "NOAEL", "LOAEL", "NEL", "LEL") & study_type == "reproduction developmental" ~ 1,
+        TRUE ~ 0
       ),
 
       # Pick row with highest priority
@@ -182,7 +186,6 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
         selected_row == 13 ~ "LEL (HED) selected for this group",
         selected_row == 14 ~ "LEL (ADJ) selected for this group",
         selected_row == 15 ~ "LEL selected for this group",
-        selected_row == 16 ~ "reproduction developmental selected for this group",
         TRUE ~ "no selection from this group"
       )
     ) %>%
@@ -192,8 +195,20 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
   res = res_init %>%
     dplyr::filter(selected_row == keep_flag,
                   remove_flag != 1) %>%
-    dplyr::select(-c("tts", "ttr", "low_loael", "low_lel", "min_val", "max_val",
-                     "remove_flag", "keep_flag", "selected_row", "reason_for_filtering"))
+    # Handle case where repro dev causes multiple selections per study_group
+    dplyr::group_by(study_group) %>%
+    dplyr::mutate(
+      n = dplyr::n(),
+
+      drop = dplyr::case_when(
+        n > 1 & repro_dev_fix == 0 ~ 1,
+        TRUE ~ 0
+      )
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(drop == 0) %>%
+    dplyr::select(-c("tts", "ttr", "low_loael", "low_lel", "min_val", "max_val", "remove_flag",
+                     "keep_flag", "selected_row", "reason_for_filtering", "repro_dev_fix", "n", "drop"))
 
   # Select rows that were filtered out
   filtered_out_non_auth = res_init %>%
