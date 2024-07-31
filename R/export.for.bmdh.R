@@ -154,7 +154,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    "INNER JOIN toxval_type_dictionary e on b.toxval_type=e.toxval_type ",
                    # "INNER JOIN record_source f on b.toxval_id=f.toxval_id ",
                    "WHERE ",
-                   "b.source='", src, "' ",
+                   "b.source LIKE '%", src, "%' ",
                    "and b.qc_status NOT LIKE '%fail%' ",
                    # "and b.human_eco='human health' ",
                    "and e.toxval_type_supercategory in ('Dose Response Summary Value') ",
@@ -325,23 +325,23 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       dplyr::filter(!experimental_record %in% c("no", "No", "not experimental", "Not experimental"))
 
     # Source specific filtering
-    if(src == "ECOTOX") {
+    if(grepl("ECOTOX", src)) {
       # Filter out critical_effect values with "accumulation" if source is ECOTOX
       mat = mat %>%
         dplyr::filter(!grepl("accumulation", critical_effect, ignore.case=TRUE))
-    } else if(src == "ECHA IUCLID") {
+    } else if(grepl("ECHA IUCLID", src)) {
       # Filter out records with quality rating of "3 (not reliable)" for IUCLID
       mat = mat %>%
         dplyr::filter(!grepl('"quality":"3 (not reliable)"', record_source_info, fixed = TRUE))
-    } else if(src == "EFSA"){
+    } else if(grepl("EFSA", src)){
       # Filter out undetermined experimental record for EFSA (concern for surrogate and read-across records)
       mat = mat %>%
         dplyr::filter(!experimental_record %in% c("undetermined", "Undetermined"))
-    } else if(src == "ATSDR MRLs"){
+    } else if(grepl("ATSDR MRLs", src)){
       # Set toxval_subtype = "-" for all "Point of Departure" toxval_type entries
       # At time of this edit, filter was for only "Point of Departure" toxval_type entries
       mat$toxval_subtype = "-"
-    } else if(src == "PFAS 150 SEM v2"){
+    } else if(grepl("PFAS 150 SEM v2", src)){
       # Set toxval_subtype = "-" to remove duplicates due to system vs. study level designations
       mat$toxval_subtype = "-"
     }

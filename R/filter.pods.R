@@ -31,13 +31,13 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
 
   # Establish list of authoritative sources
   auth_sources = c(
-    "ATSDR MRLs",
-    "Cal OEHHA",
-    "EPA HHTV",
-    "Health Canada",
-    "IRIS",
-    "HEAST",
-    "PPRTV (CPHEA)"
+    "ATSDR: ATSDR MRLs",
+    "Cal OEHHA: Cal OEHHA",
+    "EPA HHTV: EPA HHTV",
+    "Health Canada: Health Canada",
+    "EPA IRIS: IRIS",
+    "EPA HEAST: HEAST",
+    "EPA PPRTV: PPRTV (CPHEA)"
   )
   cat("Filtering authoritative sources:", paste0(auth_sources, collapse=", "), "\n")
 
