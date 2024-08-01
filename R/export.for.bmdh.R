@@ -414,11 +414,11 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       toxval_numeric_qualifier = "=",
 
       # Create critical_effect_category field w/o "cancer" for conceptual model mapping
-      critical_effect_category_temp = critical_effect_category,
+      critical_effect_category_temp = critical_effect_category %>%
+        tidyr::replace_na("-"),
       critical_effect_category = critical_effect_category %>%
         gsub("\\|cancer\\|", "|", .) %>%
-        gsub("\\|cancer|cancer\\|", "", .) %>%
-        tidyr::replace_na("-")
+        gsub("\\|cancer|cancer\\|", "", .)
     ) %>%
     # Drop records with critical_effect_category "cancer"
     dplyr::filter(critical_effect_category_temp != "cancer") %>%
