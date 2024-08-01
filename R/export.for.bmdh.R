@@ -35,10 +35,10 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   input_dir = "data/input/"
   output_dir = paste0("data/results/", run_name, "/")
 
-  slist =  c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
-             "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
-             "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
-             "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
+  # slist =  c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
+  #            "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
+  #            "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
+  #            "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
 
   # Read in pesticide DTXSID values to exclude
   # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
@@ -77,7 +77,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   plist[] = 1
   for(i in seq_len(length(slist))) {
     src = slist[i]
-    query = paste0("select distinct priority from record_source where source='",src,"' and long_ref!='-'")
+    query = paste0("select distinct priority from record_source where source LIKE '%",src,"%' and long_ref!='-'")
     vals = runQuery(query,toxval.db)[,1]
     cat(src,paste(vals,collapse="|"),"\n")
     if(length(vals)>0) plist[i] = vals[1]
@@ -96,7 +96,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
     # Handle inclusion of only specified IUCLID OHTs
     iuclid_addition = NULL
-    if(src == "ECHA IUCLID") {
+    if(grepl("ECHA IUCLID", src)) {
       iuclid_addition = paste0(" AND b.source_table in ",
                                "('source_iuclid_repeateddosetoxicityoral', ",
                                "'source_iuclid_developmentaltoxicityteratogenicity', ",
