@@ -27,37 +27,19 @@ filter.summary <- function(toxval.db="res_toxval_v95",run_name=Sys.Date(),do.loa
   if(do.load) {
     file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db,".xlsx")
     print(file)
-    t1 = openxlsx::read.xlsx(file)
+    T1 = openxlsx::read.xlsx(file)
 
-    # Removed Level 2 filter (filter.for.bmdh.R)
-    # file = paste0(dir,"results/ToxValDB for BMDh filtered ",toxval.db," ",sys.date,".xlsx")
-    # print(file)
-    # t2 = openxlsx::read.xlsx(file)
-
-    file = paste0(dir,"results/ToxValDB for BMDh LEL NEL filtered ",toxval.db,".xlsx")
+    file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx")
     print(file)
-    t3 = openxlsx::read.xlsx(file)
-
-    file = paste0(dir,"results/ToxValDB for BMDh LEL NEL multiNOEL filtered ",toxval.db,".xlsx")
-    print(file)
-    t4 = openxlsx::read.xlsx(file)
-    T1 <<- t1
-    # Removed Level 2 filter (filter.for.bmdh.R)
-    # T2 <<- t2
-    T3 <<- t3
-    T4 <<- t4
+    T2 = openxlsx::read.xlsx(file)
   }
 
   chems = unique(T1[,c("dtxsid","casrn","name")])
   chems$sg1 = NA
   chems$sg2 = NA
-  chems$sg3 = NA
-  chems$sg4 = NA
 
   chems$pod1 = NA
-  chems$pod1 = NA
-  chems$pod1 = NA
-  chems$pod1 = NA
+  chems$pod2 = NA
 
   for(i in seq_len(nrow(chems))) {
     dtxsid = chems[i,"dtxsid"]
@@ -65,18 +47,10 @@ filter.summary <- function(toxval.db="res_toxval_v95",run_name=Sys.Date(),do.loa
     chems[i,"sg1"] = length(unique(t1$study_group))
     chems[i,"pod1"] = nrow(t1)
 
-    # Removed Level 2 filter (filter.for.bmdh.R)
-    # t2 = T2[is.element(T2$dtxsid,dtxsid),]
-    # chems[i,"sg2"] = length(unique(t2$study_group))
-    # chems[i,"pod2"] = nrow(t2)
+    t2 = T2[is.element(T2$dtxsid,dtxsid),]
+    chems[i,"sg2"] = length(unique(t2$study_group))
+    chems[i,"pod2"] = nrow(t2)
 
-    t3 = T3[is.element(T3$dtxsid,dtxsid),]
-    chems[i,"sg3"] = length(unique(t3$study_group))
-    chems[i,"pod3"] = nrow(t3)
-
-    t4 = T4[is.element(T4$dtxsid,dtxsid),]
-    chems[i,"sg4"] = length(unique(t4$study_group))
-    chems[i,"pod4"] = nrow(t4)
     if(i%%100==0) cat("finished",i,"out of",nrow(chems),"\n")
   }
 

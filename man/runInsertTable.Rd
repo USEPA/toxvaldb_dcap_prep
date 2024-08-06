@@ -4,7 +4,7 @@
 \alias{runInsertTable}
 \title{runInsertTable}
 \usage{
-runInsertTable(mat, table, db, do.halt = T, verbose = F, get.id = T)
+runInsertTable(mat, table, db, do.halt = TRUE, verbose = FALSE, get.id = TRUE)
 }
 \arguments{
 \item{mat}{data frame containing the data, with the column names corresponding}
@@ -17,10 +17,10 @@ runInsertTable(mat, table, db, do.halt = T, verbose = F, get.id = T)
 
 \item{verbose}{if TRUE, print diagnostic information}
 
-\item{get.id}{PARAM_DESCRIPTION, Default: T}
+\item{get.id}{Whether to return ID or not, Default: T}
 }
 \value{
-None; inserts data into DB
+ID or None
 }
 \description{
 Inserts multiple rows into a database table

@@ -7,7 +7,7 @@
 toxvaldb.statplots(
   to.file = F,
   toxval.db = "res_toxval_v95",
-  sys.date = Sys.Date()
+  run_name = Sys.Date()
 )
 }
 \arguments{
@@ -15,7 +15,7 @@ toxvaldb.statplots(
 
 \item{toxval.db}{Database version}
 
-\item{sys.date}{The date of the database export}
+\item{run_name}{The desired name for the output directory (Default: current date)}
 
 \item{dir}{The directory where the lists are stored}
 }

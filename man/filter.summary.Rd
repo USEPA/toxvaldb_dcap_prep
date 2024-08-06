@@ -4,12 +4,12 @@
 \alias{filter.summary}
 \title{filter.summary}
 \usage{
-\method{filter}{summary}(toxval.db = "res_toxval_v95", sys.date = Sys.Date(), do.load = TRUE)
+\method{filter}{summary}(toxval.db = "res_toxval_v95", run_name = Sys.Date(), do.load = TRUE)
 }
 \arguments{
 \item{toxval.db}{Database version}
 
-\item{sys.date}{The date of the export}
+\item{run_name}{The desired name for the output directory (Default: current date)}
 
 \item{do.load}{Whether to load data from Excel, Default: TRUE}
 }

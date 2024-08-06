@@ -7,7 +7,7 @@
 bmdh.percentile.plot(
   to.file = FALSE,
   toxval.db = "res_toxval_v95",
-  sys.date = Sys.Date(),
+  run_name = Sys.Date(),
   minstudies = 3,
   cutoff.logsd = 2
 )
@@ -17,7 +17,7 @@ bmdh.percentile.plot(
 
 \item{toxval.db}{Database version}
 
-\item{sys.date}{The date of the database export}
+\item{run_name}{The desired name for the output directory (Default: current date)}
 
 \item{minstudies}{- only chemicals with this minimum number of studies will be used in the calculation}
 

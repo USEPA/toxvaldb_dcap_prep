@@ -4,12 +4,12 @@
 \alias{bmdh.per.study}
 \title{bmdh.per.study}
 \usage{
-bmdh.per.study(toxval.db = "res_toxval_v95", sys.date = Sys.Date())
+bmdh.per.study(toxval.db = "res_toxval_v95", run_name = Sys.Date())
 }
 \arguments{
 \item{toxval.db}{Database version}
 
-\item{sys.date}{The date of the database export}
+\item{run_name}{The desired name for the output directory (Default: current date)}
 }
 \value{
 Write a file with the results: toxval_PODs_for_BMDh {toxval.db} {sys.date}.xlsx

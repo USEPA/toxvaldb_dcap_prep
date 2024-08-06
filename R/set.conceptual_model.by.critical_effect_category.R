@@ -24,7 +24,13 @@ get.conceptual_model.by.critical_effect_category <- function(df){
   dir = "data/"
 
   df_dcap <- df %>%
-    dplyr::select(source_hash, study_type, critical_effect_category) %>%
+    dplyr::mutate(
+      piped_critical_effect = dplyr::case_when(
+        grepl("\\|", critical_effect_category_temp) ~ "1",
+        TRUE ~ "0"
+      )
+    ) %>%
+    dplyr::select(source_hash, study_type, critical_effect_category, piped_critical_effect) %>%
     dplyr::mutate(critical_effect_category = fix.replace.unicode(critical_effect_category)) %>%
     dplyr::distinct() %>%
     dplyr::mutate(hash_group = 1:dplyr::n()) %>%
@@ -66,7 +72,8 @@ get.conceptual_model.by.critical_effect_category <- function(df){
     dplyr::mutate(dplyr::across(dplyr::where(is.character), ~tidyr::replace_na(., "-"))) %>%
     # Recollapse category and conceptual models
     dplyr::group_by(source_hash) %>%
-    dplyr::mutate(dplyr::across(dplyr::any_of(names(.)[!names(.) %in% c("source_hash", "study_type", "type")]),
+    dplyr::mutate(dplyr::across(dplyr::any_of(names(.)[!names(.) %in% c("source_hash", "study_type",
+                                                                        "type", "piped_critical_effect")]),
                                 ~paste0(., collapse="|") %>%
                                   dplyr::na_if("NA") %>%
                                   dplyr::na_if("") %>%
@@ -88,11 +95,13 @@ get.conceptual_model.by.critical_effect_category <- function(df){
     ) %>%
     dplyr::mutate(multiple_flag = dplyr::case_when(
       # Add a flag for multiples to use in model2
+      grepl("1", piped_critical_effect) ~ "multiple",
       (grepl("cont", model1_all, ignore.case=TRUE) & grepl("det", model1_all, ignore.case=TRUE)) ~ "multiple",
       (grepl("cont", model1_all, ignore.case=TRUE) & grepl("stoch", model1_all, ignore.case=TRUE)) ~ "multiple",
       (grepl("det", model1_all, ignore.case=TRUE) & grepl("stoch", model1_all, ignore.case=TRUE)) ~ "multiple",
       TRUE ~ NA_character_
     )) %>%
+    dplyr::select(-piped_critical_effect) %>%
     dplyr::mutate(model2 = dplyr::case_when(
       (grepl("det", model2_all, ignore.case=TRUE) & grepl("stoch", model2_all) & type == "repeat dose") ~ "quantal-deterministic",
       (grepl("det", model2_all, ignore.case=TRUE) & grepl("stoch", model2_all) & type == "repro dev") ~ "quantal-stochastic",

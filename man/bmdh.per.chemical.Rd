@@ -6,15 +6,15 @@
 \usage{
 bmdh.per.chemical(
   toxval.db = "res_toxval_v95",
-  sys.date = Sys.Date(),
-  regulatory.sources = c("IRIS", "PPRTV (CPHEA)", "ATSDR MRLs", "EFSA", "Health Canada",
-    "EPA HHTV", "ATSDR PFAS 2021", "Cal OEHHA", "HEAST")
+  run_name = Sys.Date(),
+  regulatory.sources = c("ATSDR MRLs", "Cal OEHHA", "EPA HHTV", "Health Canada", "IRIS",
+    "HEAST", "PPRTV (CPHEA)")
 )
 }
 \arguments{
 \item{toxval.db}{Database version}
 
-\item{sys.date}{The date of the database export}
+\item{run_name}{The desired name for the output directory (Default: current date)}
 
 \item{regulatory.sources}{This is the list of sources that will be used to select the #' optimal quantile to use for selecting the final chemical-level BMDh.}
 }

@@ -4,14 +4,21 @@
 \alias{driver}
 \title{driver}
 \usage{
-driver(toxval.db = "res_toxval_v95", sys.date = Sys.Date(), run.export = TRUE)
+driver(
+  toxval.db = "res_toxval_v95",
+  run_name = Sys.Date(),
+  run.export = TRUE,
+  include.pesticides = FALSE
+)
 }
 \arguments{
 \item{toxval.db}{Database version}
 
-\item{sys.date}{The date of the database export}
+\item{run_name}{The desired name for the output directory (Default: current date)}
 
 \item{run.export}{Whether to run the export.for.bmdh function (Default: TRUE)}
+
+\item{include.pesticides}{Flag to include pesticides in output or not}
 }
 \value{
 None

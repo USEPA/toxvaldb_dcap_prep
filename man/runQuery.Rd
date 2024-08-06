@@ -4,7 +4,7 @@
 \alias{runQuery}
 \title{runQuery}
 \usage{
-runQuery(query, db, do.halt = T, verbose = F)
+runQuery(query = NULL, db, do.halt = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{query}{a properly formatted SQL query as a string}
@@ -16,7 +16,7 @@ runQuery(query, db, do.halt = T, verbose = F)
 \item{verbose}{if TRUE, print diagnostic information}
 }
 \value{
-Result set from query
+Query results
 }
 \description{
 Runs a database query and returns a result set
