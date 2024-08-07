@@ -170,7 +170,11 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
     # Get unique entries using query
     mat = runQuery(query, toxval.db) %>%
-      dplyr::distinct()
+      dplyr::distinct() %>%
+      # Remove specific ECOTOX entry that should be QC failed
+      dplyr::filter(
+        !(grepl("ECOTOX",source) & dtxsid=="DTXSID2024246" & toxval_numeric==7621 & toxval_units=="mg/kg-day")
+      )
 
     # Special source_hash fixes
     hash_specific_changes = readxl::read_xlsx("data/input/dictionary conversions for DCAP.xlsx") %>%
@@ -388,6 +392,33 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
             gsub(" \\|::\\| ", "|", .)
         ) %>%
         dplyr::select(-source_hash_toxval)
+    }
+
+    # Dedup ECOTOX where all values are identical except study_duration (filter out lower duration entries)
+    if(grepl("ECOTOX", src)) {
+      # Get all fields except study_duration and others that arbitrarily differ
+      hash_cols = names(mat)[!names(mat) %in% c("source_hash", "study_duration_value", "study_duration_units",
+                                                "qc_status", "critical_effect", "critical_effect_category",
+                                                "study_group")]
+
+      mat = mat %>%
+        # Get groups of entries that are identical except for study_duration
+        dplyr::group_by_at(hash_cols) %>%
+        # Select entry with maximum study_duration value
+        dplyr::mutate(
+          max_duration = max(study_duration_value),
+
+          keep = dplyr::case_when(
+            study_duration_value == max_duration ~ 1,
+            TRUE ~ 0
+          )
+        ) %>%
+        dplyr::filter(keep == 1) %>%
+        dplyr::select(-c("max_duration", "keep")) %>%
+        # In case of ties, select first alphabetical entry by study_group
+        dplyr::arrange(study_group) %>%
+        dplyr::slice(1) %>%
+        dplyr::ungroup()
     }
 
     # Add current source data to running total
