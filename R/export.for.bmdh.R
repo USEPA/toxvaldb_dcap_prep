@@ -399,7 +399,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       # Get all fields except study_duration and others that arbitrarily differ
       hash_cols = names(mat)[!names(mat) %in% c("source_hash", "study_duration_value", "study_duration_units",
                                                 "qc_status", "critical_effect", "critical_effect_category",
-                                                "study_group")]
+                                                "study_group", "study_duration_class")]
 
       mat = mat %>%
         # Get groups of entries that are identical except for study_duration
