@@ -435,6 +435,19 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res) %>%
     dplyr::select(-study_type, -critical_effect_category)
 
+  # Get grouped_dtxsid information
+  grouped_dtxsid = readxl::read_xlsx(paste0(input_dir, "ToxVal_DTXSIDs_Grouped.xlsx")) %>%
+    dplyr::rename(Grouped_DTXSID = Parent_DTXSID, dtxsid = DTXSID) %>%
+    dplyr::select(-DCAP_INDEX)
+
+  # Map conceptual models and DTXSID group
+  res = res %>%
+    dplyr::left_join(conceptual_model_map,
+                     by = "source_hash") %>%
+    dplyr::select(-critical_effect_category) %>%
+    dplyr::rename(critical_effect_category = critical_effect_category_temp) %>%
+    dplyr::left_join(grouped_dtxsid, by="dtxsid")
+
   # Dedup ECOTOX where all values are identical except study_duration (filter out lower duration entries)
   res_ecotox = res %>%
     dplyr::filter(grepl("ECOTOX", source))
@@ -492,19 +505,6 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   res = res %>%
     dplyr::filter(!grepl("ECOTOX", source)) %>%
     dplyr::bind_rows(ecotox_no_study_type, ecotox_study_type)
-
-  # Get grouped_dtxsid information
-  grouped_dtxsid = readxl::read_xlsx(paste0(input_dir, "ToxVal_DTXSIDs_Grouped.xlsx")) %>%
-    dplyr::rename(Grouped_DTXSID = Parent_DTXSID, dtxsid = DTXSID) %>%
-    dplyr::select(-DCAP_INDEX)
-
-  # Map conceptual models and DTXSID group
-  res = res %>%
-    dplyr::left_join(conceptual_model_map,
-                     by = "source_hash") %>%
-    dplyr::select(-critical_effect_category) %>%
-    dplyr::rename(critical_effect_category = critical_effect_category_temp) %>%
-    dplyr::left_join(grouped_dtxsid, by="dtxsid")
 
   cat("Exporting results...\n")
   # Write unique toxval_type values included in full data
