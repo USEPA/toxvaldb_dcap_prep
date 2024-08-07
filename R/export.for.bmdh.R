@@ -394,33 +394,6 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
         dplyr::select(-source_hash_toxval)
     }
 
-    # Dedup ECOTOX where all values are identical except study_duration (filter out lower duration entries)
-    if(grepl("ECOTOX", src)) {
-      # Get all fields except study_duration and others that arbitrarily differ
-      hash_cols = names(mat)[!names(mat) %in% c("source_hash", "study_duration_value", "study_duration_units",
-                                                "qc_status", "critical_effect", "critical_effect_category",
-                                                "study_group", "study_duration_class")]
-
-      mat = mat %>%
-        # Get groups of entries that are identical except for study_duration
-        dplyr::group_by_at(hash_cols) %>%
-        # Select entry with maximum study_duration value
-        dplyr::mutate(
-          max_duration = max(study_duration_value),
-
-          keep = dplyr::case_when(
-            study_duration_value == max_duration ~ 1,
-            TRUE ~ 0
-          )
-        ) %>%
-        dplyr::filter(keep == 1) %>%
-        dplyr::select(-c("max_duration", "keep")) %>%
-        # In case of ties, select first alphabetical entry by study_group
-        dplyr::arrange(study_group) %>%
-        dplyr::slice(1) %>%
-        dplyr::ungroup()
-    }
-
     # Add current source data to running total
     res = res %>%
       dplyr::bind_rows(mat %>%
@@ -461,6 +434,64 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
   # Get conceptual model by critical_effect_category
   conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res) %>%
     dplyr::select(-study_type, -critical_effect_category)
+
+  # Dedup ECOTOX where all values are identical except study_duration (filter out lower duration entries)
+  res_ecotox = res %>%
+    dplyr::filter(grepl("ECOTOX", source))
+
+  # Get all fields except study_duration and others that arbitrarily differ
+  eco_hash_cols = names(mat)[!names(mat) %in% c("source_hash", "study_duration_value", "study_duration_units",
+                                                "qc_status", "critical_effect", "critical_effect_category",
+                                                "study_group", "study_duration_class")]
+  # Ignore study_type for repeat dose and repro dev entries
+  eco_hash_cols_type = c(eco_hash_cols, "type", "study_type")
+
+  # Perform deduping on entries that are not repeat dose/repro dev
+  ecotox_no_study_type = res_ecotox %>%
+    dplyr::filter(!type %in% c("repeat dose", "repro dev")) %>%
+    # Get groups of entries that are identical except for study_duration
+    dplyr::group_by_at(eco_hash_cols) %>%
+    # Select entry with maximum study_duration value
+    dplyr::mutate(
+      max_duration = max(study_duration_value),
+
+      keep = dplyr::case_when(
+        study_duration_value == max_duration ~ 1,
+        TRUE ~ 0
+      )
+    ) %>%
+    dplyr::filter(keep == 1) %>%
+    dplyr::select(-c("max_duration", "keep")) %>%
+    # In case of ties, select first alphabetical entry by study_group
+    dplyr::arrange(study_group) %>%
+    dplyr::slice(1) %>%
+    dplyr::ungroup()
+
+  # Perform deduping on entries that are repeat dose/repro dev
+  ecotox_study_type = res_ecotox %>%
+    dplyr::filter(type %in% c("repeat dose", "repro dev")) %>%
+    # Get groups of entries that are identical except for study_duration/study_type
+    dplyr::group_by_at(eco_hash_cols_type) %>%
+    # Select entry with maximum study_duration value
+    dplyr::mutate(
+      max_duration = max(study_duration_value),
+
+      keep = dplyr::case_when(
+        study_duration_value == max_duration ~ 1,
+        TRUE ~ 0
+      )
+    ) %>%
+    dplyr::filter(keep == 1) %>%
+    dplyr::select(-c("max_duration", "keep")) %>%
+    # In case of ties, select first alphabetical entry by study_group
+    dplyr::arrange(study_group) %>%
+    dplyr::slice(1) %>%
+    dplyr::ungroup()
+
+  # Add filtered ECOTOX data back to res
+  res = res %>%
+    dplyr::filter(!grepl("ECOTOX", source)) %>%
+    dplyr::bind_rows(ecotox_no_study_type, ecotox_study_type)
 
   # Get grouped_dtxsid information
   grouped_dtxsid = readxl::read_xlsx(paste0(input_dir, "ToxVal_DTXSIDs_Grouped.xlsx")) %>%
