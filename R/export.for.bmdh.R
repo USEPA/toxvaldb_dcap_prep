@@ -287,18 +287,18 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       dplyr::filter(study_type %in% !!stlist) %>%
       # Keep only short-term entries with duration of at least 14 days
       dplyr::mutate(
-        keep = dplyr::case_when(
-          study_type != "short-term" ~ 1,
-          grepl("minute", study_duration_units) & study_duration_value >= 20160 ~ 1,
-          grepl("hour", study_duration_units) & study_duration_value >= 336 ~ 1,
-          grepl("day", study_duration_units) & study_duration_value >= 14 ~ 1,
-          grepl("week", study_duration_units) & study_duration_value >= 2 ~ 1,
-          grepl("month", study_duration_units) & study_duration_value >= 0.5 ~ 1,
-          grepl("year", study_duration_units) & study_duration_value >= 0.038356 ~ 1,
-          TRUE ~ 0
+        keep_short_term = dplyr::case_when(
+          study_type != "short-term" ~ "1",
+          grepl("minute", study_duration_units) & (study_duration_value >= 20160) ~ "1",
+          grepl("hour", study_duration_units) & (study_duration_value >= 336) ~ "1",
+          grepl("day", study_duration_units) & (study_duration_value >= 14) ~ "1",
+          grepl("week", study_duration_units) & (study_duration_value >= 2) ~ "1",
+          grepl("month", study_duration_units) & (study_duration_value >= 0.5) ~ "1",
+          grepl("year", study_duration_units) & (study_duration_value >= 0.038356) ~ "1",
+          TRUE ~ "0"
         )
       ) %>%
-      dplyr::filter(keep == 1)
+      dplyr::filter(keep_short_term == "1")
 
     cat("[3]",src,":",nrow(mat),"\n")
 
