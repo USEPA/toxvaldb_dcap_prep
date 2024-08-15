@@ -283,21 +283,22 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     )
 
     mat = mat %>%
+      # Remove entries with invalid study_types
+      dplyr::filter(study_type %in% !!stlist) %>%
+      # Keep only short-term entries with duration of at least 14 days
       dplyr::mutate(
-        # Add short-term study_type for entries with duration at least 14 days
-        study_type = dplyr::case_when(
-          grepl("minute", study_duration_units) & study_duration_value >= 20160 ~ "short-term",
-          grepl("hour", study_duration_units) & study_duration_value >= 336 ~ "short-term",
-          grepl("day", study_duration_units) & study_duration_value >= 14 ~ "short-term",
-          grepl("week", study_duration_units) & study_duration_value >= 2 ~ "short-term",
-          grepl("month", study_duration_units) & study_duration_value >= 0.5 ~ "short-term",
-          grepl("year", study_duration_units) & study_duration_value >= 0.038356 ~ "short-term",
-          TRUE ~ study_type
-
+        keep = dplyr::case_when(
+          study_type != "short-term" ~ 1,
+          grepl("minute", study_duration_units) & study_duration_value >= 20160 ~ 1,
+          grepl("hour", study_duration_units) & study_duration_value >= 336 ~ 1,
+          grepl("day", study_duration_units) & study_duration_value >= 14 ~ 1,
+          grepl("week", study_duration_units) & study_duration_value >= 2 ~ 1,
+          grepl("month", study_duration_units) & study_duration_value >= 0.5 ~ 1,
+          grepl("year", study_duration_units) & study_duration_value >= 0.038356 ~ 1,
+          TRUE ~ 0
         )
       ) %>%
-      # Remove entries with invalid study_types
-      dplyr::filter(study_type %in% !!stlist)
+      dplyr::filter(keep == 1)
 
     cat("[3]",src,":",nrow(mat),"\n")
 
