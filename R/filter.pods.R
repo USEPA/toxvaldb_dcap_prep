@@ -297,7 +297,9 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
       )
     ) %>%
     # Recombine rows
-    toxval.source.import.dedup(dedup_fields=dedup_fields, hashing_cols=hashing_fields)
+    toxval.source.import.dedup(dedup_fields=dedup_fields, hashing_cols=hashing_fields) %>%
+    # Remove key_finding field from output
+    dplyr::select(-key_finding)
 
   # Write results to Excel
   writexl::write_xlsx(res, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx"))
