@@ -221,7 +221,8 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
 
   # Perform deduping on identical records with different source_hash values
   non_hashing_cols = c("source_hash", "record_source_info", "critical_effect", "name",
-                       "toxval_subtype", "critical_effect_category", "multiple_flag")
+                       "toxval_subtype", "critical_effect_category", "multiple_flag",
+                       "critical_effect_category_original")
   # Add model and record_source fields to non_hashing_cols
   record_source_cols = runQuery("DESC record_source", toxval.db) %>%
     dplyr::pull(Field)
@@ -273,6 +274,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
       # Replace |::| with | where appropriate
       critical_effect = gsub(" \\|::\\| ", "|", critical_effect),
       critical_effect_category = gsub(" \\|::\\| ", "|", critical_effect_category),
+      critical_effect_category_original = gsub(" \\|::\\| ", "|", critical_effect_category_original),
       dplyr::across(!!model_non_hash_cols, ~gsub(" \\|::\\| ", "|", .))
     ) %>%
     dplyr::distinct() %>%
@@ -287,7 +289,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     # Use rules to assign correct duration_adjustment
     dplyr::mutate(
       duration_adjustment = dplyr::case_when(
-        study_type == "developmental" | grepl("development", critical_effect_category) ~ "developmental",
+        study_type == "developmental" | grepl("development", critical_effect_category_original) ~ "developmental",
         study_type == "reproduction developmental" & !is.na(study_duration_class) ~ study_duration_class %>%
           gsub("\\(.+", "", .) %>%
           stringr::str_squish(),

@@ -423,7 +423,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
         TRUE ~ toxval_type
       ),
       # Set critical_effect_category values for NOAEL/related toxval_type to none
-      # critical_effect_category_original = critical_effect_category,
+      critical_effect_category_original = critical_effect_category,
       critical_effect_category = dplyr::case_when(
         grepl("NO?A?EL", toxval_type) ~ "none",
         TRUE ~ critical_effect_category
