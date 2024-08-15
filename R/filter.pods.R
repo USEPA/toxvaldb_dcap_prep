@@ -278,6 +278,20 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     dplyr::distinct() %>%
     dplyr::select(-source_hash_temp)
 
+  # Add duration_adjustment field to POD filtered output
+  res = res %>%
+    dplyr::mutate(
+      duration_adjustment = dplyr::case_when(
+        study_type == "developmental" | grepl("development", critical_effect_category) ~ "developmental",
+        study_type == "reproduction developmental" & !is.na(study_duration_class) ~ study_duration_class %>%
+          gsub("\\(.+", "", .) %>%
+          stringr::str_squish(),
+        study_type == "reproduction developmental" & study_duration_value %in% c(-999, NA) ~ "subchronic",
+        study_type %in% c("short-term", "subchronic", "chronic") ~ "study_type",
+        TRUE ~ as.character(NA)
+      )
+    )
+
   # Write results to Excel
   writexl::write_xlsx(res, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx"))
   writexl::write_xlsx(filtered_out, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," removed entries.xlsx"))
