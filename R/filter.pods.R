@@ -279,7 +279,12 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     dplyr::select(-source_hash_temp)
 
   # Add duration_adjustment field to POD filtered output
+  dedup_fields = c("study_type", "duration_adjustment")
+  hashing_fields = names(res)[!names(res) %in% dedup_fields]
   res = res %>%
+    # Temporarily separate study_types to get unique duration_adjustment assignment
+    tidyr::separate_rows(study_type, sep=" \\|::\\| ") %>%
+    # Use rules to assign correct duration_adjustment
     dplyr::mutate(
       duration_adjustment = dplyr::case_when(
         study_type == "developmental" | grepl("development", critical_effect_category) ~ "developmental",
@@ -287,10 +292,12 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
           gsub("\\(.+", "", .) %>%
           stringr::str_squish(),
         study_type == "reproduction developmental" & study_duration_value %in% c(-999, NA) ~ "subchronic",
-        study_type %in% c("short-term", "subchronic", "chronic") ~ "study_type",
+        study_type %in% c("short-term", "subchronic", "chronic") ~ study_type,
         TRUE ~ as.character(NA)
       )
-    )
+    ) %>%
+    # Recombine rows
+    toxval.source.import.dedup(dedup_fields=dedup_fields, hashing_cols=hashing_fields)
 
   # Write results to Excel
   writexl::write_xlsx(res, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx"))

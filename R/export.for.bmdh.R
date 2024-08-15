@@ -153,7 +153,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    "INNER JOIN source_chemical a on a.chemical_id=b.chemical_id ",
                    "LEFT JOIN species d on b.species_id=d.species_id ",
                    "INNER JOIN toxval_type_dictionary e on b.toxval_type=e.toxval_type ",
-                   "INNER JOIN record_source f on b.toxval_id=f.toxval_id ",
+                   "LEFT JOIN record_source f on b.toxval_id=f.toxval_id ",
                    "WHERE ",
                    "b.source LIKE '%", src, "%' ",
                    "and b.qc_status NOT LIKE '%fail%' ",
