@@ -25,13 +25,13 @@
 #' @importFrom stats sd quantile
 #-------------------------------------------------------------------------------
 bmdh.per.chemical <- function(toxval.db="res_toxval_v95",run_name=Sys.Date(),
-                              regulatory.sources=c("ATSDR: ATSDR MRLs",
-                                                   "Cal OEHHA: Cal OEHHA",
-                                                   "EPA HHTV: EPA HHTV",
-                                                   "Health Canada: Health Canada",
-                                                   "EPA IRIS: IRIS",
-                                                   "EPA HEAST: HEAST",
-                                                   "EPA PPRTV: PPRTV (CPHEA)")) {
+                              regulatory.sources=c("ATSDR MRLs",
+                                                   "Cal OEHHA",
+                                                   "EPA HHTV",
+                                                   "Health Canada",
+                                                   "IRIS",
+                                                   "HEAST",
+                                                   "PPRTV (CPHEA)")) {
   printCurrentFunction()
   dir = paste0("data/results/", run_name, "/")
 
