@@ -273,17 +273,28 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     # Initialize list of study_type values to include
     stlist = c(
       "subchronic",
-      "28-day",
       "chronic",
       "repeat dose other",
       "developmental",
-      "reproduction",
       "reproduction developmental",
-      "clinical"
+      "clinical",
+      "short-term"
     )
 
-    # Remove entries with invalid study_types
     mat = mat %>%
+      dplyr::mutate(
+        # Add short-term study_type for entries with duration at least 14 days
+        study_type = dplyr::case_when(
+          grepl("minute", study_duration_units) & study_duration_value >= 20160 ~ "short-term",
+          grepl("hour", study_duration_units) & study_duration_value >= 336 ~ "short-term",
+          grepl("day", study_duration_units) & study_duration_value >= 14 ~ "short-term",
+          grepl("month", study_duration_units) & study_duration_value >= 0.5 ~ "short-term",
+          grepl("year", study_duration_units) & study_duration_value >= 0.038356 ~ "short-term",
+          TRUE ~ study_type
+
+        )
+      ) %>%
+      # Remove entries with invalid study_types
       dplyr::filter(study_type %in% !!stlist)
 
     cat("[3]",src,":",nrow(mat),"\n")
