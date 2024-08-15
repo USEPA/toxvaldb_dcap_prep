@@ -288,6 +288,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
           grepl("minute", study_duration_units) & study_duration_value >= 20160 ~ "short-term",
           grepl("hour", study_duration_units) & study_duration_value >= 336 ~ "short-term",
           grepl("day", study_duration_units) & study_duration_value >= 14 ~ "short-term",
+          grepl("week", study_duration_units) & study_duration_value >= 2 ~ "short-term",
           grepl("month", study_duration_units) & study_duration_value >= 0.5 ~ "short-term",
           grepl("year", study_duration_units) & study_duration_value >= 0.038356 ~ "short-term",
           TRUE ~ study_type
