@@ -30,7 +30,7 @@
 #' @importFrom readxl read_xls
 #-----------------------------------------------------------------------------------
 export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE,
-                            include.drugs=FALSE, run_name=Sys.Date()) {
+                            include.drugs=FALSE, include.epa_dws=FALSE, run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
   input_dir = "data/input/"
   output_dir = paste0("data/results/", run_name, "/")
@@ -70,6 +70,22 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     drug_addition = ""
   } else {
     drug_addition = paste0(" and b.dtxsid NOT IN ('", drug_dtxsid, "')")
+  }
+
+  # Read in EPA drinking water standards chemical list
+  # List found at: https://comptox.epa.gov/dashboard/chemical-lists/EPADWS
+
+  epa_dws_file = Sys.getenv("epa_dws_file")
+  epa_dws_dtxsid = readxl::read_xlsx(epa_dws_file) %>%
+    dplyr::pull(DTXSID) %>%
+    unique() %>%
+    paste0(., collapse="', '")
+
+  # Set epa_dws addition according to parameter
+  if(include.epa_dws) {
+    epa_dws_addition = ""
+  } else {
+    epa_dws_addition = paste0(" and b.dtxsid NOT IN ('", epa_dws_dtxsid, "')")
   }
 
   # Get priority values for each specified source
