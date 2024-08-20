@@ -31,27 +31,37 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
 
   # Establish list of authoritative sources
   auth_sources = c(
-    "ATSDR MRLs",
-    "Cal OEHHA",
-    "EPA HHTV",
-    "Health Canada",
-    "IRIS",
-    "HEAST",
-    "PPRTV (CPHEA)"
+    # "ATSDR MRLs"
+    "source_atsdr_mrls",
+    #"Cal OEHHA",
+    "source_caloehha",
+    #"EPA HHTV",
+    "source_epa_hhtv",
+    #"Health Canada",
+    "source_health_canada",
+    #"IRIS",
+    "source_iris",
+    #"HEAST",
+    "source_heast",
+    #"PPRTV (CPHEA)"
+    "source_pprtv_cphea"
   )
-  cat("Filtering authoritative sources:", paste0(auth_sources, collapse=", "), "\n")
+
+  cat("Filtering authoritative sources:\n", paste0("- ", sort(unique(res0$source[res0$source_table %in% auth_sources])),
+                                                   collapse="\n "),
+      "\n")
 
   # Get key_finding PODs from authoritative sources
   res_auth = res0 %>%
     dplyr::filter(
-      source %in% auth_sources,
+      source_table %in% auth_sources,
       grepl("key|yes", key_finding, ignore.case=TRUE)
     )
 
   # Track filtered out entries (with reason for filtering)
   filtered_out_auth = res0 %>%
     dplyr::filter(
-      source %in% auth_sources,
+      source_table %in% auth_sources,
       !grepl("key|yes", key_finding, ignore.case=TRUE)
     ) %>%
     dplyr::mutate(
@@ -61,7 +71,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
   cat("Filtering non-authoritative sources\n")
   # Extract entries with key_finding for non_authoritative sources
   non_auth_key_findings = res0 %>%
-    dplyr::filter(!source %in% auth_sources,
+    dplyr::filter(!source_table %in% auth_sources,
                   key_finding %in% c("yes", "key"))
 
   key_finding_study_groups = non_auth_key_findings %>%
@@ -77,7 +87,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
 
   # Filter non-authoritative sources
   res_init = res0 %>%
-    dplyr::filter(!source %in% auth_sources,
+    dplyr::filter(!source_table %in% auth_sources,
                   !study_group %in% key_finding_study_groups) %>%
     dplyr::bind_rows(res_auth) %>%
     dplyr::bind_rows(non_auth_key_findings) %>%

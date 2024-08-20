@@ -39,6 +39,12 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
              "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
              "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
              "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
+  # sources by supersource name
+  slist = c(
+    "ATSDR", "EPA HAWC", "Cal OEHHA", "Copper Manufacturers", "ECHA IUCLID", "EPA ECOTOX",
+    "EFSA OpenFoodTox", "EPA HHTV", "Health Canada", "EPA HEAST", "NITE HESS", "EPA HPVIS",
+    "EPA IRIS", "NTP PFAS", "EPA PPRTV", "EPA ToxRefDB", "WHO JECFA"
+  )
 
   # Read in pesticide DTXSID values to exclude
   # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
@@ -98,7 +104,9 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     cat(src,paste(vals,collapse="|"),"\n")
     if(length(vals)>0) plist[i] = vals[1]
     else {
-      if(src %in% c("HEAST", "HESS", "ECHA IUCLID")) plist[i] = 1
+      if(src %in% c("HEAST", "EPA HEAST",
+                    "HESS", "NITE HESS",
+                    "ECHA IUCLID")) plist[i] = 1
     }
   }
 
@@ -126,6 +134,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    "b.toxval_id, ",
                    "a.dtxsid, a.casrn, a.name, ",
                    "b.source, ",
+                   "b.source_table, ",
                    "b.toxval_type, ",
                    "b.toxval_subtype, ",
                    "b.toxval_numeric_qualifier, ",
@@ -371,13 +380,15 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       # Filter out undetermined experimental record for EFSA (concern for surrogate and read-across records)
       mat = mat %>%
         dplyr::filter(!experimental_record %in% c("undetermined", "Undetermined"))
-    } else if(grepl("ATSDR MRLs", src)){
+    } else if(grepl("ATSDR", src)){
+      # Specific to ATSDR MRLs
       # Set toxval_subtype = "-" for all "Point of Departure" toxval_type entries
       # At time of this edit, filter was for only "Point of Departure" toxval_type entries
-      mat$toxval_subtype = "-"
-    } else if(grepl("PFAS 150 SEM v2", src)){
+      mat$toxval_subtype[mat$source_table == "source_atsdr_mrls"] = "-"
+    } else if(grepl("PFAS 150 SEM v2", src) | src == "EPA HAWC"){
+      # Specific to PFAS 150 SEM v2
       # Set toxval_subtype = "-" to remove duplicates due to system vs. study level designations
-      mat$toxval_subtype = "-"
+      mat$toxval_subtype[mat$source_table == "source_pfas_150_sem_v2"] = "-"
     }
 
     cat("[4]",src,":",nrow(mat),"\n\n")
@@ -478,63 +489,66 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     dplyr::rename(critical_effect_category = critical_effect_category_temp) %>%
     dplyr::left_join(grouped_dtxsid, by="dtxsid")
 
-  # Dedup ECOTOX where all values are identical except study_duration (filter out lower duration entries)
-  res_ecotox = res %>%
-    dplyr::filter(grepl("ECOTOX", source))
+  # ECOTOX specific filtering
+  if(any(grepl("ECOTOX", res$source))){
+    # Dedup ECOTOX where all values are identical except study_duration (filter out lower duration entries)
+    res_ecotox = res %>%
+      dplyr::filter(grepl("ECOTOX", source))
 
-  # Get all fields except study_duration and others that arbitrarily differ
-  eco_hash_cols = names(mat)[!names(mat) %in% c("source_hash", "study_duration_value", "study_duration_units",
-                                                "qc_status", "critical_effect", "critical_effect_category",
-                                                "study_group", "study_duration_class")]
-  # Ignore study_type for repeat dose and repro dev entries
-  eco_hash_cols_type = c(eco_hash_cols, "type", "study_type")
+    # Get all fields except study_duration and others that arbitrarily differ
+    eco_hash_cols = names(mat)[!names(mat) %in% c("source_hash", "study_duration_value", "study_duration_units",
+                                                  "qc_status", "critical_effect", "critical_effect_category",
+                                                  "study_group", "study_duration_class")]
+    # Ignore study_type for repeat dose and repro dev entries
+    eco_hash_cols_type = c(eco_hash_cols, "type", "study_type")
 
-  # Perform deduping on entries that are not repeat dose/repro dev
-  ecotox_no_study_type = res_ecotox %>%
-    dplyr::filter(!type %in% c("repeat dose", "repro dev")) %>%
-    # Get groups of entries that are identical except for study_duration
-    dplyr::group_by_at(eco_hash_cols) %>%
-    # Select entry with maximum study_duration value
-    dplyr::mutate(
-      max_duration = max(study_duration_value),
+    # Perform deduping on entries that are not repeat dose/repro dev
+    ecotox_no_study_type = res_ecotox %>%
+      dplyr::filter(!type %in% c("repeat dose", "repro dev")) %>%
+      # Get groups of entries that are identical except for study_duration
+      dplyr::group_by_at(eco_hash_cols) %>%
+      # Select entry with maximum study_duration value
+      dplyr::mutate(
+        max_duration = max(study_duration_value),
 
-      keep = dplyr::case_when(
-        study_duration_value == max_duration ~ 1,
-        TRUE ~ 0
-      )
-    ) %>%
-    dplyr::filter(keep == 1) %>%
-    dplyr::select(-c("max_duration", "keep")) %>%
-    # In case of ties, select first alphabetical entry by study_group
-    dplyr::arrange(study_group) %>%
-    dplyr::slice(1) %>%
-    dplyr::ungroup()
+        keep = dplyr::case_when(
+          study_duration_value == max_duration ~ 1,
+          TRUE ~ 0
+        )
+      ) %>%
+      dplyr::filter(keep == 1) %>%
+      dplyr::select(-c("max_duration", "keep")) %>%
+      # In case of ties, select first alphabetical entry by study_group
+      dplyr::arrange(study_group) %>%
+      dplyr::slice(1) %>%
+      dplyr::ungroup()
 
-  # Perform deduping on entries that are repeat dose/repro dev
-  ecotox_study_type = res_ecotox %>%
-    dplyr::filter(type %in% c("repeat dose", "repro dev")) %>%
-    # Get groups of entries that are identical except for study_duration/study_type
-    dplyr::group_by_at(eco_hash_cols_type) %>%
-    # Select entry with maximum study_duration value
-    dplyr::mutate(
-      max_duration = max(study_duration_value),
+    # Perform deduping on entries that are repeat dose/repro dev
+    ecotox_study_type = res_ecotox %>%
+      dplyr::filter(type %in% c("repeat dose", "repro dev")) %>%
+      # Get groups of entries that are identical except for study_duration/study_type
+      dplyr::group_by_at(eco_hash_cols_type) %>%
+      # Select entry with maximum study_duration value
+      dplyr::mutate(
+        max_duration = max(study_duration_value),
 
-      keep = dplyr::case_when(
-        study_duration_value == max_duration ~ 1,
-        TRUE ~ 0
-      )
-    ) %>%
-    dplyr::filter(keep == 1) %>%
-    dplyr::select(-c("max_duration", "keep")) %>%
-    # In case of ties, select first alphabetical entry by study_group
-    dplyr::arrange(study_group) %>%
-    dplyr::slice(1) %>%
-    dplyr::ungroup()
+        keep = dplyr::case_when(
+          study_duration_value == max_duration ~ 1,
+          TRUE ~ 0
+        )
+      ) %>%
+      dplyr::filter(keep == 1) %>%
+      dplyr::select(-c("max_duration", "keep")) %>%
+      # In case of ties, select first alphabetical entry by study_group
+      dplyr::arrange(study_group) %>%
+      dplyr::slice(1) %>%
+      dplyr::ungroup()
 
-  # Add filtered ECOTOX data back to res
-  res = res %>%
-    dplyr::filter(!grepl("ECOTOX", source)) %>%
-    dplyr::bind_rows(ecotox_no_study_type, ecotox_study_type)
+    # Add filtered ECOTOX data back to res
+    res = res %>%
+      dplyr::filter(!grepl("ECOTOX", source)) %>%
+      dplyr::bind_rows(ecotox_no_study_type, ecotox_study_type)
+  }
 
   cat("Exporting results...\n")
   # Write unique toxval_type values included in full data

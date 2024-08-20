@@ -25,13 +25,23 @@
 #' @importFrom stats sd quantile
 #-------------------------------------------------------------------------------
 bmdh.per.chemical <- function(toxval.db="res_toxval_v95",run_name=Sys.Date(),
-                              regulatory.sources=c("ATSDR MRLs",
-                                                   "Cal OEHHA",
-                                                   "EPA HHTV",
-                                                   "Health Canada",
-                                                   "IRIS",
-                                                   "HEAST",
-                                                   "PPRTV (CPHEA)")) {
+                              regulatory.sources=c(
+                                # "ATSDR MRLs"
+                                "source_atsdr_mrls",
+                                #"Cal OEHHA",
+                                "source_caloehha",
+                                #"EPA HHTV",
+                                "source_epa_hhtv",
+                                #"Health Canada",
+                                "source_health_canada",
+                                #"IRIS",
+                                "source_iris",
+                                #"HEAST",
+                                "source_heast",
+                                #"PPRTV (CPHEA)"
+                                "source_pprtv_cphea"
+                              )
+) {
   printCurrentFunction()
   dir = paste0("data/results/", run_name, "/")
 
@@ -42,7 +52,7 @@ bmdh.per.chemical <- function(toxval.db="res_toxval_v95",run_name=Sys.Date(),
   res = unique(mat[,c("dtxsid","casrn","name")])
   res$casrn = NA
   res$name = NA
-  res = unique(res)
+  res = distinct(res)
   res = res[!is.na(res$dtxsid),]
   rownames(res) = res$dtxsid
 
@@ -65,7 +75,7 @@ bmdh.per.chemical <- function(toxval.db="res_toxval_v95",run_name=Sys.Date(),
 
   for(i in seq_len(nrow(res))) {
     dtxsid = res[i,"dtxsid"]
-    temp0 = mat[is.element(mat$dtxsid,dtxsid),c("dtxsid","casrn","name","bmdh","study_group","source","common_name")]
+    temp0 = mat[is.element(mat$dtxsid,dtxsid),c("dtxsid","casrn","name","bmdh","study_group","source","source_table","common_name")]
     temp = NULL
 
     #---------------------------------------------------------------------------
@@ -82,8 +92,8 @@ bmdh.per.chemical <- function(toxval.db="res_toxval_v95",run_name=Sys.Date(),
     res[i,"name"] = temp[1,"name"]
     res[i,"casrn"] = temp[1,"casrn"]
 
-    temp1 =  temp[is.element(temp$source,regulatory.sources),]
-     if(nrow(temp1)>0) {
+    temp1 =  temp[temp$source_table %in% regulatory.sources,]
+    if(nrow(temp1)>0) {
       temp1 = temp1[order(temp1$bmdh),]
       res[i,"pod_hra"] = temp1[1,"bmdh"]
       temp1 = temp1[temp1$bmdh<=temp1[1,"bmdh"],]
@@ -122,5 +132,5 @@ bmdh.per.chemical <- function(toxval.db="res_toxval_v95",run_name=Sys.Date(),
   }
   sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
   file = paste0(dir,"results/ToxValDB BMDh per chemical ",toxval.db,".xlsx")
-  openxlsx::write.xlsx(res,file,firstRow=T,headerStyle=sty)
+  openxlsx::write.xlsx(res,file,firstRow=TRUE,headerStyle=sty)
 }
