@@ -18,15 +18,18 @@
 #' @rdname driver
 #-------------------------------------------------------------------------------
 driver <- function(toxval.db="res_toxval_v95", run_name=Sys.Date(), run.export=TRUE,
-                   include.pesticides=FALSE, include.drugs=FALSE) {
+                   include.pesticides=FALSE, include.drugs=FALSE, include.epa_dws=FALSE) {
   printCurrentFunction()
   if(include.pesticides) run_name = paste0(run_name, "_pesticides")
   if(include.drugs) run_name = paste0(run_name, "_drugs")
 
   if(run.export) {
     init.current.run.directory(run_name)
-    export.for.bmdh(toxval.db, run_name=run_name,
-                    include.pesticides=include.pesticides, include.drugs=include.drugs)
+    export.for.bmdh(toxval.db,
+                    run_name=run_name,
+                    include.pesticides=include.pesticides,
+                    include.drugs=include.drugs,
+                    include.epa_dws=include.epa_dws)
   }
   filter.pods(toxval.db, run_name=run_name)
   filter.summary(toxval.db, run_name=run_name, do.load=TRUE)

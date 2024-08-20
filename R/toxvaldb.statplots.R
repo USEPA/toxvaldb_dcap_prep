@@ -29,7 +29,7 @@
 #' @importFrom gridExtra grid.arrange
 #' @importFrom grDevices dev.off
 #-------------------------------------------------------------------------------
-toxvaldb.statplots <- function(to.file=F,toxval.db="res_toxval_v95",run_name=Sys.Date()) {
+toxvaldb.statplots <- function(to.file=FALSE,toxval.db="res_toxval_v95",run_name=Sys.Date()) {
   printCurrentFunction()
   dir = paste0("data/results/", run_name, "/")
   file = paste0(dir,"results/ToxValDB summary stats ",toxval.db,".xlsx")
@@ -100,7 +100,7 @@ toxvaldb.statplots <- function(to.file=F,toxval.db="res_toxval_v95",run_name=Sys
                    plot.margin = ggplot2::margin(t=5,r=20,b=5,l=20),
                    legend.text = ggplot2::element_text(size=12),
                    legend.title = ggplot2::element_text(size=12),
-                   strip.background = ggplot2::element_rect(color="black", fill="white", size=0.1, linetype="solid"),
+                   strip.background = ggplot2::element_rect(color="black", fill="white", linewidth=0.1, linetype="solid"),
                    strip.text = ggplot2::element_text( size = 6))
 
   p = gridExtra::grid.arrange(p1,p2,nrow=2)

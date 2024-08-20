@@ -31,27 +31,37 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
 
   # Establish list of authoritative sources
   auth_sources = c(
-    "ATSDR: ATSDR MRLs",
-    "Cal OEHHA: Cal OEHHA",
-    "EPA HHTV: EPA HHTV",
-    "Health Canada: Health Canada",
-    "EPA IRIS: IRIS",
-    "EPA HEAST: HEAST",
-    "EPA PPRTV: PPRTV (CPHEA)"
+    # "ATSDR MRLs"
+    "source_atsdr_mrls",
+    #"Cal OEHHA",
+    "source_caloehha",
+    #"EPA HHTV",
+    "source_epa_hhtv",
+    #"Health Canada",
+    "source_health_canada",
+    #"IRIS",
+    "source_iris",
+    #"HEAST",
+    "source_heast",
+    #"PPRTV (CPHEA)"
+    "source_pprtv_cphea"
   )
-  cat("Filtering authoritative sources:", paste0(auth_sources, collapse=", "), "\n")
+
+  cat("Filtering authoritative sources:\n", paste0("- ", sort(unique(res0$source[res0$source_table %in% auth_sources])),
+                                                   collapse="\n "),
+      "\n")
 
   # Get key_finding PODs from authoritative sources
   res_auth = res0 %>%
     dplyr::filter(
-      source %in% auth_sources,
+      source_table %in% auth_sources,
       grepl("key|yes", key_finding, ignore.case=TRUE)
     )
 
   # Track filtered out entries (with reason for filtering)
   filtered_out_auth = res0 %>%
     dplyr::filter(
-      source %in% auth_sources,
+      source_table %in% auth_sources,
       !grepl("key|yes", key_finding, ignore.case=TRUE)
     ) %>%
     dplyr::mutate(
@@ -61,7 +71,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
   cat("Filtering non-authoritative sources\n")
   # Extract entries with key_finding for non_authoritative sources
   non_auth_key_findings = res0 %>%
-    dplyr::filter(!source %in% auth_sources,
+    dplyr::filter(!source_table %in% auth_sources,
                   key_finding %in% c("yes", "key"))
 
   key_finding_study_groups = non_auth_key_findings %>%
@@ -77,7 +87,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
 
   # Filter non-authoritative sources
   res_init = res0 %>%
-    dplyr::filter(!source %in% auth_sources,
+    dplyr::filter(!source_table %in% auth_sources,
                   !study_group %in% key_finding_study_groups) %>%
     dplyr::bind_rows(res_auth) %>%
     dplyr::bind_rows(non_auth_key_findings) %>%
@@ -221,7 +231,8 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
 
   # Perform deduping on identical records with different source_hash values
   non_hashing_cols = c("source_hash", "record_source_info", "critical_effect", "name",
-                       "toxval_subtype", "critical_effect_category", "multiple_flag")
+                       "toxval_subtype", "critical_effect_category", "multiple_flag",
+                       "critical_effect_category_original")
   # Add model and record_source fields to non_hashing_cols
   record_source_cols = runQuery("DESC record_source", toxval.db) %>%
     dplyr::pull(Field)
@@ -273,10 +284,34 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
       # Replace |::| with | where appropriate
       critical_effect = gsub(" \\|::\\| ", "|", critical_effect),
       critical_effect_category = gsub(" \\|::\\| ", "|", critical_effect_category),
+      critical_effect_category_original = gsub(" \\|::\\| ", "|", critical_effect_category_original),
       dplyr::across(!!model_non_hash_cols, ~gsub(" \\|::\\| ", "|", .))
     ) %>%
     dplyr::distinct() %>%
     dplyr::select(-source_hash_temp)
+
+  # Add duration_adjustment field to POD filtered output
+  dedup_fields = c("study_type", "duration_adjustment")
+  hashing_fields = names(res)[!names(res) %in% dedup_fields]
+  res = res %>%
+    # Temporarily separate study_types to get unique duration_adjustment assignment
+    tidyr::separate_rows(study_type, sep=" \\|::\\| ") %>%
+    # Use rules to assign correct duration_adjustment
+    dplyr::mutate(
+      duration_adjustment = dplyr::case_when(
+        study_type == "developmental" | grepl("development", critical_effect_category_original) ~ "developmental",
+        study_type == "reproduction developmental" & !is.na(study_duration_class) ~ study_duration_class %>%
+          gsub("\\(.+", "", .) %>%
+          stringr::str_squish(),
+        study_type == "reproduction developmental" & study_duration_value %in% c(-999, NA) ~ "subchronic",
+        study_type %in% c("short-term", "subchronic", "chronic") ~ study_type,
+        TRUE ~ as.character(NA)
+      )
+    ) %>%
+    # Recombine rows
+    toxval.source.import.dedup(dedup_fields=dedup_fields, hashing_cols=hashing_fields) %>%
+    # Remove key_finding field from output
+    dplyr::select(-key_finding)
 
   # Write results to Excel
   writexl::write_xlsx(res, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx"))

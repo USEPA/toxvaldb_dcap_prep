@@ -20,7 +20,7 @@
 #' @rdname filter.summary
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
-filter.summary <- function(toxval.db="res_toxval_v95",run_name=Sys.Date(),do.load=TRUE) {
+filter.summary <- function(toxval.db="res_toxval_v95", run_name=Sys.Date(), do.load=TRUE) {
   printCurrentFunction(toxval.db)
   dir = paste0("data/results/", run_name, "/")
 

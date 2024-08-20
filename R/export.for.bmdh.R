@@ -30,7 +30,7 @@
 #' @importFrom readxl read_xls
 #-----------------------------------------------------------------------------------
 export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE,
-                            include.drugs=FALSE, run_name=Sys.Date()) {
+                            include.drugs=FALSE, include.epa_dws=FALSE, run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
   input_dir = "data/input/"
   output_dir = paste0("data/results/", run_name, "/")
@@ -39,6 +39,12 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
              "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
              "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
              "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
+  # sources by supersource name
+  slist = c(
+    "ATSDR", "EPA HAWC", "Cal OEHHA", "Copper Manufacturers", "ECHA IUCLID", "EPA ECOTOX",
+    "EFSA OpenFoodTox", "EPA HHTV", "Health Canada", "EPA HEAST", "NITE HESS", "EPA HPVIS",
+    "EPA IRIS", "NTP PFAS", "EPA PPRTV", "EPA ToxRefDB", "WHO JECFA"
+  )
 
   # Read in pesticide DTXSID values to exclude
   # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
@@ -72,6 +78,22 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     drug_addition = paste0(" and b.dtxsid NOT IN ('", drug_dtxsid, "')")
   }
 
+  # Read in EPA drinking water standards chemical list
+  # List found at: https://comptox.epa.gov/dashboard/chemical-lists/EPADWS
+
+  epa_dws_file = Sys.getenv("epa_dws_file")
+  epa_dws_dtxsid = readxl::read_xlsx(epa_dws_file) %>%
+    dplyr::pull(DTXSID) %>%
+    unique() %>%
+    paste0(., collapse="', '")
+
+  # Set epa_dws addition according to parameter
+  if(include.epa_dws) {
+    epa_dws_addition = ""
+  } else {
+    epa_dws_addition = paste0(" and b.dtxsid NOT IN ('", epa_dws_dtxsid, "')")
+  }
+
   # Get priority values for each specified source
   plist = vector(mode="integer",length=length(slist))
   plist[] = 1
@@ -82,7 +104,9 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     cat(src,paste(vals,collapse="|"),"\n")
     if(length(vals)>0) plist[i] = vals[1]
     else {
-      if(src %in% c("HEAST", "HESS", "ECHA IUCLID")) plist[i] = 1
+      if(src %in% c("HEAST", "EPA HEAST",
+                    "HESS", "NITE HESS",
+                    "ECHA IUCLID")) plist[i] = 1
     }
   }
 
@@ -110,6 +134,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    "b.toxval_id, ",
                    "a.dtxsid, a.casrn, a.name, ",
                    "b.source, ",
+                   "b.source_table, ",
                    "b.toxval_type, ",
                    "b.toxval_subtype, ",
                    "b.toxval_numeric_qualifier, ",
@@ -120,6 +145,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    "b.study_duration_units, ",
                    "b.study_duration_class, ",
                    "b.supersource, ",
+                   "b.subsource_url, ",
                    "d.common_name, ",
                    "b.species_original, ",
                    "b.strain, ",
@@ -139,11 +165,11 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    # "f.record_source_level, ",
                    # "f.record_source_type, ",
                    # "f.priority, ",
-                   # "f.clowder_doc_id, ",
+                   "f.clowder_doc_id, ",
                    # "f.quality, ",
                    "b.source_hash, ",
                    "b.study_group, ",
-                   "b.qc_status, ",
+                   "b.qc_category, ",
                    "b.experimental_record, ",
                    "b.key_finding, ",
                    "a.cleaned_casrn, a.cleaned_name ",
@@ -152,7 +178,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    "INNER JOIN source_chemical a on a.chemical_id=b.chemical_id ",
                    "LEFT JOIN species d on b.species_id=d.species_id ",
                    "INNER JOIN toxval_type_dictionary e on b.toxval_type=e.toxval_type ",
-                   # "INNER JOIN record_source f on b.toxval_id=f.toxval_id ",
+                   "LEFT JOIN record_source f on b.toxval_id=f.toxval_id ",
                    "WHERE ",
                    "b.source LIKE '%", src, "%' ",
                    "and b.qc_status NOT LIKE '%fail%' ",
@@ -170,7 +196,11 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
     # Get unique entries using query
     mat = runQuery(query, toxval.db) %>%
-      dplyr::distinct()
+      dplyr::distinct() %>%
+      # Remove specific ECOTOX entry that should be QC failed
+      dplyr::filter(
+        !(grepl("ECOTOX",source) & dtxsid=="DTXSID2024246" & toxval_numeric==7621 & toxval_units=="mg/kg-day")
+      )
 
     # Special source_hash fixes
     hash_specific_changes = readxl::read_xlsx("data/input/dictionary conversions for DCAP.xlsx") %>%
@@ -269,18 +299,31 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     # Initialize list of study_type values to include
     stlist = c(
       "subchronic",
-      "28-day",
       "chronic",
       "repeat dose other",
       "developmental",
-      "reproduction",
       "reproduction developmental",
-      "clinical"
+      "clinical",
+      "short-term"
     )
 
-    # Remove entries with invalid study_types
     mat = mat %>%
-      dplyr::filter(study_type %in% !!stlist)
+      # Remove entries with invalid study_types
+      dplyr::filter(study_type %in% !!stlist) %>%
+      # Keep only short-term entries with duration of at least 14 days
+      dplyr::mutate(
+        keep_short_term = dplyr::case_when(
+          study_type != "short-term" ~ "1",
+          grepl("minute", study_duration_units) & (study_duration_value >= 20160) ~ "1",
+          grepl("hour", study_duration_units) & (study_duration_value >= 336) ~ "1",
+          grepl("day", study_duration_units) & (study_duration_value >= 14) ~ "1",
+          grepl("week", study_duration_units) & (study_duration_value >= 2) ~ "1",
+          grepl("month", study_duration_units) & (study_duration_value >= 0.5) ~ "1",
+          grepl("year", study_duration_units) & (study_duration_value >= 0.038356) ~ "1",
+          TRUE ~ "0"
+        )
+      ) %>%
+      dplyr::filter(keep_short_term == "1")
 
     cat("[3]",src,":",nrow(mat),"\n")
 
@@ -337,13 +380,15 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       # Filter out undetermined experimental record for EFSA (concern for surrogate and read-across records)
       mat = mat %>%
         dplyr::filter(!experimental_record %in% c("undetermined", "Undetermined"))
-    } else if(grepl("ATSDR MRLs", src)){
+    } else if(grepl("ATSDR", src)){
+      # Specific to ATSDR MRLs
       # Set toxval_subtype = "-" for all "Point of Departure" toxval_type entries
       # At time of this edit, filter was for only "Point of Departure" toxval_type entries
-      mat$toxval_subtype = "-"
-    } else if(grepl("PFAS 150 SEM v2", src)){
+      mat$toxval_subtype[mat$source_table == "source_atsdr_mrls"] = "-"
+    } else if(grepl("PFAS 150 SEM v2", src) | src == "EPA HAWC"){
+      # Specific to PFAS 150 SEM v2
       # Set toxval_subtype = "-" to remove duplicates due to system vs. study level designations
-      mat$toxval_subtype = "-"
+      mat$toxval_subtype[mat$source_table == "source_pfas_150_sem_v2"] = "-"
     }
 
     cat("[4]",src,":",nrow(mat),"\n\n")
@@ -405,7 +450,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
         TRUE ~ toxval_type
       ),
       # Set critical_effect_category values for NOAEL/related toxval_type to none
-      # critical_effect_category_original = critical_effect_category,
+      critical_effect_category_original = critical_effect_category,
       critical_effect_category = dplyr::case_when(
         grepl("NO?A?EL", toxval_type) ~ "none",
         TRUE ~ critical_effect_category
@@ -443,6 +488,67 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     dplyr::select(-critical_effect_category) %>%
     dplyr::rename(critical_effect_category = critical_effect_category_temp) %>%
     dplyr::left_join(grouped_dtxsid, by="dtxsid")
+
+  # ECOTOX specific filtering
+  if(any(grepl("ECOTOX", res$source))){
+    # Dedup ECOTOX where all values are identical except study_duration (filter out lower duration entries)
+    res_ecotox = res %>%
+      dplyr::filter(grepl("ECOTOX", source))
+
+    # Get all fields except study_duration and others that arbitrarily differ
+    eco_hash_cols = names(mat)[!names(mat) %in% c("source_hash", "study_duration_value", "study_duration_units",
+                                                  "qc_status", "critical_effect", "critical_effect_category",
+                                                  "study_group", "study_duration_class")]
+    # Ignore study_type for repeat dose and repro dev entries
+    eco_hash_cols_type = c(eco_hash_cols, "type", "study_type")
+
+    # Perform deduping on entries that are not repeat dose/repro dev
+    ecotox_no_study_type = res_ecotox %>%
+      dplyr::filter(!type %in% c("repeat dose", "repro dev")) %>%
+      # Get groups of entries that are identical except for study_duration
+      dplyr::group_by_at(eco_hash_cols) %>%
+      # Select entry with maximum study_duration value
+      dplyr::mutate(
+        max_duration = max(study_duration_value),
+
+        keep = dplyr::case_when(
+          study_duration_value == max_duration ~ 1,
+          TRUE ~ 0
+        )
+      ) %>%
+      dplyr::filter(keep == 1) %>%
+      dplyr::select(-c("max_duration", "keep")) %>%
+      # In case of ties, select first alphabetical entry by study_group
+      dplyr::arrange(study_group) %>%
+      dplyr::slice(1) %>%
+      dplyr::ungroup()
+
+    # Perform deduping on entries that are repeat dose/repro dev
+    ecotox_study_type = res_ecotox %>%
+      dplyr::filter(type %in% c("repeat dose", "repro dev")) %>%
+      # Get groups of entries that are identical except for study_duration/study_type
+      dplyr::group_by_at(eco_hash_cols_type) %>%
+      # Select entry with maximum study_duration value
+      dplyr::mutate(
+        max_duration = max(study_duration_value),
+
+        keep = dplyr::case_when(
+          study_duration_value == max_duration ~ 1,
+          TRUE ~ 0
+        )
+      ) %>%
+      dplyr::filter(keep == 1) %>%
+      dplyr::select(-c("max_duration", "keep")) %>%
+      # In case of ties, select first alphabetical entry by study_group
+      dplyr::arrange(study_group) %>%
+      dplyr::slice(1) %>%
+      dplyr::ungroup()
+
+    # Add filtered ECOTOX data back to res
+    res = res %>%
+      dplyr::filter(!grepl("ECOTOX", source)) %>%
+      dplyr::bind_rows(ecotox_no_study_type, ecotox_study_type)
+  }
 
   cat("Exporting results...\n")
   # Write unique toxval_type values included in full data

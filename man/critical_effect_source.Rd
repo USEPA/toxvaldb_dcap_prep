@@ -4,11 +4,7 @@
 \alias{critical_effect_source}
 \title{critical_effect_source}
 \usage{
-critical_effect_source(
-  toxval.db = "res_toxval_v95",
-  user = "_dataminer",
-  password = "pass"
-)
+critical_effect_source(toxval.db = "res_toxval_v95", user, password)
 }
 \arguments{
 \item{toxval.db}{Database version}

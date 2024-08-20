@@ -6,7 +6,7 @@ library(openxlsx)
 #-------------------------------------------------------------------------------
 pod.rule.explorer <- function(toxval.db="res_toxval_v95",sys.date="2023-10-24") {
   printCurrentFunction()
-  setDBConn(user="_dataminer",password="pass")
+  setDBConn(user=user,password=password)
   dir = "data/input/pods/"
   if(!exists("TOXVAL")) {
     cat("read in ToxValDB data\n")

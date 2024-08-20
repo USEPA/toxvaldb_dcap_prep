@@ -17,7 +17,7 @@ library(digest)
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
 #' @export
 #-----------------------------------------------------------------------------------
-export.for.bmdh <- function(toxval.db="res_toxval_v95",user="_dataminer",password="pass") {
+export.for.bmdh <- function(toxval.db="res_toxval_v95",user, password) {
   toxvaldbBMDh::printCurrentFunction(toxval.db)
   dir = "data/"
   toxvaldbBMDh::setDBConn(user=user,password=password)

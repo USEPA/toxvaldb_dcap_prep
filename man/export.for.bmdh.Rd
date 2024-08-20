@@ -7,6 +7,8 @@
 export.for.bmdh(
   toxval.db = "res_toxval_v95",
   include.pesticides = FALSE,
+  include.drugs = FALSE,
+  include.epa_dws = FALSE,
   run_name = Sys.Date()
 )
 }
@@ -14,6 +16,8 @@ export.for.bmdh(
 \item{toxval.db}{Database version}
 
 \item{include.pesticides}{Flag to include pesticides in output or not}
+
+\item{include.drugs}{Flag to include drugs in output or not}
 
 \item{run_name}{The desired name for the output directory (Default: current date)}
 }
