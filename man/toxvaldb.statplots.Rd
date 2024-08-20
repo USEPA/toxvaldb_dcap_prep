@@ -5,7 +5,7 @@
 \title{toxvaldb.statplots}
 \usage{
 toxvaldb.statplots(
-  to.file = F,
+  to.file = FALSE,
   toxval.db = "res_toxval_v95",
   run_name = Sys.Date()
 )

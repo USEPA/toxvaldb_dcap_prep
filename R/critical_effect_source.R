@@ -2,23 +2,23 @@
 #' @param toxval.db Database version
 #' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
-#' @export 
+#' @export
 #' @title critical_effect_source
 #' @description Find the source for odd critical effect chunks.
 #' @return Writes output to file
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname critical_effect_source
 #' @importFrom openxlsx read.xlsx write.xlsx
 #-----------------------------------------------------------------------------------
-critical_effect_source <- function(toxval.db="res_toxval_v95",user="_dataminer",password="pass") {
+critical_effect_source <- function(toxval.db="res_toxval_v95",user, password) {
   printCurrentFunction(toxval.db)
   dir = "data/critical_effects/"
   setDBConn(user=user,password=password)

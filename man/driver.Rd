@@ -8,7 +8,9 @@ driver(
   toxval.db = "res_toxval_v95",
   run_name = Sys.Date(),
   run.export = TRUE,
-  include.pesticides = FALSE
+  include.pesticides = FALSE,
+  include.drugs = FALSE,
+  include.epa_dws = FALSE
 )
 }
 \arguments{
@@ -19,6 +21,8 @@ driver(
 \item{run.export}{Whether to run the export.for.bmdh function (Default: TRUE)}
 
 \item{include.pesticides}{Flag to include pesticides in output or not}
+
+\item{include.drugs}{Flag to include drugs in output or not}
 }
 \value{
 None

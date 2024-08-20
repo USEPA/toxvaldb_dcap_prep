@@ -4,7 +4,7 @@
 \alias{toxval.redundancies}
 \title{toxval.redundancies}
 \usage{
-toxval.redundancies(toxval.db = "res_toxval_v95", user = "rjudson", password)
+toxval.redundancies(toxval.db = "res_toxval_v95", user, password)
 }
 \arguments{
 \item{toxval.db}{Database version}
