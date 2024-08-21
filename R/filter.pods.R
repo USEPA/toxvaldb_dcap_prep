@@ -27,7 +27,8 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
   # Read in initial export data
   dir = paste0("data/results/", run_name, "/")
   file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db,".xlsx")
-  res0 = readxl::read_xlsx(file)
+  res0 = readxl::read_xlsx(file) %>%
+    dplyr::mutate(dplyr::across(dplyr::where(is.character), ~tidyr::replace_na(., "-")))
 
   # Establish list of authoritative sources
   auth_sources = c(
