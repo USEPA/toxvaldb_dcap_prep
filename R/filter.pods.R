@@ -307,12 +307,15 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
         study_type == "reproduction developmental" & study_duration_value %in% c(-999, NA) ~ "subchronic",
         study_type %in% c("short-term", "subchronic", "chronic") ~ study_type,
         TRUE ~ as.character(NA)
-      )
+      ),
+      # toxval.source.import.dedup removes the locally generated source_hash, so preserve here
+      source_hash_old = source_hash
     ) %>%
     # Recombine rows
     toxval.source.import.dedup(dedup_fields=dedup_fields, hashing_cols=hashing_fields) %>%
     # Remove key_finding field from output
-    dplyr::select(-key_finding)
+    dplyr::select(-key_finding) %>%
+    dplyr::rename(source_hash = source_hash_old)
 
   # Write results to Excel
   writexl::write_xlsx(res, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx"))

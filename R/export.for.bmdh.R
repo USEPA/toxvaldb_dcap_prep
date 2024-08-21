@@ -444,6 +444,15 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
   res = res %>%
     dplyr::mutate(
+      experimental_record = dplyr::case_when(
+        # Hard-code experimental record change for select source_hash values
+        source_hash %in% c(
+          "ToxValhc_299a0fc3ac8d080494ab57ddd9fc591d", "ToxValhc_13afb685d768ebc7bd84cc6ac9fb14f2",
+          "ToxValhc_14a2b9d4adabf1e116bd40853c481504", "ToxValhc_e42ae724eb6a28bcef618ba41e92291c",
+          "ToxValhc_88f7cb5d118b846f6a37512b2e3b5164", "ToxValhc_91438f0c9c23a417c38d78ff4d553618"
+        ) ~ "not experimental",
+        TRUE ~ experimental_record
+      ),
       # Convert "<" N(OA)EL to L(OA)EL
       toxval_type = dplyr::case_when(
         grepl("NO?A?EL", toxval_type) & toxval_numeric_qualifier %in% c("<") ~ gsub("^N", "L", toxval_type),
@@ -467,6 +476,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     ) %>%
     # Drop records with critical_effect_category "cancer"
     dplyr::filter(critical_effect_category_temp != "cancer") %>%
+    # Remove non-experimental records
+    dplyr::filter(!experimental_record %in% c("no", "No", "not experimental", "Not experimental")) %>%
     dplyr::mutate(
       critical_effect_category_temp = critical_effect_category_temp %>%
         dplyr::na_if("-")
