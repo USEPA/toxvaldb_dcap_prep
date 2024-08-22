@@ -48,6 +48,7 @@ get.conceptual_model.by.critical_effect_category <- function(df){
       grepl("28-day", study_type, ignore.case=TRUE) ~ "repeat dose",
       grepl("clinical", study_type, ignore.case=TRUE) ~ "repeat dose",
       grepl("repeat dose other", study_type, ignore.case=TRUE) ~ "repeat dose",
+      grepl("short-term", study_type, ignore.case=TRUE) ~ "repeat dose",
       study_type=="developmental"~"repro dev",
       study_type=="reproduction"~"repro dev",
       study_type=="reproduction developmental"~"repro dev",
@@ -126,7 +127,7 @@ get.conceptual_model.by.critical_effect_category <- function(df){
     dplyr::mutate(source_hash = paste0(source_hash, collapse=",")) %>%
     dplyr::ungroup() %>%
     dplyr::distinct() %>%
-    dplyr::select(-hash_group)
+    dplyr::select(-dplyr::any_of(c("hash_group", "multiple_flag", "model1", "model2", "model1_all", "model2_all")))
 
   return(final)
 }

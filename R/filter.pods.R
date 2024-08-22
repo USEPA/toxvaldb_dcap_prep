@@ -300,12 +300,13 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     # Use rules to assign correct duration_adjustment
     dplyr::mutate(
       duration_adjustment = dplyr::case_when(
-        study_type == "developmental" | grepl("development", critical_effect_category_original) ~ "developmental",
-        study_type == "reproduction developmental" & !is.na(study_duration_class) ~ study_duration_class %>%
+        study_type %in% c("short-term", "subchronic", "chronic", "developmental") ~ study_type,
+        study_type %in% c("clinical", "repeat dose other") ~ "subchronic",
+
+        study_type == "reproduction developmental" & study_duration_class %in% c(NA, "-") ~ "subchronic",
+        study_type == "reproduction developmental" ~ study_duration_class %>%
           gsub("\\(.+", "", .) %>%
           stringr::str_squish(),
-        study_type == "reproduction developmental" & study_duration_value %in% c(-999, NA) ~ "subchronic",
-        study_type %in% c("short-term", "subchronic", "chronic") ~ study_type,
         TRUE ~ as.character(NA)
       ),
       # toxval.source.import.dedup removes the locally generated source_hash, so preserve here

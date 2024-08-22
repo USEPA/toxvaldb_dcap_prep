@@ -146,6 +146,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    "b.study_duration_class, ",
                    "b.supersource, ",
                    "b.subsource_url, ",
+                   "f.clowder_doc_id, ",
                    "d.common_name, ",
                    "b.species_original, ",
                    "b.strain, ",
@@ -165,7 +166,6 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    # "f.record_source_level, ",
                    # "f.record_source_type, ",
                    # "f.priority, ",
-                   "f.clowder_doc_id, ",
                    # "f.quality, ",
                    "b.source_hash, ",
                    "b.study_group, ",
@@ -323,7 +323,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
           TRUE ~ "0"
         )
       ) %>%
-      dplyr::filter(keep_short_term == "1")
+      dplyr::filter(keep_short_term == "1") %>%
+      dplyr::select(-keep_short_term)
 
     cat("[3]",src,":",nrow(mat),"\n")
 
@@ -354,11 +355,11 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
           TRUE ~ name
         ),
 
-        # Add toxval_numeric_hed flag field
-        toxval_numeric_hed = dplyr::case_when(
-          grepl("HED", toxval_type) ~ 1,
-          TRUE ~ 0
-        )
+        # # Add toxval_numeric_hed flag field
+        # toxval_numeric_hed = dplyr::case_when(
+        #   grepl("HED", toxval_type) ~ 1,
+        #   TRUE ~ 0
+        # )
       ) %>%
       # Keep only entries with specified common_name
       dplyr::filter(common_name %in% c("Rat", "Mouse", "Dog", "Rabbit", "Human")) %>%
@@ -399,7 +400,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                                     paste0(mat$source_hash, collapse = "', '")
                                     ,"') ",
                                     # Remove select terms
-                                    "and term not in ('none')"),
+                                    "and term not in ('none') and critical_effect_category not in ('cancer')"),
                              toxval.db) %>%
       dplyr::group_by(source_hash) %>%
       dplyr::mutate(critical_effect_category = paste0(unique(critical_effect_category[!is.na(critical_effect_category)]),
@@ -438,8 +439,9 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     # Add current source data to running total
     res = res %>%
       dplyr::bind_rows(mat %>%
-                         dplyr::mutate(across(c("study_duration_value",
-                                                "toxval_numeric_hed"), ~as.numeric(.))))
+                         dplyr::mutate(across(c("study_duration_value"#,
+                                                #"toxval_numeric_hed"
+                                                ), ~as.numeric(.))))
   }
 
   res = res %>%
