@@ -22,6 +22,7 @@ driver <- function(toxval.db="res_toxval_v95", run_name=Sys.Date(), run.export=T
   printCurrentFunction()
   if(include.pesticides) run_name = paste0(run_name, "_pesticides")
   if(include.drugs) run_name = paste0(run_name, "_drugs")
+  if(include.epa_dws) run_name = paste0(run_name, "_epa_dws")
 
   if(run.export) {
     init.current.run.directory(run_name)

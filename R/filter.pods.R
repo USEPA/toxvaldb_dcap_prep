@@ -300,7 +300,9 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     # Use rules to assign correct duration_adjustment
     dplyr::mutate(
       duration_adjustment = dplyr::case_when(
-        study_type %in% c("short-term", "subchronic", "chronic", "developmental") ~ study_type,
+        grepl("development|reproduction", critical_effect_category_original) ~ "no adjustment",
+        study_type == "developmental" ~ "no adjustment",
+        study_type %in% c("short-term", "subchronic", "chronic") ~ study_type,
         study_type %in% c("clinical", "repeat dose other") ~ "subchronic",
 
         study_type == "reproduction developmental" & study_duration_class %in% c(NA, "-") ~ "subchronic",

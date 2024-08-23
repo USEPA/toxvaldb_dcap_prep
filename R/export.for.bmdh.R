@@ -355,11 +355,11 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
           TRUE ~ name
         ),
 
-        # # Add toxval_numeric_hed flag field
-        # toxval_numeric_hed = dplyr::case_when(
-        #   grepl("HED", toxval_type) ~ 1,
-        #   TRUE ~ 0
-        # )
+        # Add toxval_numeric_hed flag field
+        toxval_numeric_hed = dplyr::case_when(
+          grepl("HED", toxval_type) ~ 1,
+          TRUE ~ 0
+        )
       ) %>%
       # Keep only entries with specified common_name
       dplyr::filter(common_name %in% c("Rat", "Mouse", "Dog", "Rabbit", "Human")) %>%
@@ -395,13 +395,62 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     cat("[4]",src,":",nrow(mat),"\n\n")
 
     # Map critical_effect_category
-    crit_cat_map <- runQuery(paste0("SELECT source_hash, critical_effect_category FROM critical_effect_terms ",
+    crit_cat_map <- runQuery(paste0("SELECT source_hash, critical_effect_category, ",
+                                    "CONCAT(source_hash, '_', term) as crit_key ",
+                                    "FROM critical_effect_terms ",
                                     "WHERE source_hash in ('",
                                     paste0(mat$source_hash, collapse = "', '")
                                     ,"') ",
                                     # Remove select terms
                                     "and term not in ('none') and critical_effect_category not in ('cancer')"),
-                             toxval.db) %>%
+                             toxval.db)
+
+    # Copy over study_type collapse lists from old Python script logic
+    repeat_study_types = c('immunotoxicity','intermediate','repeat dose other','subchronic',
+                           'neurotoxicity subchronic','neurotoxicity chronic',
+                           'neurotoxicity 28-day', 'neurotoxicity','intermediate','1','104','14','2','24', #typo
+                           'immunotoxicity subchronic','immunotoxicity chronic',
+                           'immunotoxicity 28-day','immunotoxicity','growth','chronic','28-day', 'short-term')
+    reprodev_study_types = c('reproduction developmental',
+                             'extended one-generation reproductive toxicity - with F2 generation and developmental neurotoxicity (Cohorts 1A, 1B with extension, 2A and 2B)',
+                             'extended one-generation reproductive toxicity - with F2 generation and both developmental neuro- and immunotoxicity (Cohorts 1A, 1B with extension, 2A, 2B, and 3)',
+                             'extended one-generation reproductive toxicity - with F2 generation (Cohorts 1A, and 1B with extension)',
+                             'developmental')
+
+    # Unwrap critical_effect and export missing critical_effect_category mappings
+    missing_crit_cat = mat %>%
+      dplyr::select(source_hash, critical_effect, study_type) %>%
+      tidyr::separate_rows(critical_effect, sep = "\\|") %>%
+      dplyr::mutate(critical_effect = stringr::str_squish(critical_effect),
+                    critical_effect_category=NA) %>%
+      dplyr::filter(!critical_effect %in% c("-", "", "")) %>%
+      tidyr::unite(col = "crit_key",
+                   source_hash, critical_effect,
+                   sep = "_",
+                   remove = FALSE) %>%
+      dplyr::distinct() %>%
+      dplyr::filter(!crit_key %in% crit_cat_map$crit_key) %>%
+      dplyr::select(-crit_key) %>%
+      # Collapse source_hash to export unique cases to map
+      dplyr::group_by(dplyr::across(c(-source_hash))) %>%
+      dplyr::summarise(source_hash = toString(source_hash)) %>%
+      dplyr::ungroup() %>%
+      dplyr::distinct() %>%
+      dplyr::mutate(
+        study_type = dplyr::case_when(
+          study_type %in% !!repeat_study_types ~ "repeat dose",
+          study_type %in% !!reprodev_study_types ~ "reproductive developmental",
+          TRUE ~ study_type
+        )
+      ) %>%
+      dplyr::select(source_hash, term=critical_effect, dplyr::everything())
+
+    if(nrow(missing_crit_cat)){
+      writexl::write_xlsx(missing_crit_cat,
+                          paste0(output_dir, "missing_crit_cat/missing_crit_cat_", src, "_", Sys.Date(),".xlsx"))
+    }
+
+    crit_cat_map = crit_cat_map %>%
       dplyr::group_by(source_hash) %>%
       dplyr::mutate(critical_effect_category = paste0(unique(critical_effect_category[!is.na(critical_effect_category)]),
                                                       collapse = "|")) %>%
@@ -439,8 +488,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     # Add current source data to running total
     res = res %>%
       dplyr::bind_rows(mat %>%
-                         dplyr::mutate(across(c("study_duration_value"#,
-                                                #"toxval_numeric_hed"
+                         dplyr::mutate(across(c("study_duration_value",
+                                                "toxval_numeric_hed"
                                                 ), ~as.numeric(.))))
   }
 
