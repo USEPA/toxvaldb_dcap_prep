@@ -15,7 +15,7 @@
 #'  \code{\link[tidyr]{separate_rows}}, \code{\link[tidyr]{replace_na}}
 #'  \code{\link[stringr]{str_trim}}
 #'  \code{\link[readr]{read_delim}}, \code{\link[readr]{cols}}
-#' @rdname set.conceptual_model.by.critical_effect_category
+#' @rdname get.conceptual_model.by.critical_effect_category
 #' @importFrom dplyr select distinct mutate n case_when left_join rename across where group_by any_of na_if ungroup
 #' @importFrom tidyr separate_rows replace_na
 #' @importFrom stringr str_squish
@@ -43,6 +43,8 @@ get.conceptual_model.by.critical_effect_category <- function(df){
     tidyr::separate_rows(critical_effect_category, sep = "\\|") %>%
     dplyr::distinct() %>%
     dplyr::mutate(type_map = dplyr::case_when(
+      study_type == "reproduction developmental" & !grepl("development|reproduction", critical_effect_category_original) ~ "repeat dose",
+      grepl("development|reproduction", critical_effect_category_original) ~ "repro dev",
       grepl("chronic", study_type, ignore.case=TRUE) ~ "repeat dose",
       grepl("subchronic", study_type, ignore.case=TRUE) ~ "repeat dose",
       grepl("28-day", study_type, ignore.case=TRUE) ~ "repeat dose",
@@ -51,8 +53,7 @@ get.conceptual_model.by.critical_effect_category <- function(df){
       grepl("short-term", study_type, ignore.case=TRUE) ~ "repeat dose",
       study_type=="developmental"~"repro dev",
       study_type=="reproduction"~"repro dev",
-      study_type == "reproduction developmental" & !grepl("development|reproduction", critical_effect_category_original) ~ "repeat dose",
-      study_type=="reproduction developmental"~"repro dev",
+      study_type=="reproduction developmental" ~ "repro dev",
       TRUE ~ NA_character_
     ))%>%
     dplyr::mutate(type = dplyr::case_when(

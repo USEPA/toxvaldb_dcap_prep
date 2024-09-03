@@ -395,14 +395,12 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     cat("[4]",src,":",nrow(mat),"\n\n")
 
     # Map critical_effect_category
-    crit_cat_map <- runQuery(paste0("SELECT source_hash, critical_effect_category, ",
+    crit_cat_map <- runQuery(paste0("SELECT distinct source_hash, term, study_type, critical_effect_category, ",
                                     "CONCAT(source_hash, '_', term) as crit_key ",
                                     "FROM critical_effect_terms ",
                                     "WHERE source_hash in ('",
                                     paste0(mat$source_hash, collapse = "', '")
-                                    ,"') ",
-                                    # Remove select terms
-                                    "and term not in ('none') and critical_effect_category not in ('cancer')"),
+                                    ,"') "),
                              toxval.db)
 
     # Copy over study_type collapse lists from old Python script logic
@@ -421,9 +419,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     missing_crit_cat = mat %>%
       dplyr::select(source_hash, critical_effect, study_type) %>%
       tidyr::separate_rows(critical_effect, sep = "\\|") %>%
-      dplyr::mutate(critical_effect = stringr::str_squish(critical_effect),
-                    critical_effect_category=NA) %>%
-      dplyr::filter(!critical_effect %in% c("-", "", "")) %>%
+      dplyr::mutate(critical_effect = stringr::str_squish(critical_effect)) %>%
+      dplyr::filter(!critical_effect %in% c("-", "", "none", "None")) %>%
       tidyr::unite(col = "crit_key",
                    source_hash, critical_effect,
                    sep = "_",
@@ -446,11 +443,40 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       dplyr::select(source_hash, term=critical_effect, dplyr::everything())
 
     if(nrow(missing_crit_cat)){
-      writexl::write_xlsx(missing_crit_cat,
+      # Try to provide suggestions
+
+      crit_suggs <- runQuery(paste0("SELECT distinct term, study_type, critical_effect_category, CONCAT(term, study_type) as crit_key ",
+                                    "FROM res_toxval_v96.critical_effect_terms ",
+                                    "HAVING crit_key in ('", paste0(missing_crit_cat$term, missing_crit_cat$study_type, collapse="', '"), "')"),
+                             toxval.db) %>%
+        dplyr::select(-crit_key)
+
+      writexl::write_xlsx(missing_crit_cat %>%
+                            dplyr::left_join(crit_suggs,
+                                             by = c("term", "study_type")),
                           paste0(output_dir, "missing_crit_cat/missing_crit_cat_", src, "_", Sys.Date(),".xlsx"))
     }
 
+    # Report duplicate/conflicting mappings
+    dups = crit_cat_map %>%
+      dplyr::select(-crit_key) %>%
+      dplyr::distinct() %>%
+      dplyr::group_by(source_hash, term, study_type) %>%
+      dplyr::summarise(n = dplyr::n()) %>%
+      dplyr::filter(n > 1)
+
+    if(nrow(dups)){
+      writexl::write_xlsx(crit_cat_map %>%
+                            dplyr::filter(source_hash %in% dups$source_hash),
+                          paste0(output_dir, "missing_crit_cat/duplicate_crit_cat_mappings_", src, "_", Sys.Date(),".xlsx"))
+    }
+
     crit_cat_map = crit_cat_map %>%
+      # Remove select terms
+      # term not in ('none') and critical_effect_category not in ('cancer')
+      dplyr::filter(!term %in% c("None", "none"),
+                    !critical_effect_category %in% c("cancer")) %>%
+      dplyr::select(-term, -study_type) %>%
       dplyr::group_by(source_hash) %>%
       dplyr::mutate(critical_effect_category = paste0(unique(critical_effect_category[!is.na(critical_effect_category)]),
                                                       collapse = "|")) %>%
@@ -490,7 +516,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       dplyr::bind_rows(mat %>%
                          dplyr::mutate(across(c("study_duration_value",
                                                 "toxval_numeric_hed"
-                                                ), ~as.numeric(.))))
+                         ), ~as.numeric(.))))
   }
 
   res = res %>%
