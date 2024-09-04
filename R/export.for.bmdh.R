@@ -40,11 +40,11 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
              "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
              "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
   # sources by supersource name
-  slist = c(
-    "ATSDR", "EPA HAWC", "Cal OEHHA", "Copper Manufacturers", "ECHA IUCLID", "EPA ECOTOX",
-    "EFSA OpenFoodTox", "EPA HHTV", "Health Canada", "EPA HEAST", "NITE HESS", "EPA HPVIS",
-    "EPA IRIS", "NTP PFAS", "EPA PPRTV", "EPA ToxRefDB", "WHO JECFA"
-  )
+  # slist = c(
+  #   "ATSDR", "EPA HAWC", "Cal OEHHA", "Copper Manufacturers", "ECHA IUCLID", "EPA ECOTOX",
+  #   "EFSA OpenFoodTox", "EPA HHTV", "Health Canada", "EPA HEAST", "NITE HESS", "EPA HPVIS",
+  #   "EPA IRIS", "NTP PFAS", "EPA PPRTV", "EPA ToxRefDB", "WHO JECFA"
+  # )
 
   # Read in pesticide DTXSID values to exclude
   # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
