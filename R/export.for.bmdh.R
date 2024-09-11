@@ -259,6 +259,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                                "record_source_type, ",
                                "priority, ",
                                "clowder_doc_id, ",
+                               "document_name, ",
                                "quality ",
                                "FROM record_source ",
                                "WHERE toxval_id in (", toString(mat$toxval_id), ")"),
@@ -584,7 +585,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       dplyr::filter(grepl("ECOTOX", source))
 
     # Get all fields except study_duration and others that arbitrarily differ
-    eco_hash_cols = names(mat)[!names(mat) %in% c("source_hash", "study_duration_value", "study_duration_units",
+    eco_hash_cols = names(res)[!names(res) %in% c("source_hash", "study_duration_value", "study_duration_units",
                                                   "qc_status", "critical_effect", "critical_effect_category",
                                                   "study_group", "study_duration_class")]
     # Ignore study_type for repeat dose and repro dev entries
