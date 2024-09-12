@@ -452,10 +452,17 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                              toxval.db) %>%
         dplyr::select(-crit_key)
 
-      writexl::write_xlsx(missing_crit_cat %>%
-                            dplyr::left_join(crit_suggs,
-                                             by = c("term", "study_type")),
-                          paste0(output_dir, "missing_crit_cat/missing_crit_cat_", src, "_", Sys.Date(),".xlsx"))
+      tryCatch(
+        {
+          writexl::write_xlsx(missing_crit_cat %>%
+                                dplyr::left_join(crit_suggs,
+                                                 by = c("term", "study_type")),
+                              paste0(output_dir, "missing_crit_cat/missing_crit_cat_", src, "_", Sys.Date(),".xlsx"))
+        },
+        error = function(e){
+          message(e)
+        }
+      )
     }
 
     # Report duplicate/conflicting mappings

@@ -60,13 +60,18 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     )
 
   # Track filtered out entries (with reason for filtering)
-  filtered_out_auth = res0 %>%
+  # filtered_out_auth = res0 %>%
+  #   dplyr::filter(
+  #     source_table %in% auth_sources,
+  #     !grepl("key|yes", key_finding, ignore.case=TRUE)
+  #   ) %>%
+  #   dplyr::mutate(
+  #     reason_for_filtering = "from authoritative source but not key finding"
+  #   )
+  res_auth_not_key = res0 %>%
     dplyr::filter(
       source_table %in% auth_sources,
       !grepl("key|yes", key_finding, ignore.case=TRUE)
-    ) %>%
-    dplyr::mutate(
-      reason_for_filtering = "from authoritative source but not key finding"
     )
 
   cat("Filtering non-authoritative sources\n")
@@ -75,23 +80,22 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     dplyr::filter(!source_table %in% auth_sources,
                   key_finding %in% c("yes", "key"))
 
-  key_finding_study_groups = non_auth_key_findings %>%
+  non_auth_key_finding_study_groups = non_auth_key_findings %>%
     dplyr::pull(study_group) %>%
     unique()
 
-  non_auth_key_findings_filtered = res0 %>%
-    dplyr::filter(study_group %in% key_finding_study_groups,
+  non_auth_non_key_findings_filtered = res0 %>%
+    dplyr::filter(study_group %in% non_auth_key_finding_study_groups,
                   !key_finding %in% c("yes", "key")) %>%
     dplyr::mutate(
-      reason_for_filtering = "from non-auth study group that had key_finding"
+      reason_for_filtering = "from non-auth study group that were not key_finding"
     )
 
   # Filter non-authoritative sources
   res_init = res0 %>%
     dplyr::filter(!source_table %in% auth_sources,
-                  !study_group %in% key_finding_study_groups) %>%
-    dplyr::bind_rows(res_auth) %>%
-    dplyr::bind_rows(non_auth_key_findings) %>%
+                  !study_group %in% non_auth_key_finding_study_groups) %>%
+    dplyr::bind_rows(res_auth, res_auth_not_key, non_auth_key_findings) %>%
     dplyr::mutate(
       # Standardize toxval_type values to "{TYPE} {MODIFIER}"
       tts = dplyr::case_when(
@@ -110,42 +114,47 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
         grepl("LO?EL", toxval_type) & grepl("HED", toxval_type) ~ "LEL HED",
         grepl("LO?EL", toxval_type) & grepl("ADJ", toxval_type) ~ "LEL ADJ",
         grepl("LO?EL", toxval_type) ~ "LEL",
+        grepl("FO?EL", toxval_type) & grepl("HED", toxval_type) ~ "FEL HED",
+        grepl("FO?EL", toxval_type) & grepl("ADJ", toxval_type) ~ "FEL ADJ",
+        grepl("FO?EL", toxval_type) ~ "FEL",
         TRUE ~ as.character(NA)
       ) %>%
         stringr::str_trim(),
       # Get underlying root of toxval_type (no HED/ADJ/etc.)
       ttr = tts %>%
-        stringr::str_extract("(BMDL|[NL]OAEL|[NL]EL)", group=1)
+        stringr::str_extract("(BMDL|[NLF]OAEL|[NLF]EL)", group=1)
     ) %>%
     dplyr::group_by(study_group) %>%
     # Get minimum LOAEL/LEL values to initially filter out NOAEL/NEL > LOAEL/LEL
     dplyr::mutate(
       low_loael = dplyr::case_when(
         ttr == "LOAEL" ~ toxval_numeric,
-        TRUE ~ 999
+        TRUE ~ NA
       ),
-      low_loael = min(low_loael),
+      low_loael = suppressWarnings(min(low_loael, na.rm = TRUE)),
 
       low_lel = dplyr::case_when(
         ttr == "LEL" ~ toxval_numeric,
-        TRUE ~ 999
+        TRUE ~ NA
       ),
-      low_lel = min(low_lel),
+      low_lel = suppressWarnings(min(low_lel, na.rm = TRUE)),
+      # Replace Inf with NA from min with only NA values
+      dplyr::across(c(low_loael, low_lel), ~dplyr::na_if(., Inf))
     ) %>%
     dplyr::ungroup() %>%
     # Remove NOAEL/NEL greater than minimum LOAEL/LEL
     dplyr::mutate(
       remove_flag = dplyr::case_when(
-        ttr == "NOAEL" & toxval_numeric > low_loael & low_loael != 999 ~ 1,
-        ttr == "NEL" & toxval_numeric > low_lel & low_lel != 999 ~ 1,
+        ttr == "NOAEL" & toxval_numeric > low_loael & !is.na(low_loael) ~ 1,
+        ttr == "NEL" & toxval_numeric > low_lel & !is.na(low_lel) ~ 1,
         TRUE ~ 0
       )
     ) %>%
     # Get maximum/minumum values for each toxval_type within study groups (ignoring entries to remove)
     dplyr::group_by(study_group, tts, remove_flag) %>%
     dplyr::mutate(
-      min_val = min(toxval_numeric),
-      max_val = max(toxval_numeric)
+      min_val = min(toxval_numeric, na.rm = TRUE),
+      max_val = max(toxval_numeric, na.rm = TRUE)
     ) %>%
     dplyr::ungroup() %>%
     dplyr::group_by(study_group, remove_flag) %>%
@@ -168,16 +177,19 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
         tts == "LEL HED" & toxval_numeric == min_val ~ 13,
         tts == "LEL ADJ" & toxval_numeric == min_val ~ 14,
         tts == "LEL" & toxval_numeric == min_val ~ 15,
+        tts == "FEL HED" & toxval_numeric == min_val ~ 16,
+        tts == "FEL ADJ" & toxval_numeric == min_val ~ 17,
+        tts == "FEL" & toxval_numeric == min_val ~ 18,
         TRUE ~ 999
       ),
 
       repro_dev_fix = dplyr::case_when(
-        ttr %in% c("BMDL", "NOAEL", "LOAEL", "NEL", "LEL") & study_type == "reproduction developmental" ~ 1,
+        ttr %in% c("BMDL", "NOAEL", "LOAEL", "NEL", "LEL", "FEL") & study_type == "reproduction developmental" ~ 1,
         TRUE ~ 0
       ),
 
       # Pick row with highest priority
-      selected_row = min(keep_flag),
+      selected_row = min(keep_flag, na.rm = TRUE),
 
       # Set reason for filtering row out
       reason_for_filtering = dplyr::case_when(
@@ -197,10 +209,16 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
         selected_row == 13 ~ "LEL (HED) selected for this group",
         selected_row == 14 ~ "LEL (ADJ) selected for this group",
         selected_row == 15 ~ "LEL selected for this group",
+        selected_row == 16 ~ "FEL (HED) selected for this group",
+        selected_row == 17 ~ "FEL (ADJ) selected for this group",
+        selected_row == 18 ~ "FEL selected for this group",
         TRUE ~ "no selection from this group"
       )
     ) %>%
     dplyr::ungroup()
+
+  # Check assignments
+  # View(res_init %>% select(dplyr::any_of(c("study_group", "toxval_type", "toxval_numeric", "toxval_units", "tts", "ttr", "low_loael", "low_lel", "remove_flag", "min_val", "max_val", "selected_row", "keep_flag", "reason_for_filtering"))) %>% distinct())
 
   # Select chosen rows
   res = res_init %>%
@@ -223,12 +241,39 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
 
   # Select rows that were filtered out
   filtered_out_non_auth = res_init %>%
-    dplyr::filter(remove_flag == 1 | keep_flag != selected_row) %>%
+    dplyr::filter(!source_hash %in% res$source_hash) %>%
+    # dplyr::filter(remove_flag == 1 | keep_flag != selected_row) %>%
     dplyr::select(-c("tts", "ttr", "low_loael", "low_lel", "min_val", "max_val",
                      "remove_flag", "keep_flag", "selected_row"))
 
   # Combine filtered out data from authoritative and non-authoritative sources
-  filtered_out = dplyr::bind_rows(filtered_out_auth, filtered_out_non_auth, non_auth_key_findings_filtered)
+  filtered_out = dplyr::bind_rows(
+    # filtered_out_auth,
+    filtered_out_non_auth, non_auth_non_key_findings_filtered)
+
+  if(nrow(filtered_out) + nrow(res) != nrow(res0)){
+    # Check for any accidental overlap between selected and filtered groups
+    combined = res %>%
+      dplyr::select(source_hash) %>%
+      dplyr::bind_rows(filtered_out %>%
+                         dplyr::select(source_hash))
+
+      dups = combined %>%
+        dplyr::group_by(source_hash) %>%
+      dplyr::summarise(n = dplyr::n()) %>%
+      dplyr::filter(n > 1)
+    if(nrow(dups)){
+      browser("...Records found in filter and not filtered datasets...")
+    }
+
+    # Check if any missing from filtering
+    missing = res0 %>%
+      dplyr::filter(!source_hash %in% combined$source_hash)
+
+    if(nrow(missing)){
+      browser("...Records missing from filtering process...")
+    }
+  }
 
   # Perform deduping on identical records with different source_hash values
   non_hashing_cols = c("source_hash", "record_source_info", "critical_effect", "name",
@@ -316,9 +361,8 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     ) %>%
     # Recombine rows
     toxval.source.import.dedup(dedup_fields=dedup_fields, hashing_cols=hashing_fields) %>%
-    # Remove key_finding field from output
-    dplyr::select(-key_finding) %>%
-    dplyr::rename(source_hash = source_hash_old)
+    # Rename key_finding and source_hash fields
+    dplyr::rename(calibration_flag = key_finding, source_hash = source_hash_old)
 
   # Write results to Excel
   writexl::write_xlsx(res, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx"))
