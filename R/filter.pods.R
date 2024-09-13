@@ -258,8 +258,8 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
       dplyr::bind_rows(filtered_out %>%
                          dplyr::select(source_hash))
 
-      dups = combined %>%
-        dplyr::group_by(source_hash) %>%
+    dups = combined %>%
+      dplyr::group_by(source_hash) %>%
       dplyr::summarise(n = dplyr::n()) %>%
       dplyr::filter(n > 1)
     if(nrow(dups)){
@@ -361,6 +361,11 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     ) %>%
     # Recombine rows
     toxval.source.import.dedup(dedup_fields=dedup_fields, hashing_cols=hashing_fields) %>%
+    # Translate key_finding to boolean
+    dplyr::mutate(key_finding = dplyr::case_when(
+      grepl("key|yes", key_finding, ignore.case=TRUE) ~ 1,
+      TRUE ~ 0
+    )) %>%
     # Rename key_finding and source_hash fields
     dplyr::rename(calibration_flag = key_finding, source_hash = source_hash_old)
 

@@ -94,28 +94,28 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     epa_dws_addition = paste0(" and b.dtxsid NOT IN ('", epa_dws_dtxsid, "')")
   }
 
-  # Get priority values for each specified source
-  plist = vector(mode="integer",length=length(slist))
-  plist[] = 1
-  for(i in seq_len(length(slist))) {
-    src = slist[i]
-    query = paste0("select distinct priority from record_source where source LIKE '%",src,"%' and long_ref!='-'")
-    vals = runQuery(query,toxval.db)[,1]
-    cat(src,paste(vals,collapse="|"),"\n")
-    if(length(vals)>0) plist[i] = vals[1]
-    else {
-      if(src %in% c("HEAST", "EPA HEAST",
-                    "HESS", "NITE HESS",
-                    "ECHA IUCLID")) plist[i] = 1
-    }
-  }
+  # # Get priority values for each specified source
+  # plist = vector(mode="integer",length=length(slist))
+  # plist[] = 1
+  # for(i in seq_len(length(slist))) {
+  #   src = slist[i]
+  #   query = paste0("select distinct priority from record_source where source LIKE '%",src,"%' and long_ref!='-'")
+  #   vals = runQuery(query,toxval.db)[,1]
+  #   cat(src,paste(vals,collapse="|"),"\n")
+  #   if(length(vals)>0) plist[i] = vals[1]
+  #   else {
+  #     if(src %in% c("HEAST", "EPA HEAST",
+  #                   "HESS", "NITE HESS",
+  #                   "ECHA IUCLID")) plist[i] = 1
+  #   }
+  # }
 
   # Query ToxVal for source data
   res = data.frame()
 
   for(i in seq_len(length(slist))) {
     src = slist[i]
-    priority = plist[i]
+    # priority = plist[i]
     cat("Pulling ", src, " (", i, " of ", length(slist), ")\n")
 
     # Handle inclusion of only specified IUCLID OHTs
@@ -396,7 +396,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     cat("[4]",src,":",nrow(mat),"\n\n")
 
     # Map critical_effect_category
-    crit_cat_map <- runQuery(paste0("SELECT distinct source_hash, term, study_type, critical_effect_category, ",
+    # https://stackoverflow.com/questions/5629111/how-can-i-make-sql-case-sensitive-string-comparison-on-mysql
+    crit_cat_map <- runQuery(paste0("SELECT distinct source_hash, BINARY term as term, study_type, critical_effect_category, ",
                                     "CONCAT(source_hash, '_', term) as crit_key ",
                                     "FROM critical_effect_terms ",
                                     "WHERE source_hash in ('",
@@ -443,6 +444,41 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       ) %>%
       dplyr::select(source_hash, term=critical_effect, dplyr::everything())
 
+    # Handle case of long source_hash list XLSX character limit
+    # Get hash length, add 2 characters for ", " delimiter
+    hash_length = min(stringr::str_length(mat$source_hash)) + 2
+    tmp = missing_crit_cat %>%
+      dplyr::mutate(n_count = stringr::str_length(source_hash),
+                    group_length = dplyr::case_when(
+                     n_count < 10000 ~ n_count,
+                     TRUE ~ floor(n_count / floor(n_count / 10000))
+                    ),
+                    n_group = floor(group_length / hash_length)
+                    )
+
+    # Split large strings into smaller groups
+    split = tmp %>%
+      dplyr::filter(n_count > 10000) %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(out_groups = strsplit(source_hash, ", ") %>%
+                      unlist() %>%
+                      split(., rep(seq_along(.), each  = n_group, length.out = length(.))) %>%
+                      lapply(., toString) %>%
+                      paste0(collapse = ";")
+                    ) %>%
+      dplyr::ungroup() %>%
+      tidyr::separate_rows(out_groups, sep = ";") %>%
+      dplyr::select(-n_count, -group_length, -n_group)
+
+    # Filter out records with strings over limit, append split groups
+    missing_crit_cat = missing_crit_cat %>%
+      dplyr::filter(!source_hash %in% split$source_hash) %>%
+      dplyr::bind_rows(split %>%
+                         dplyr::select(-source_hash) %>%
+                         dplyr::rename(source_hash = out_groups))
+
+    # max(stringr::str_length(missing_crit_cat$source_hash))
+
     if(nrow(missing_crit_cat)){
       # Try to provide suggestions
 
@@ -467,15 +503,14 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
 
     # Report duplicate/conflicting mappings
     dups = crit_cat_map %>%
-      dplyr::select(-crit_key) %>%
       dplyr::distinct() %>%
-      dplyr::group_by(source_hash, term, study_type) %>%
+      dplyr::group_by(crit_key, study_type) %>%
       dplyr::summarise(n = dplyr::n()) %>%
       dplyr::filter(n > 1)
 
     if(nrow(dups)){
       writexl::write_xlsx(crit_cat_map %>%
-                            dplyr::filter(source_hash %in% dups$source_hash),
+                            dplyr::filter(crit_key %in% dups$crit_key),
                           paste0(output_dir, "missing_crit_cat/duplicate_crit_cat_mappings_", src, "_", Sys.Date(),".xlsx"))
     }
 
