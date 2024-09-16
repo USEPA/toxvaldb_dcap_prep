@@ -364,6 +364,8 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     # Translate key_finding to boolean
     dplyr::mutate(key_finding = dplyr::case_when(
       grepl("key|yes", key_finding, ignore.case=TRUE) ~ 1,
+      # Only display key_finding for authoritative sources
+      !source_table %in% auth_sources ~ NA,
       TRUE ~ 0
     )) %>%
     # Rename key_finding and source_hash fields
