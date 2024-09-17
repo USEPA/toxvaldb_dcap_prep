@@ -57,7 +57,8 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     dplyr::filter(
       source_table %in% auth_sources,
       grepl("key|yes", key_finding, ignore.case=TRUE)
-    )
+    ) %>%
+    dplyr::mutate(filter_pod_group = "auth_key")
 
   # Track filtered out entries (with reason for filtering)
   # filtered_out_auth = res0 %>%
@@ -72,30 +73,34 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     dplyr::filter(
       source_table %in% auth_sources,
       !grepl("key|yes", key_finding, ignore.case=TRUE)
-    )
+    ) %>%
+    dplyr::mutate(filter_pod_group = "auth_not_key")
 
   cat("Filtering non-authoritative sources\n")
   # Extract entries with key_finding for non_authoritative sources
-  non_auth_key_findings = res0 %>%
-    dplyr::filter(!source_table %in% auth_sources,
-                  key_finding %in% c("yes", "key"))
-
-  non_auth_key_finding_study_groups = non_auth_key_findings %>%
-    dplyr::pull(study_group) %>%
-    unique()
-
-  non_auth_non_key_findings_filtered = res0 %>%
-    dplyr::filter(study_group %in% non_auth_key_finding_study_groups,
-                  !key_finding %in% c("yes", "key")) %>%
-    dplyr::mutate(
-      reason_for_filtering = "from non-auth study group that were not key_finding"
-    )
+  # non_auth_key_findings = res0 %>%
+  #   dplyr::filter(!source_table %in% auth_sources,
+  #                 key_finding %in% c("yes", "key"))
+  #
+  # non_auth_key_finding_study_groups = non_auth_key_findings %>%
+  #   dplyr::pull(study_group) %>%
+  #   unique()
+  #
+  # non_auth_non_key_findings_filtered = res0 %>%
+  #   dplyr::filter(study_group %in% non_auth_key_finding_study_groups,
+  #                 !key_finding %in% c("yes", "key")) %>%
+  #   dplyr::mutate(
+  #     reason_for_filtering = "from non-auth study group that were not key_finding"
+  #   )
 
   # Filter non-authoritative sources
   res_init = res0 %>%
-    dplyr::filter(!source_table %in% auth_sources,
-                  !study_group %in% non_auth_key_finding_study_groups) %>%
-    dplyr::bind_rows(res_auth, res_auth_not_key, non_auth_key_findings) %>%
+    dplyr::filter(!source_table %in% auth_sources #,
+                  # !study_group %in% non_auth_key_finding_study_groups
+                  ) %>%
+    dplyr::mutate(filter_pod_group = "non_auth") %>%
+    dplyr::bind_rows(res_auth, res_auth_not_key#, non_auth_key_findings
+                     ) %>%
     dplyr::mutate(
       # Standardize toxval_type values to "{TYPE} {MODIFIER}"
       tts = dplyr::case_when(
@@ -124,7 +129,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
       ttr = tts %>%
         stringr::str_extract("(BMDL|[NLF]OAEL|[NLF]EL)", group=1)
     ) %>%
-    dplyr::group_by(study_group) %>%
+    dplyr::group_by(study_group, filter_pod_group) %>%
     # Get minimum LOAEL/LEL values to initially filter out NOAEL/NEL > LOAEL/LEL
     dplyr::mutate(
       low_loael = dplyr::case_when(
@@ -151,13 +156,13 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
       )
     ) %>%
     # Get maximum/minumum values for each toxval_type within study groups (ignoring entries to remove)
-    dplyr::group_by(study_group, tts, remove_flag) %>%
+    dplyr::group_by(study_group, filter_pod_group, tts, remove_flag) %>%
     dplyr::mutate(
       min_val = min(toxval_numeric, na.rm = TRUE),
       max_val = max(toxval_numeric, na.rm = TRUE)
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::group_by(study_group, remove_flag) %>%
+    dplyr::group_by(study_group, filter_pod_group, remove_flag) %>%
     dplyr::mutate(
       # Tag each entry in every study_group with filter step it corresponds to
       keep_flag = dplyr::case_when(
@@ -225,7 +230,7 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     dplyr::filter(selected_row == keep_flag,
                   remove_flag != 1) %>%
     # Handle case where repro dev causes multiple selections per study_group
-    dplyr::group_by(study_group) %>%
+    dplyr::group_by(study_group, filter_pod_group) %>%
     dplyr::mutate(
       n = dplyr::n(),
 
@@ -249,7 +254,8 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
   # Combine filtered out data from authoritative and non-authoritative sources
   filtered_out = dplyr::bind_rows(
     # filtered_out_auth,
-    filtered_out_non_auth, non_auth_non_key_findings_filtered)
+    filtered_out_non_auth #, non_auth_non_key_findings_filtered
+    )
 
   if(nrow(filtered_out) + nrow(res) != nrow(res0)){
     # Check for any accidental overlap between selected and filtered groups
