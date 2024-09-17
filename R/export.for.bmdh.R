@@ -199,7 +199,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       dplyr::distinct() %>%
       # Remove specific ECOTOX entry that should be QC failed
       dplyr::filter(
-        !(grepl("ECOTOX",source) & dtxsid=="DTXSID2024246" & toxval_numeric==7621 & toxval_units=="mg/kg-day")
+        !(grepl("ECOTOX",source) & dtxsid=="DTXSID2024246" & toxval_numeric==7621 & toxval_units=="mg/kg-day"),
+        !(grepl("ToxRefDB", source) & dtxsid == "DTXSID6040371")
       )
 
     # Special source_hash fixes
@@ -444,44 +445,47 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       ) %>%
       dplyr::select(source_hash, term=critical_effect, dplyr::everything())
 
-    # Handle case of long source_hash list XLSX character limit
-    # Get hash length, add 2 characters for ", " delimiter
-    hash_length = min(stringr::str_length(mat$source_hash)) + 2
-    tmp = missing_crit_cat %>%
-      dplyr::mutate(n_count = stringr::str_length(source_hash),
-                    group_length = dplyr::case_when(
-                     n_count < 10000 ~ n_count,
-                     TRUE ~ floor(n_count / floor(n_count / 10000))
-                    ),
-                    n_group = floor(group_length / hash_length)
-                    )
-
-    # Split large strings into smaller groups
-    split = tmp %>%
-      dplyr::filter(n_count > 10000) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(out_groups = strsplit(source_hash, ", ") %>%
-                      unlist() %>%
-                      split(., rep(seq_along(.), each  = n_group, length.out = length(.))) %>%
-                      lapply(., toString) %>%
-                      paste0(collapse = ";")
-                    ) %>%
-      dplyr::ungroup() %>%
-      tidyr::separate_rows(out_groups, sep = ";") %>%
-      dplyr::select(-n_count, -group_length, -n_group)
-
-    # Filter out records with strings over limit, append split groups
-    missing_crit_cat = missing_crit_cat %>%
-      dplyr::filter(!source_hash %in% split$source_hash) %>%
-      dplyr::bind_rows(split %>%
-                         dplyr::select(-source_hash) %>%
-                         dplyr::rename(source_hash = out_groups))
-
-    # max(stringr::str_length(missing_crit_cat$source_hash))
-
     if(nrow(missing_crit_cat)){
-      # Try to provide suggestions
+      # Handle case of long source_hash list XLSX character limit
+      # Get hash length, add 2 characters for ", " delimiter
+      hash_length = min(stringr::str_length(mat$source_hash)) + 2
+      tmp = missing_crit_cat %>%
+        dplyr::mutate(n_count = stringr::str_length(source_hash),
+                      group_length = dplyr::case_when(
+                        n_count < 10000 ~ n_count,
+                        TRUE ~ floor(n_count / floor(n_count / 10000))
+                      ),
+                      n_group = floor(group_length / hash_length)
+        )
 
+      # Split large strings into smaller groups
+      split = tmp %>%
+        dplyr::filter(n_count > 10000)
+
+      if(nrow(split)){
+        split = split %>%
+          dplyr::rowwise() %>%
+          dplyr::mutate(out_groups = strsplit(source_hash, ", ") %>%
+                          unlist() %>%
+                          split(., rep(seq_along(.), each  = n_group, length.out = length(.))) %>%
+                          lapply(., toString) %>%
+                          paste0(collapse = ";")
+          ) %>%
+          dplyr::ungroup() %>%
+          tidyr::separate_rows(out_groups, sep = ";") %>%
+          dplyr::select(-n_count, -group_length, -n_group)
+
+        # Filter out records with strings over limit, append split groups
+        missing_crit_cat = missing_crit_cat %>%
+          dplyr::filter(!source_hash %in% split$source_hash) %>%
+          dplyr::bind_rows(split %>%
+                             dplyr::select(-source_hash) %>%
+                             dplyr::rename(source_hash = out_groups))
+      }
+
+      # max(stringr::str_length(missing_crit_cat$source_hash))
+
+      # Try to provide suggestions
       crit_suggs <- runQuery(paste0("SELECT distinct term, study_type, critical_effect_category, CONCAT(term, study_type) as crit_key ",
                                     "FROM res_toxval_v96.critical_effect_terms ",
                                     "HAVING crit_key in ('", paste0(missing_crit_cat$term, missing_crit_cat$study_type, collapse="', '"), "')"),
@@ -519,7 +523,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       # term not in ('none') and critical_effect_category not in ('cancer')
       dplyr::filter(!term %in% c("None", "none"),
                     !critical_effect_category %in% c("cancer")) %>%
-      dplyr::select(-term, -study_type) %>%
+      dplyr::select(-term, -study_type, -crit_key) %>%
       dplyr::group_by(source_hash) %>%
       dplyr::mutate(critical_effect_category = paste0(unique(critical_effect_category[!is.na(critical_effect_category)]),
                                                       collapse = "|")) %>%
@@ -543,13 +547,12 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                                          dplyr::rename(source_hash_toxval=source_hash),
                                        hashing_cols=c("study_group", "toxval_type", "toxval_numeric", "record_source_info")) %>%
         # Replace "|::|" in critical_effect with "|" delimiter
-        dplyr::mutate(
-          critical_effect = critical_effect %>%
-            gsub(" \\|::\\| ", "|", .),
-          source_hash = source_hash_toxval %>%
-            gsub(" \\|::\\| ", ",", .),
-          critical_effect_category = critical_effect_category %>%
-            gsub(" \\|::\\| ", "|", .)
+        dplyr::mutate(dplyr::across(dplyr::any_of(c("critical_effect", "critical_effect_category_original", "critical_effect_category")),
+                                    ~gsub(" \\|::\\| ", "|", .)
+        ),
+        source_hash = source_hash_toxval %>%
+          gsub(" \\|::\\| ", ",", .)
+
         ) %>%
         dplyr::select(-source_hash_toxval)
     }
@@ -603,6 +606,68 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
         dplyr::na_if("-")
     )
 
+  # ECOTOX specific filtering
+  if(any(grepl("ECOTOX", res$source))){
+    # Dedup ECOTOX where all values are identical except study_duration (filter out lower duration entries)
+    res_ecotox = res %>%
+      dplyr::filter(grepl("ECOTOX", source))
+
+    # Get all fields except study_duration and others that arbitrarily differ
+    eco_hash_cols = names(res)[!names(res) %in% c("source_hash", "study_duration_value", "study_duration_units",
+                                                  "qc_status", "critical_effect", "critical_effect_category",
+                                                  "critical_effect_category_original", "critical_effect_category_temp", "crit_key",
+                                                  "study_group", "study_duration_class", "qc_category",
+                                                  "final_model1", "final_model2")]
+    # # Ignore study_type for repeat dose and repro dev entries
+    # eco_hash_cols_type = c(eco_hash_cols, "type", "study_type")
+
+    # Perform deduping on entries that are not repeat dose/repro dev
+    # ecotox_no_study_type = res_ecotox %>%
+    #   dplyr::filter(!type %in% c("repeat dose", "repro dev"))
+
+    ecotox_dedup = res_ecotox %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(study_duration_norm = convert_units(study_duration_value,
+                                                        units=study_duration_units,
+                                                        desired="days")
+      ) %>%
+      dplyr::ungroup() %>%
+      # Get groups of entries that are identical except for study_duration/study_type
+      dplyr::group_by(dplyr::across(dplyr::any_of(eco_hash_cols))) %>%
+      # Select entry with maximum study_duration value
+      # dplyr::summarise(max_duration = max(study_duration_norm))
+      dplyr::mutate(
+        max_duration = max(study_duration_norm),
+        # Store original max duration selection
+        max_duration_sel = paste0(study_duration_value[which(study_duration_value == max_duration)], "_",
+                                  study_duration_units[which(study_duration_value == max_duration)])
+      ) %>%
+      dplyr::ungroup()
+
+    # Collapse groups
+    ecotox_dedup =
+      toxval.source.import.dedup(ecotox_dedup %>%
+                                   dplyr::rename(source_hash_toxval=source_hash),
+                                 hashing_cols=eco_hash_cols) %>%
+      # Replace "|::|" in critical_effect with "|" delimiter
+      dplyr::mutate(dplyr::across(dplyr::any_of(c("critical_effect", "critical_effect_category_original",
+                                                  "critical_effect_category", "critical_effect_category_temp")),
+                                  ~gsub(" \\|::\\| ", "|", .)
+      ),
+      source_hash = source_hash_toxval %>%
+        gsub(" \\|::\\| ", ",", .)
+      ) %>%
+      dplyr::select(-source_hash_toxval, -study_duration_value, -study_duration_units,
+                    -max_duration, -study_duration_norm) %>%
+      tidyr::separate(max_duration_sel, into=c("study_duration_value", "study_duration_units"), sep = "_") %>%
+      dplyr::mutate(study_duration_value = as.numeric(study_duration_value))
+
+    # Add filtered ECOTOX data back to res
+    res = res %>%
+      dplyr::filter(!grepl("ECOTOX", source)) %>%
+      dplyr::bind_rows(ecotox_dedup)
+  }
+
   # Get conceptual model by critical_effect_category
   conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res) %>%
     dplyr::select(-study_type, -critical_effect_category)
@@ -620,72 +685,12 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     dplyr::rename(critical_effect_category = critical_effect_category_temp) %>%
     dplyr::left_join(grouped_dtxsid, by="dtxsid")
 
-  # ECOTOX specific filtering
-  if(any(grepl("ECOTOX", res$source))){
-    # Dedup ECOTOX where all values are identical except study_duration (filter out lower duration entries)
-    res_ecotox = res %>%
-      dplyr::filter(grepl("ECOTOX", source))
-
-    # Get all fields except study_duration and others that arbitrarily differ
-    eco_hash_cols = names(res)[!names(res) %in% c("source_hash", "study_duration_value", "study_duration_units",
-                                                  "qc_status", "critical_effect", "critical_effect_category",
-                                                  "study_group", "study_duration_class")]
-    # Ignore study_type for repeat dose and repro dev entries
-    eco_hash_cols_type = c(eco_hash_cols, "type", "study_type")
-
-    # Perform deduping on entries that are not repeat dose/repro dev
-    ecotox_no_study_type = res_ecotox %>%
-      dplyr::filter(!type %in% c("repeat dose", "repro dev")) %>%
-      # Get groups of entries that are identical except for study_duration
-      dplyr::group_by_at(eco_hash_cols) %>%
-      # Select entry with maximum study_duration value
-      dplyr::mutate(
-        max_duration = max(study_duration_value),
-
-        keep = dplyr::case_when(
-          study_duration_value == max_duration ~ 1,
-          TRUE ~ 0
-        )
-      ) %>%
-      dplyr::filter(keep == 1) %>%
-      dplyr::select(-c("max_duration", "keep")) %>%
-      # In case of ties, select first alphabetical entry by study_group
-      dplyr::arrange(study_group) %>%
-      dplyr::slice(1) %>%
-      dplyr::ungroup()
-
-    # Perform deduping on entries that are repeat dose/repro dev
-    ecotox_study_type = res_ecotox %>%
-      dplyr::filter(type %in% c("repeat dose", "repro dev")) %>%
-      # Get groups of entries that are identical except for study_duration/study_type
-      dplyr::group_by_at(eco_hash_cols_type) %>%
-      # Select entry with maximum study_duration value
-      dplyr::mutate(
-        max_duration = max(study_duration_value),
-
-        keep = dplyr::case_when(
-          study_duration_value == max_duration ~ 1,
-          TRUE ~ 0
-        )
-      ) %>%
-      dplyr::filter(keep == 1) %>%
-      dplyr::select(-c("max_duration", "keep")) %>%
-      # In case of ties, select first alphabetical entry by study_group
-      dplyr::arrange(study_group) %>%
-      dplyr::slice(1) %>%
-      dplyr::ungroup()
-
-    # Add filtered ECOTOX data back to res
-    res = res %>%
-      dplyr::filter(!grepl("ECOTOX", source)) %>%
-      dplyr::bind_rows(ecotox_no_study_type, ecotox_study_type)
-  }
-
   cat("Exporting results...\n")
   # Write unique toxval_type values included in full data
   unique_toxval_type = res %>%
     dplyr::select(source, toxval_type) %>%
     dplyr::distinct()
+
   file = paste0(output_dir,"results/bmdh_export_toxval_type.xlsx")
   writexl::write_xlsx(unique_toxval_type, file)
 
