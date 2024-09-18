@@ -34,8 +34,6 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
   auth_sources = c(
     # "ATSDR MRLs"
     "source_atsdr_mrls",
-    #"Cal OEHHA",
-    "source_caloehha",
     #"EPA HHTV",
     "source_epa_hhtv",
     #"Health Canada",
@@ -369,9 +367,9 @@ filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
     toxval.source.import.dedup(dedup_fields=dedup_fields, hashing_cols=hashing_fields) %>%
     # Translate key_finding to boolean
     dplyr::mutate(key_finding = dplyr::case_when(
+      !source_table %in% auth_sources ~ NA,
       grepl("key|yes", key_finding, ignore.case=TRUE) ~ 1,
       # Only display key_finding for authoritative sources
-      !source_table %in% auth_sources ~ NA,
       TRUE ~ 0
     )) %>%
     # Rename key_finding and source_hash fields
