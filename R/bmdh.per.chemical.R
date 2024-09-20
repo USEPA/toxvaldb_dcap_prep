@@ -24,12 +24,10 @@
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #' @importFrom stats sd quantile
 #-------------------------------------------------------------------------------
-bmdh.per.chemical <- function(toxval.db="res_toxval_v95",run_name=Sys.Date(),
+bmdh.per.chemical <- function(toxval.db, run_name=Sys.Date(),
                               regulatory.sources=c(
                                 # "ATSDR MRLs"
                                 "source_atsdr_mrls",
-                                #"Cal OEHHA",
-                                "source_caloehha",
                                 #"EPA HHTV",
                                 "source_epa_hhtv",
                                 #"Health Canada",

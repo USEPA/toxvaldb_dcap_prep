@@ -21,7 +21,7 @@
 #' @importFrom stringr str_trim str_extract
 #' @importFrom writexl write_xlsx
 #-----------------------------------------------------------------------------------
-filter.pods <- function(toxval.db="res_toxval_v95", run_name=Sys.Date()) {
+filter.pods <- function(toxval.db, run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
 
   # Read in initial export data

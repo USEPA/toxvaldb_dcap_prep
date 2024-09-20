@@ -29,8 +29,11 @@
 #' @importFrom writexl write_xlsx
 #' @importFrom readxl read_xls
 #-----------------------------------------------------------------------------------
-export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE,
-                            include.drugs=FALSE, include.epa_dws=FALSE, run_name=Sys.Date()) {
+export.for.bmdh <- function(toxval.db,
+                            include.pesticides=FALSE,
+                            include.drugs=FALSE,
+                            include.epa_dws=FALSE,
+                            run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
   input_dir = "data/input/"
   output_dir = paste0("data/results/", run_name, "/")
@@ -488,7 +491,10 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       # Try to provide suggestions
       crit_suggs <- runQuery(paste0("SELECT distinct term, study_type, critical_effect_category, CONCAT(term, study_type) as crit_key ",
                                     "FROM res_toxval_v96.critical_effect_terms ",
-                                    "HAVING crit_key in ('", paste0(missing_crit_cat$term, missing_crit_cat$study_type, collapse="', '"), "')"),
+                                    "HAVING crit_key in ('", paste0(missing_crit_cat$term %>%
+                                                                      # Escape "'" for query
+                                                                      gsub("'", "''", .),
+                                                                    missing_crit_cat$study_type, collapse="', '"), "')"),
                              toxval.db) %>%
         dplyr::select(-crit_key)
 

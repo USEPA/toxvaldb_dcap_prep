@@ -33,7 +33,7 @@
 #' @importFrom tidyr drop_na
 #' @importFrom writexl write_xlsx
 #-------------------------------------------------------------------------------
-bmdh.percentile.plot <- function(to.file=FALSE, toxval.db="res_toxval_v95", run_name=Sys.Date(),
+bmdh.percentile.plot <- function(to.file=FALSE, toxval.db, run_name=Sys.Date(),
                                  minstudies=3, cutoff.logsd=2) {
   printCurrentFunction()
   dir = paste0("data/results/", run_name, "/")

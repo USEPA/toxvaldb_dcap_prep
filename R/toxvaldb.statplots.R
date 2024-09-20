@@ -29,7 +29,7 @@
 #' @importFrom gridExtra grid.arrange
 #' @importFrom grDevices dev.off
 #-------------------------------------------------------------------------------
-toxvaldb.statplots <- function(to.file=FALSE,toxval.db="res_toxval_v95",run_name=Sys.Date()) {
+toxvaldb.statplots <- function(to.file=FALSE, toxval.db, run_name=Sys.Date()) {
   printCurrentFunction()
   dir = paste0("data/results/", run_name, "/")
   file = paste0(dir,"results/ToxValDB summary stats ",toxval.db,".xlsx")

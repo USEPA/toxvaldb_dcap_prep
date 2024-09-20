@@ -17,7 +17,7 @@
 #' }
 #' @rdname driver
 #-------------------------------------------------------------------------------
-driver <- function(toxval.db="res_toxval_v95", run_name=Sys.Date(), run.export=TRUE,
+driver <- function(toxval.db, run_name=Sys.Date(), run.export=TRUE,
                    include.pesticides=FALSE, include.drugs=FALSE, include.epa_dws=FALSE) {
   printCurrentFunction()
   if(include.pesticides) run_name = paste0(run_name, "_pesticides")

@@ -26,7 +26,7 @@
 #' @importFrom graphics plot
 #' @importFrom dplyr mutate
 #-----------------------------------------------------------------------------------
-bmdh.per.study <- function(toxval.db="res_toxval_v95",run_name=Sys.Date()) {
+bmdh.per.study <- function(toxval.db, run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
   dir = paste0("data/results/", run_name, "/")
 
