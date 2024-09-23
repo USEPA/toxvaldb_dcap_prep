@@ -141,8 +141,20 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
         TRUE ~ NA
       ),
       low_lel = suppressWarnings(min(low_lel, na.rm = TRUE)),
+
+      low_noael = dplyr::case_when(
+        ttr == "NOAEL" ~ toxval_numeric,
+        TRUE ~ NA
+      ),
+      low_noael = suppressWarnings(min(low_noael, na.rm = TRUE)),
+
+      low_nel = dplyr::case_when(
+        ttr == "NEL" ~ toxval_numeric,
+        TRUE ~ NA
+      ),
+      low_nel = suppressWarnings(min(low_nel, na.rm = TRUE)),
       # Replace Inf with NA from min with only NA values
-      dplyr::across(c(low_loael, low_lel), ~dplyr::na_if(., Inf))
+      dplyr::across(c(low_loael, low_lel, low_noael, low_nel), ~dplyr::na_if(., Inf))
     ) %>%
     dplyr::ungroup() %>%
     # Remove NOAEL/NEL greater than minimum LOAEL/LEL
@@ -194,6 +206,22 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
       # Pick row with highest priority
       selected_row = min(keep_flag, na.rm = TRUE),
 
+      # Special case to check where NOAEL/LOAEL, NOEL/LOEL, or NEL/LEL may have the same dose, keep the L form
+      keep_flag_tie = dplyr::case_when(
+        all(c(4, 7) %in% keep_flag) & remove_flag != 1 & any(low_loael == low_noael) & any(c(4, 7) %in% selected_row) ~ 7,
+        all(c(5, 8) %in% keep_flag) & remove_flag != 1 & any(low_loael == low_noael) & any(c(5, 8) %in% selected_row) ~ 8,
+        all(c(6, 9) %in% keep_flag) & remove_flag != 1 & any(low_loael == low_noael) & any(c(6, 9) %in% selected_row) ~ 9,
+        all(c(10, 13) %in% keep_flag) & remove_flag != 1 & any(low_lel == low_nel) & any(c(10, 13) %in% selected_row) ~ 13,
+        all(c(11, 14) %in% keep_flag) & remove_flag != 1 & any(low_lel == low_nel) & any(c(11, 14) %in% selected_row) ~ 14,
+        all(c(12, 15) %in% keep_flag) & remove_flag != 1 & any(low_lel == low_nel) & any(c(12, 15) %in% selected_row) ~ 15,
+        TRUE ~ NA
+      ),
+
+      selected_row = dplyr::case_when(
+        !is.na(keep_flag_tie) ~ keep_flag_tie,
+        TRUE ~ selected_row
+      ),
+
       # Set reason for filtering row out
       reason_for_filtering = dplyr::case_when(
         remove_flag == 1 ~ "NEL/NOAEL greater than minimum LEL/LOAEL",
@@ -216,7 +244,18 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
         selected_row == 17 ~ "FEL (ADJ) selected for this group",
         selected_row == 18 ~ "FEL selected for this group",
         TRUE ~ "no selection from this group"
-      )
+      ),
+
+      # Add reason based on special tie case
+      reason_for_filtering = dplyr::case_when(
+        keep_flag_tie == 7 ~ paste0("LOAEL (HED) selected for this group with NOAEL (HED) dose tie"),
+        keep_flag_tie == 8 ~ paste0("LOAEL (ADJ) selected for this group with NOAEL (ADJ) dose tie"),
+        keep_flag_tie == 9 ~ paste0("LOAEL selected for this group with NOAEL dose tie"),
+        keep_flag_tie == 13 ~ paste0("LEL (HED) selected for this group with NEL (HED) dose tie"),
+        keep_flag_tie == 14 ~ paste0("LEL (ADJ) selected for this group with NEL (ADJ) dose tie"),
+        keep_flag_tie == 15 ~ paste0("LEL selected for this group with NEL dose tie"),
+        TRUE ~ reason_for_filtering
+      ),
     ) %>%
     dplyr::ungroup()
 
@@ -240,7 +279,8 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     dplyr::ungroup() %>%
     dplyr::filter(drop == 0) %>%
     dplyr::select(-c("tts", "ttr", "low_loael", "low_lel", "min_val", "max_val", "remove_flag",
-                     "keep_flag", "selected_row", "reason_for_filtering", "repro_dev_fix", "n", "drop"))
+                     "keep_flag", "selected_row", "reason_for_filtering", "repro_dev_fix", "n", "drop",
+                     "keep_flag_tie"))
 
   # Select rows that were filtered out
   filtered_out_non_auth = res_init %>%
