@@ -58,19 +58,24 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     ) %>%
     dplyr::mutate(filter_pod_group = "auth_key")
 
-  # Track filtered out entries (with reason for filtering)
-  # filtered_out_auth = res0 %>%
-  #   dplyr::filter(
-  #     source_table %in% auth_sources,
-  #     !grepl("key|yes", key_finding, ignore.case=TRUE)
-  #   ) %>%
-  #   dplyr::mutate(
-  #     reason_for_filtering = "from authoritative source but not key finding"
-  #   )
+  # Get list of key auth study_groups
+  key_finding_study_groups = res_auth %>%
+    dplyr::pull(study_group) %>%
+    unique()
+
+  # Filter out non-key auth records in the key-auth study_groups
+  filtered_out_auth_non_key_study_group = res0 %>%
+    dplyr::filter(study_group %in% key_finding_study_groups,
+                  !key_finding %in% c("yes", "key")) %>%
+    dplyr::mutate(
+      reason_for_filtering = "authoritative non-key_finding record from authoritative study_group with key_finding"
+    )
+
   res_auth_not_key = res0 %>%
     dplyr::filter(
       source_table %in% auth_sources,
-      !grepl("key|yes", key_finding, ignore.case=TRUE)
+      !grepl("key|yes", key_finding, ignore.case=TRUE),
+      !study_group %in% key_finding_study_groups
     ) %>%
     dplyr::mutate(filter_pod_group = "auth_not_key")
 
@@ -93,8 +98,8 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
 
   # Filter non-authoritative sources
   res_init = res0 %>%
-    dplyr::filter(!source_table %in% auth_sources #,
-                  # !study_group %in% non_auth_key_finding_study_groups
+    dplyr::filter(!source_table %in% auth_sources,
+                  !study_group %in% key_finding_study_groups
                   ) %>%
     dplyr::mutate(filter_pod_group = "non_auth") %>%
     dplyr::bind_rows(res_auth, res_auth_not_key#, non_auth_key_findings
@@ -291,8 +296,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
 
   # Combine filtered out data from authoritative and non-authoritative sources
   filtered_out = dplyr::bind_rows(
-    # filtered_out_auth,
-    filtered_out_non_auth #, non_auth_non_key_findings_filtered
+    filtered_out_non_auth, filtered_out_auth_non_key_study_group
     )
 
   if(nrow(filtered_out) + nrow(res) != nrow(res0)){
