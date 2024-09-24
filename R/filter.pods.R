@@ -419,6 +419,34 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     # Rename key_finding and source_hash fields
     dplyr::rename(calibration_flag = key_finding, source_hash = source_hash_old)
 
+  # Add calibration_class field for calibration_flag records
+  res = res %>%
+    dplyr::mutate(calibration_class = dplyr::case_when(
+      study_type %in% c("chronic", "subchronic") & calibration_flag %in% c(1) ~ study_type,
+      TRUE ~ NA
+    )) %>%
+    # Select calibration_record by chemical based on calibration_class
+    dplyr::group_by(dtxsid) %>%
+    # chronic > subchronic > NA
+    dplyr::mutate(rank_calibration_class = dplyr::case_when(
+      calibration_class %in% "chronic" ~ 1,
+      calibration_class %in% "subchronic" ~ 2,
+      calibration_flag %in% c(1) ~ 3,
+      TRUE ~ NA
+    ),
+
+    # Select calibration rank within group
+    calibration_record = suppressWarnings(min(rank_calibration_class, na.rm = TRUE))
+    ) %>%
+    dplyr::ungroup() %>%
+    # Set calibration_record flag
+    dplyr::mutate(calibration_record = dplyr::case_when(
+      calibration_record == rank_calibration_class ~ 1,
+      TRUE ~ 0
+    )) %>%
+    # Remove intermediate fields
+    dplyr::select(-rank_calibration_class)
+
   # Write results to Excel
   writexl::write_xlsx(res, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx"))
   writexl::write_xlsx(filtered_out, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," removed entries.xlsx"))

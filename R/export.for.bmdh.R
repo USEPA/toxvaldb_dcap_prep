@@ -138,6 +138,7 @@ export.for.bmdh <- function(toxval.db,
                    "a.dtxsid, a.casrn, a.name, ",
                    "b.source, ",
                    "b.source_table, ",
+                   "e.toxval_type_supercategory, ",
                    "b.toxval_type, ",
                    "b.toxval_subtype, ",
                    "b.toxval_numeric_qualifier, ",
@@ -205,6 +206,15 @@ export.for.bmdh <- function(toxval.db,
         !(grepl("ECOTOX",source) & dtxsid=="DTXSID2024246" & toxval_numeric==7621 & toxval_units=="mg/kg-day"),
         !(grepl("ToxRefDB", source) & dtxsid == "DTXSID6040371")
       )
+
+    # Special case for IRIS and HESS. toxval_type_supercategory DRSV set toxval_subtype to "-"
+    if(grepl("IRIS$|HESS$", src)){
+      mat = mat %>%
+        dplyr::mutate(toxval_subtype = dplyr::case_when(
+          toxval_type_supercategory %in% c("Dose Response Summary Value") ~ "-",
+          TRUE ~ toxval_subtype
+        ))
+    }
 
     # Special source_hash fixes
     hash_specific_changes = readxl::read_xlsx("data/input/dictionary conversions for DCAP.xlsx") %>%
