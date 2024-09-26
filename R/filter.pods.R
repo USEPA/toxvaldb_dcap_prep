@@ -419,22 +419,50 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     # Rename key_finding and source_hash fields
     dplyr::rename(calibration_flag = key_finding, source_hash = source_hash_old)
 
+  # Load calibration dictionary
+  calibration_dict = readxl::read_xlsx(Sys.getenv("calibration_dict"), guess_max = 21474836) %>%
+    dplyr::filter(!is.na(calibration_class)) %>%
+    dplyr::select(source_hash, calibration_class)
+
+  # Remove and export duplicate mappings
+  dup_calib_dict = calibration_dict %>%
+    dplyr::group_by(source_hash) %>%
+    dplyr::filter(dplyr::n()>1)
+
+  if(nrow(dup_calib_dict)){
+    writexl::write_xlsx(missing_calibration_dict,
+                        paste0(dir, "dup_calibration_dict.xlsx"))
+    stop("Duplicate calibration dictionary entries found...see ", paste0(dir, "dup_calibration_dict.xlsx"))
+  }
+
+  # Export missing calibration dictionary
+  missing_calibration_dict = res %>%
+    dplyr::filter(calibration_flag %in% c(1),
+                  !source_hash %in% calibration_dict$source_hash)
+
+  if(nrow(missing_calibration_dict)){
+    writexl::write_xlsx(missing_calibration_dict,
+                        paste0(dir, "missing_calibration_dict.xlsx"))
+  }
+
   # Add calibration_class field for calibration_flag records
   res = res %>%
-    dplyr::mutate(calibration_class = dplyr::case_when(
-      study_type %in% c("chronic", "subchronic") & calibration_flag %in% c(1) ~ study_type,
-      TRUE ~ NA
-    )) %>%
+    dplyr::left_join(calibration_dict,
+                     by = "source_hash")
+    # dplyr::mutate(calibration_class = dplyr::case_when(
+    #   study_type %in% c("chronic", "subchronic") & calibration_flag %in% c(1) ~ study_type,
+    #   TRUE ~ NA
+    # ))
+
+  res = res %>%
     # Select calibration_record by chemical based on calibration_class
     dplyr::group_by(dtxsid) %>%
     # chronic > subchronic > NA
     dplyr::mutate(rank_calibration_class = dplyr::case_when(
-      calibration_class %in% "chronic" ~ 1,
-      calibration_class %in% "subchronic" ~ 2,
-      calibration_flag %in% c(1) ~ 3,
+      grepl("\\bchronic\\b", calibration_class) ~ 1,
+      grepl("\\bsubchronic\\b|\\bintermediate\\b", calibration_class) ~ 2,
       TRUE ~ NA
     ),
-
     # Select calibration rank within group
     calibration_record = suppressWarnings(min(rank_calibration_class, na.rm = TRUE))
     ) %>%
