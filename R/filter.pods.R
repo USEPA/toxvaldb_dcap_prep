@@ -283,7 +283,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     ) %>%
     dplyr::ungroup() %>%
     dplyr::filter(drop == 0) %>%
-    dplyr::select(-c("tts", "ttr", "low_loael", "low_lel", "min_val", "max_val", "remove_flag",
+    dplyr::select(-c("tts", "ttr", "low_loael", "low_lel", "low_noael", "low_nel", "min_val", "max_val", "remove_flag",
                      "keep_flag", "selected_row", "reason_for_filtering", "repro_dev_fix", "n", "drop",
                      "keep_flag_tie"))
 

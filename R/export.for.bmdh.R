@@ -388,6 +388,59 @@ export.for.bmdh <- function(toxval.db,
       # Filter out critical_effect values with "accumulation" if source is ECOTOX
       mat = mat %>%
         dplyr::filter(!grepl("accumulation", critical_effect, ignore.case=TRUE))
+
+      # Get long_ref by source_hash
+      ecotox_longref = mat %>%
+        dplyr::select(source_hash, record_source_info) %>%
+        dplyr::mutate(
+          record_source_info = record_source_info %>%
+            gsub("] |::| [", ",", ., fixed=TRUE),
+          json_parsed = purrr::map(record_source_info, ~jsonlite::fromJSON(., flatten = TRUE))
+        ) %>%
+        dplyr::select(-record_source_info) %>%
+        tidyr::unnest(json_parsed) %>%
+        dplyr::mutate(dplyr::across(dplyr::everything(), ~tidyr::replace_na(., "-"))) %>%
+        dplyr::filter(!record_source_level %in% c("origin")) %>%
+        dplyr::select(source_hash, long_ref) %>%
+        dplyr::distinct()
+
+      # Alert to unhandled cases
+      if(any(!unique(mat$toxval_type) %in% c("NOEL", "LOEL"))){
+        cat("Need to handle missing ECOTOX toxval_type filtering cases:\n", paste0("- ", unique(mat$toxval_type)[!unique(mat$toxval_type) %in% c("NOEL", "LOEL")],
+                                                                                   collapse="\n "),
+            "\n")
+        stop()
+      }
+
+      # Within study, drop NOEL > LOEL per chemical (constrained to match on species, duration, and sex)
+      ecotox_noel_filter = mat %>%
+        dplyr::left_join(ecotox_longref,
+                         by="source_hash") %>%
+        dplyr::group_by(dtxsid, long_ref, common_name, study_duration_value, study_duration_units, sex, lifestage, generation) %>%
+        # Get minimum LOAEL/LEL values to initially filter out NOAEL/NEL > LOAEL/LEL
+        dplyr::mutate(
+          low_loel = dplyr::case_when(
+            toxval_type == "LOEL" ~ toxval_numeric,
+            TRUE ~ NA
+          ),
+          low_loel = suppressWarnings(min(low_loel, na.rm = TRUE)),
+          # Replace Inf with NA from min with only NA values
+          dplyr::across(c(low_loel), ~dplyr::na_if(., Inf)),
+          remove_flag = dplyr::case_when(
+            toxval_type == "NOEL" & toxval_numeric > low_loel & !is.na(low_loel) ~ 1,
+            TRUE ~ 0
+          )
+        ) %>%
+        dplyr::distinct() %>%
+        dplyr::filter(remove_flag %in% c(1))
+
+      if(nrow(ecotox_noel_filter)){
+        # Export filtered out records for review
+        writexl::write_xlsx(ecotox_noel_filter, paste0(output_dir,"results/ToxValDB for BMDh ",toxval.db," ECOTOX NOEL filtered.xlsx"))
+        mat = mat %>%
+          dplyr::filter(!source_hash %in% ecotox_noel_filter$source_hash)
+      }
+
     } else if(grepl("ECHA IUCLID", src)) {
       # Filter out records with quality rating of "3 (not reliable)" for IUCLID
       mat = mat %>%
