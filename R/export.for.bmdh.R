@@ -54,10 +54,22 @@ export.for.bmdh <- function(toxval.db,
   # Updated list: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/BCPCPEST
   # Current approach combines original and updated lists
   pesticide_file = Sys.getenv("pesticide_file")
-  pesticide_dtxsid = readxl::read_xls(pesticide_file) %>%
-    dplyr::pull(DTXSID) %>%
-    unique() %>%
-    paste0(., collapse="', '")
+  pesticide_dtxsid = switch(tools::file_ext(pesticide_file),
+                            "xls" = {
+                              readxl::read_xls(pesticide_file) %>%
+                                dplyr::pull(DTXSID) %>%
+                                unique() %>%
+                                paste0(., collapse="', '")
+                            },
+                            "xlsx" = {
+                              readxl::read_xlsx(pesticide_file,
+                                                sheet = "Main Data") %>%
+                                dplyr::pull(DTXSID) %>%
+                                unique() %>%
+                                paste0(., collapse="', '")
+                            },
+                            stop("Unhandled file type for pesticide file")
+  )
 
   # Set pesticide addition according to parameter
   if(include.pesticides) {
