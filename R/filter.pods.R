@@ -459,6 +459,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     dplyr::group_by(dtxsid) %>%
     # chronic > subchronic > NA
     dplyr::mutate(rank_calibration_class = dplyr::case_when(
+      grepl("\\(|\\)", calibration_class) ~ NA,
       grepl("\\bchronic\\b", calibration_class) ~ 1,
       grepl("\\bsubchronic\\b|\\bintermediate\\b", calibration_class) ~ 2,
       TRUE ~ NA
