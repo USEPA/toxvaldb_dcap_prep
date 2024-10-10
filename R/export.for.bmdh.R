@@ -257,12 +257,28 @@ export.for.bmdh <- function(toxval.db,
           exposure_route %in% c(NA, "-") &
             toxval_units == 'mg/kg-day' &
             (toxval_type %in% c('NEL', 'LEL', 'LOEL', 'NOEL', 'NOAEL', 'LOAEL') |
-               grepl('^BMD', toxval_type)) ~ "oral",
+               grepl('^BMD', toxval_type)) ~ "oral_fix",
           TRUE ~ exposure_route
-        )
+        ),
+        exposure_route_fix = dplyr::case_when(
+          exposure_route == "oral_fix" ~ 1,
+          TRUE ~ 0
+        ),
+        exposure_route = exposure_route %>%
+          gsub("oral_fix", "oral", .)
       ) %>%
       dplyr::filter(exposure_route == "oral") %>%
       dplyr::distinct()
+
+    # Filter to and export records that were manually assigned to oral
+    exposure_route_fix = mat %>%
+      dplyr::filter(exposure_route_fix == 1)
+
+    if(nrow(exposure_route_fix)){
+      expo_dir = paste0(output_dir, "exposure_route_fix")
+      if(!dir.exists(expo_dir)) dir.create(expo_dir)
+      writexl::write_xlsx(exposure_route_fix, paste0(expo_dir, src, "_oral.xlsx"))
+    }
 
     if(!nrow(mat)){
       cat("No data pulled for: ", src, "\n")
@@ -642,7 +658,8 @@ export.for.bmdh <- function(toxval.db,
     res = res %>%
       dplyr::bind_rows(mat %>%
                          dplyr::mutate(across(c("study_duration_value",
-                                                "toxval_numeric_hed"
+                                                "toxval_numeric_hed",
+                                                "exposure_route_fix"
                          ), ~as.numeric(.))))
   }
 
