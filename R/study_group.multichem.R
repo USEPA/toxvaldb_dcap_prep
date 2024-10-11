@@ -17,7 +17,7 @@
 #' @rdname study_group.multichem
 #' @importFrom openxlsx read.xlsx createStyle write.xlsx
 #-----------------------------------------------------------------------------------
-study_group.multichem <- function(toxval.db="res_toxval_v95",run_name=Sys.Date()) {
+study_group.multichem <- function(toxval.db, run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
   dir = paste0("data/results/", run_name, "/")
 

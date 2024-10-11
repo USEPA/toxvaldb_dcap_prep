@@ -26,5 +26,6 @@ init.current.run.directory <- function(run_name=Sys.Date()) {
     dir.create(new_directory)
     dir.create(paste0(new_directory, "/results"))
     dir.create(paste0(new_directory, "/DCAP"))
+    dir.create(paste0(new_directory, "/missing_crit_cat"))
   }
 }

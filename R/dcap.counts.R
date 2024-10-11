@@ -18,7 +18,7 @@
 #' @importFrom openxlsx read.xlsx write.xlsx
 #' @importFrom writexl write_xlsx
 #-----------------------------------------------------------------------------------
-dcap.counts <- function(toxval.db="res_toxval_v95",run_name=Sys.Date()) {
+dcap.counts <- function(toxval.db, run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
   dir = paste0("data/results/", run_name, "/")
   file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx")

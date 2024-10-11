@@ -15,7 +15,7 @@
 #'  \code{\link[tidyr]{separate_rows}}, \code{\link[tidyr]{replace_na}}
 #'  \code{\link[stringr]{str_trim}}
 #'  \code{\link[readr]{read_delim}}, \code{\link[readr]{cols}}
-#' @rdname set.conceptual_model.by.critical_effect_category
+#' @rdname get.conceptual_model.by.critical_effect_category
 #' @importFrom dplyr select distinct mutate n case_when left_join rename across where group_by any_of na_if ungroup
 #' @importFrom tidyr separate_rows replace_na
 #' @importFrom stringr str_squish
@@ -30,7 +30,7 @@ get.conceptual_model.by.critical_effect_category <- function(df){
         TRUE ~ "0"
       )
     ) %>%
-    dplyr::select(source_hash, study_type, critical_effect_category, piped_critical_effect) %>%
+    dplyr::select(source_hash, study_type, critical_effect_category, critical_effect_category_original, piped_critical_effect) %>%
     dplyr::mutate(critical_effect_category = fix.replace.unicode(critical_effect_category)) %>%
     dplyr::distinct() %>%
     dplyr::mutate(hash_group = 1:dplyr::n()) %>%
@@ -43,14 +43,17 @@ get.conceptual_model.by.critical_effect_category <- function(df){
     tidyr::separate_rows(critical_effect_category, sep = "\\|") %>%
     dplyr::distinct() %>%
     dplyr::mutate(type_map = dplyr::case_when(
+      study_type == "reproduction developmental" & !grepl("development|reproduction", critical_effect_category_original) ~ "repeat dose",
+      grepl("development|reproduction", critical_effect_category_original) ~ "repro dev",
       grepl("chronic", study_type, ignore.case=TRUE) ~ "repeat dose",
       grepl("subchronic", study_type, ignore.case=TRUE) ~ "repeat dose",
       grepl("28-day", study_type, ignore.case=TRUE) ~ "repeat dose",
       grepl("clinical", study_type, ignore.case=TRUE) ~ "repeat dose",
       grepl("repeat dose other", study_type, ignore.case=TRUE) ~ "repeat dose",
+      grepl("short-term", study_type, ignore.case=TRUE) ~ "repeat dose",
       study_type=="developmental"~"repro dev",
       study_type=="reproduction"~"repro dev",
-      study_type=="reproduction developmental"~"repro dev",
+      study_type=="reproduction developmental" ~ "repro dev",
       TRUE ~ NA_character_
     ))%>%
     dplyr::mutate(type = dplyr::case_when(
@@ -126,7 +129,8 @@ get.conceptual_model.by.critical_effect_category <- function(df){
     dplyr::mutate(source_hash = paste0(source_hash, collapse=",")) %>%
     dplyr::ungroup() %>%
     dplyr::distinct() %>%
-    dplyr::select(-hash_group)
+    dplyr::select(-dplyr::any_of(c("hash_group", "multiple_flag", "model1", "model2",
+                                   "model1_all", "model2_all", "critical_effect_category_original")))
 
   return(final)
 }

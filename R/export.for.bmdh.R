@@ -29,8 +29,11 @@
 #' @importFrom writexl write_xlsx
 #' @importFrom readxl read_xls
 #-----------------------------------------------------------------------------------
-export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE,
-                            include.drugs=FALSE, include.epa_dws=FALSE, run_name=Sys.Date()) {
+export.for.bmdh <- function(toxval.db,
+                            include.pesticides=FALSE,
+                            include.drugs=FALSE,
+                            include.epa_dws=FALSE,
+                            run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
   input_dir = "data/input/"
   output_dir = paste0("data/results/", run_name, "/")
@@ -40,21 +43,33 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
              "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
              "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
   # sources by supersource name
-  slist = c(
-    "ATSDR", "EPA HAWC", "Cal OEHHA", "Copper Manufacturers", "ECHA IUCLID", "EPA ECOTOX",
-    "EFSA OpenFoodTox", "EPA HHTV", "Health Canada", "EPA HEAST", "NITE HESS", "EPA HPVIS",
-    "EPA IRIS", "NTP PFAS", "EPA PPRTV", "EPA ToxRefDB", "WHO JECFA"
-  )
+  # slist = c(
+  #   "ATSDR", "EPA HAWC", "Cal OEHHA", "Copper Manufacturers", "ECHA IUCLID", "EPA ECOTOX",
+  #   "EFSA OpenFoodTox", "EPA HHTV", "Health Canada", "EPA HEAST", "NITE HESS", "EPA HPVIS",
+  #   "EPA IRIS", "NTP PFAS", "EPA PPRTV", "EPA ToxRefDB", "WHO JECFA"
+  # )
 
   # Read in pesticide DTXSID values to exclude
   # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
   # Updated list: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/BCPCPEST
   # Current approach combines original and updated lists
   pesticide_file = Sys.getenv("pesticide_file")
-  pesticide_dtxsid = readxl::read_xls(pesticide_file) %>%
-    dplyr::pull(DTXSID) %>%
-    unique() %>%
-    paste0(., collapse="', '")
+  pesticide_dtxsid = switch(tools::file_ext(pesticide_file),
+                            "xls" = {
+                              readxl::read_xls(pesticide_file) %>%
+                                dplyr::pull(DTXSID) %>%
+                                unique() %>%
+                                paste0(., collapse="', '")
+                            },
+                            "xlsx" = {
+                              readxl::read_xlsx(pesticide_file,
+                                                sheet = "Main Data") %>%
+                                dplyr::pull(DTXSID) %>%
+                                unique() %>%
+                                paste0(., collapse="', '")
+                            },
+                            stop("Unhandled file type for pesticide file")
+  )
 
   # Set pesticide addition according to parameter
   if(include.pesticides) {
@@ -94,28 +109,28 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     epa_dws_addition = paste0(" and b.dtxsid NOT IN ('", epa_dws_dtxsid, "')")
   }
 
-  # Get priority values for each specified source
-  plist = vector(mode="integer",length=length(slist))
-  plist[] = 1
-  for(i in seq_len(length(slist))) {
-    src = slist[i]
-    query = paste0("select distinct priority from record_source where source LIKE '%",src,"%' and long_ref!='-'")
-    vals = runQuery(query,toxval.db)[,1]
-    cat(src,paste(vals,collapse="|"),"\n")
-    if(length(vals)>0) plist[i] = vals[1]
-    else {
-      if(src %in% c("HEAST", "EPA HEAST",
-                    "HESS", "NITE HESS",
-                    "ECHA IUCLID")) plist[i] = 1
-    }
-  }
+  # # Get priority values for each specified source
+  # plist = vector(mode="integer",length=length(slist))
+  # plist[] = 1
+  # for(i in seq_len(length(slist))) {
+  #   src = slist[i]
+  #   query = paste0("select distinct priority from record_source where source LIKE '%",src,"%' and long_ref!='-'")
+  #   vals = runQuery(query,toxval.db)[,1]
+  #   cat(src,paste(vals,collapse="|"),"\n")
+  #   if(length(vals)>0) plist[i] = vals[1]
+  #   else {
+  #     if(src %in% c("HEAST", "EPA HEAST",
+  #                   "HESS", "NITE HESS",
+  #                   "ECHA IUCLID")) plist[i] = 1
+  #   }
+  # }
 
   # Query ToxVal for source data
   res = data.frame()
 
   for(i in seq_len(length(slist))) {
     src = slist[i]
-    priority = plist[i]
+    # priority = plist[i]
     cat("Pulling ", src, " (", i, " of ", length(slist), ")\n")
 
     # Handle inclusion of only specified IUCLID OHTs
@@ -135,6 +150,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    "a.dtxsid, a.casrn, a.name, ",
                    "b.source, ",
                    "b.source_table, ",
+                   "e.toxval_type_supercategory, ",
                    "b.toxval_type, ",
                    "b.toxval_subtype, ",
                    "b.toxval_numeric_qualifier, ",
@@ -146,6 +162,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    "b.study_duration_class, ",
                    "b.supersource, ",
                    "b.subsource_url, ",
+                   "f.clowder_doc_id, ",
                    "d.common_name, ",
                    "b.species_original, ",
                    "b.strain, ",
@@ -165,7 +182,6 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                    # "f.record_source_level, ",
                    # "f.record_source_type, ",
                    # "f.priority, ",
-                   "f.clowder_doc_id, ",
                    # "f.quality, ",
                    "b.source_hash, ",
                    "b.study_group, ",
@@ -199,8 +215,18 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       dplyr::distinct() %>%
       # Remove specific ECOTOX entry that should be QC failed
       dplyr::filter(
-        !(grepl("ECOTOX",source) & dtxsid=="DTXSID2024246" & toxval_numeric==7621 & toxval_units=="mg/kg-day")
+        !(grepl("ECOTOX",source) & dtxsid=="DTXSID2024246" & toxval_numeric==7621 & toxval_units=="mg/kg-day"),
+        !(grepl("ToxRefDB", source) & dtxsid == "DTXSID6040371")
       )
+
+    # Special case for IRIS and HESS. toxval_type_supercategory DRSV set toxval_subtype to "-"
+    if(grepl("IRIS$|HESS$", src)){
+      mat = mat %>%
+        dplyr::mutate(toxval_subtype = dplyr::case_when(
+          toxval_type_supercategory %in% c("Dose Response Summary Value") ~ "-",
+          TRUE ~ toxval_subtype
+        ))
+    }
 
     # Special source_hash fixes
     hash_specific_changes = readxl::read_xlsx("data/input/dictionary conversions for DCAP.xlsx") %>%
@@ -231,12 +257,28 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
           exposure_route %in% c(NA, "-") &
             toxval_units == 'mg/kg-day' &
             (toxval_type %in% c('NEL', 'LEL', 'LOEL', 'NOEL', 'NOAEL', 'LOAEL') |
-               grepl('^BMD', toxval_type)) ~ "oral",
+               grepl('^BMD', toxval_type)) ~ "oral_fix",
           TRUE ~ exposure_route
-        )
+        ),
+        exposure_route_fix = dplyr::case_when(
+          exposure_route == "oral_fix" ~ 1,
+          TRUE ~ 0
+        ),
+        exposure_route = exposure_route %>%
+          gsub("oral_fix", "oral", .)
       ) %>%
       dplyr::filter(exposure_route == "oral") %>%
       dplyr::distinct()
+
+    # Filter to and export records that were manually assigned to oral
+    exposure_route_fix = mat %>%
+      dplyr::filter(exposure_route_fix == 1)
+
+    if(nrow(exposure_route_fix)){
+      expo_dir = paste0(output_dir, "exposure_route_fix")
+      if(!dir.exists(expo_dir)) dir.create(expo_dir)
+      writexl::write_xlsx(exposure_route_fix, paste0(expo_dir, src, "_oral.xlsx"))
+    }
 
     if(!nrow(mat)){
       cat("No data pulled for: ", src, "\n")
@@ -259,6 +301,7 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                                "record_source_type, ",
                                "priority, ",
                                "clowder_doc_id, ",
+                               "document_name, ",
                                "quality ",
                                "FROM record_source ",
                                "WHERE toxval_id in (", toString(mat$toxval_id), ")"),
@@ -323,7 +366,8 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
           TRUE ~ "0"
         )
       ) %>%
-      dplyr::filter(keep_short_term == "1")
+      dplyr::filter(keep_short_term == "1") %>%
+      dplyr::select(-keep_short_term)
 
     cat("[3]",src,":",nrow(mat),"\n")
 
@@ -372,6 +416,59 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
       # Filter out critical_effect values with "accumulation" if source is ECOTOX
       mat = mat %>%
         dplyr::filter(!grepl("accumulation", critical_effect, ignore.case=TRUE))
+
+      # Get long_ref by source_hash
+      ecotox_longref = mat %>%
+        dplyr::select(source_hash, record_source_info) %>%
+        dplyr::mutate(
+          record_source_info = record_source_info %>%
+            gsub("] |::| [", ",", ., fixed=TRUE),
+          json_parsed = purrr::map(record_source_info, ~jsonlite::fromJSON(., flatten = TRUE))
+        ) %>%
+        dplyr::select(-record_source_info) %>%
+        tidyr::unnest(json_parsed) %>%
+        dplyr::mutate(dplyr::across(dplyr::everything(), ~tidyr::replace_na(., "-"))) %>%
+        dplyr::filter(!record_source_level %in% c("origin")) %>%
+        dplyr::select(source_hash, long_ref) %>%
+        dplyr::distinct()
+
+      # Alert to unhandled cases
+      if(any(!unique(mat$toxval_type) %in% c("NOEL", "LOEL"))){
+        cat("Need to handle missing ECOTOX toxval_type filtering cases:\n", paste0("- ", unique(mat$toxval_type)[!unique(mat$toxval_type) %in% c("NOEL", "LOEL")],
+                                                                                   collapse="\n "),
+            "\n")
+        stop()
+      }
+
+      # Within study, drop NOEL > LOEL per chemical (constrained to match on species, duration, and sex)
+      ecotox_noel_filter = mat %>%
+        dplyr::left_join(ecotox_longref,
+                         by="source_hash") %>%
+        dplyr::group_by(dtxsid, long_ref, common_name, study_duration_value, study_duration_units, sex, lifestage, generation) %>%
+        # Get minimum LOAEL/LEL values to initially filter out NOAEL/NEL > LOAEL/LEL
+        dplyr::mutate(
+          low_loel = dplyr::case_when(
+            toxval_type == "LOEL" ~ toxval_numeric,
+            TRUE ~ NA
+          ),
+          low_loel = suppressWarnings(min(low_loel, na.rm = TRUE)),
+          # Replace Inf with NA from min with only NA values
+          dplyr::across(c(low_loel), ~dplyr::na_if(., Inf)),
+          remove_flag = dplyr::case_when(
+            toxval_type == "NOEL" & toxval_numeric > low_loel & !is.na(low_loel) ~ 1,
+            TRUE ~ 0
+          )
+        ) %>%
+        dplyr::distinct() %>%
+        dplyr::filter(remove_flag %in% c(1))
+
+      if(nrow(ecotox_noel_filter)){
+        # Export filtered out records for review
+        writexl::write_xlsx(ecotox_noel_filter, paste0(output_dir,"results/ToxValDB for BMDh ",toxval.db," ECOTOX NOEL filtered.xlsx"))
+        mat = mat %>%
+          dplyr::filter(!source_hash %in% ecotox_noel_filter$source_hash)
+      }
+
     } else if(grepl("ECHA IUCLID", src)) {
       # Filter out records with quality rating of "3 (not reliable)" for IUCLID
       mat = mat %>%
@@ -394,13 +491,136 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     cat("[4]",src,":",nrow(mat),"\n\n")
 
     # Map critical_effect_category
-    crit_cat_map <- runQuery(paste0("SELECT source_hash, critical_effect_category FROM critical_effect_terms ",
+    # https://stackoverflow.com/questions/5629111/how-can-i-make-sql-case-sensitive-string-comparison-on-mysql
+    crit_cat_map <- runQuery(paste0("SELECT distinct source_hash, BINARY term as term, study_type, critical_effect_category, ",
+                                    "CONCAT(source_hash, '_', term) as crit_key ",
+                                    "FROM critical_effect_terms ",
                                     "WHERE source_hash in ('",
                                     paste0(mat$source_hash, collapse = "', '")
-                                    ,"') ",
-                                    # Remove select terms
-                                    "and term not in ('none')"),
+                                    ,"') "),
+                             toxval.db)
+
+    # Copy over study_type collapse lists from old Python script logic
+    repeat_study_types = c('immunotoxicity','intermediate','repeat dose other','subchronic',
+                           'neurotoxicity subchronic','neurotoxicity chronic',
+                           'neurotoxicity 28-day', 'neurotoxicity','intermediate','1','104','14','2','24', #typo
+                           'immunotoxicity subchronic','immunotoxicity chronic',
+                           'immunotoxicity 28-day','immunotoxicity','growth','chronic','28-day', 'short-term')
+    reprodev_study_types = c('reproduction developmental',
+                             'extended one-generation reproductive toxicity - with F2 generation and developmental neurotoxicity (Cohorts 1A, 1B with extension, 2A and 2B)',
+                             'extended one-generation reproductive toxicity - with F2 generation and both developmental neuro- and immunotoxicity (Cohorts 1A, 1B with extension, 2A, 2B, and 3)',
+                             'extended one-generation reproductive toxicity - with F2 generation (Cohorts 1A, and 1B with extension)',
+                             'developmental')
+
+    # Unwrap critical_effect and export missing critical_effect_category mappings
+    missing_crit_cat = mat %>%
+      dplyr::select(source_hash, critical_effect, study_type) %>%
+      tidyr::separate_rows(critical_effect, sep = "\\|") %>%
+      dplyr::mutate(critical_effect = stringr::str_squish(critical_effect)) %>%
+      dplyr::filter(!critical_effect %in% c("-", "", "none", "None")) %>%
+      tidyr::unite(col = "crit_key",
+                   source_hash, critical_effect,
+                   sep = "_",
+                   remove = FALSE) %>%
+      dplyr::distinct() %>%
+      dplyr::filter(!crit_key %in% crit_cat_map$crit_key) %>%
+      dplyr::select(-crit_key) %>%
+      # Collapse source_hash to export unique cases to map
+      dplyr::group_by(dplyr::across(c(-source_hash))) %>%
+      dplyr::summarise(source_hash = toString(source_hash)) %>%
+      dplyr::ungroup() %>%
+      dplyr::distinct() %>%
+      dplyr::mutate(
+        study_type = dplyr::case_when(
+          study_type %in% !!repeat_study_types ~ "repeat dose",
+          study_type %in% !!reprodev_study_types ~ "reproductive developmental",
+          TRUE ~ study_type
+        )
+      ) %>%
+      dplyr::select(source_hash, term=critical_effect, dplyr::everything())
+
+    if(nrow(missing_crit_cat)){
+      # Handle case of long source_hash list XLSX character limit
+      # Get hash length, add 2 characters for ", " delimiter
+      hash_length = min(stringr::str_length(mat$source_hash)) + 2
+      tmp = missing_crit_cat %>%
+        dplyr::mutate(n_count = stringr::str_length(source_hash),
+                      group_length = dplyr::case_when(
+                        n_count < 10000 ~ n_count,
+                        TRUE ~ floor(n_count / floor(n_count / 10000))
+                      ),
+                      n_group = floor(group_length / hash_length)
+        )
+
+      # Split large strings into smaller groups
+      split = tmp %>%
+        dplyr::filter(n_count > 10000)
+
+      if(nrow(split)){
+        split = split %>%
+          dplyr::rowwise() %>%
+          dplyr::mutate(out_groups = strsplit(source_hash, ", ") %>%
+                          unlist() %>%
+                          split(., rep(seq_along(.), each  = n_group, length.out = length(.))) %>%
+                          lapply(., toString) %>%
+                          paste0(collapse = ";")
+          ) %>%
+          dplyr::ungroup() %>%
+          tidyr::separate_rows(out_groups, sep = ";") %>%
+          dplyr::select(-n_count, -group_length, -n_group)
+
+        # Filter out records with strings over limit, append split groups
+        missing_crit_cat = missing_crit_cat %>%
+          dplyr::filter(!source_hash %in% split$source_hash) %>%
+          dplyr::bind_rows(split %>%
+                             dplyr::select(-source_hash) %>%
+                             dplyr::rename(source_hash = out_groups))
+      }
+
+      # max(stringr::str_length(missing_crit_cat$source_hash))
+
+      # Try to provide suggestions
+      crit_suggs <- runQuery(paste0("SELECT distinct term, study_type, critical_effect_category, CONCAT(term, study_type) as crit_key ",
+                                    "FROM res_toxval_v96.critical_effect_terms ",
+                                    "HAVING crit_key in ('", paste0(missing_crit_cat$term %>%
+                                                                      # Escape "'" for query
+                                                                      gsub("'", "''", .),
+                                                                    missing_crit_cat$study_type, collapse="', '"), "')"),
                              toxval.db) %>%
+        dplyr::select(-crit_key)
+
+      tryCatch(
+        {
+          writexl::write_xlsx(missing_crit_cat %>%
+                                dplyr::left_join(crit_suggs,
+                                                 by = c("term", "study_type")),
+                              paste0(output_dir, "missing_crit_cat/missing_crit_cat_", src, "_", Sys.Date(),".xlsx"))
+        },
+        error = function(e){
+          message(e)
+        }
+      )
+    }
+
+    # Report duplicate/conflicting mappings
+    dups = crit_cat_map %>%
+      dplyr::distinct() %>%
+      dplyr::group_by(crit_key, study_type) %>%
+      dplyr::summarise(n = dplyr::n()) %>%
+      dplyr::filter(n > 1)
+
+    if(nrow(dups)){
+      writexl::write_xlsx(crit_cat_map %>%
+                            dplyr::filter(crit_key %in% dups$crit_key),
+                          paste0(output_dir, "missing_crit_cat/duplicate_crit_cat_mappings_", src, "_", Sys.Date(),".xlsx"))
+    }
+
+    crit_cat_map = crit_cat_map %>%
+      # Remove select terms
+      # term not in ('none') and critical_effect_category not in ('cancer')
+      dplyr::filter(!term %in% c("None", "none"),
+                    !critical_effect_category %in% c("cancer")) %>%
+      dplyr::select(-term, -study_type, -crit_key) %>%
       dplyr::group_by(source_hash) %>%
       dplyr::mutate(critical_effect_category = paste0(unique(critical_effect_category[!is.na(critical_effect_category)]),
                                                       collapse = "|")) %>%
@@ -424,13 +644,12 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
                                          dplyr::rename(source_hash_toxval=source_hash),
                                        hashing_cols=c("study_group", "toxval_type", "toxval_numeric", "record_source_info")) %>%
         # Replace "|::|" in critical_effect with "|" delimiter
-        dplyr::mutate(
-          critical_effect = critical_effect %>%
-            gsub(" \\|::\\| ", "|", .),
-          source_hash = source_hash_toxval %>%
-            gsub(" \\|::\\| ", ",", .),
-          critical_effect_category = critical_effect_category %>%
-            gsub(" \\|::\\| ", "|", .)
+        dplyr::mutate(dplyr::across(dplyr::any_of(c("critical_effect", "critical_effect_category_original", "critical_effect_category")),
+                                    ~gsub(" \\|::\\| ", "|", .)
+        ),
+        source_hash = source_hash_toxval %>%
+          gsub(" \\|::\\| ", ",", .)
+
         ) %>%
         dplyr::select(-source_hash_toxval)
     }
@@ -439,11 +658,22 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     res = res %>%
       dplyr::bind_rows(mat %>%
                          dplyr::mutate(across(c("study_duration_value",
-                                                "toxval_numeric_hed"), ~as.numeric(.))))
+                                                "toxval_numeric_hed",
+                                                "exposure_route_fix"
+                         ), ~as.numeric(.))))
   }
 
   res = res %>%
     dplyr::mutate(
+      experimental_record = dplyr::case_when(
+        # Hard-code experimental record change for select source_hash values
+        source_hash %in% c(
+          "ToxValhc_299a0fc3ac8d080494ab57ddd9fc591d", "ToxValhc_13afb685d768ebc7bd84cc6ac9fb14f2",
+          "ToxValhc_14a2b9d4adabf1e116bd40853c481504", "ToxValhc_e42ae724eb6a28bcef618ba41e92291c",
+          "ToxValhc_88f7cb5d118b846f6a37512b2e3b5164", "ToxValhc_91438f0c9c23a417c38d78ff4d553618"
+        ) ~ "not experimental",
+        TRUE ~ experimental_record
+      ),
       # Convert "<" N(OA)EL to L(OA)EL
       toxval_type = dplyr::case_when(
         grepl("NO?A?EL", toxval_type) & toxval_numeric_qualifier %in% c("<") ~ gsub("^N", "L", toxval_type),
@@ -467,10 +697,74 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     ) %>%
     # Drop records with critical_effect_category "cancer"
     dplyr::filter(critical_effect_category_temp != "cancer") %>%
+    # Remove non-experimental records
+    dplyr::filter(!experimental_record %in% c("no", "No", "not experimental", "Not experimental")) %>%
     dplyr::mutate(
       critical_effect_category_temp = critical_effect_category_temp %>%
         dplyr::na_if("-")
     )
+
+  # ECOTOX specific filtering
+  if(any(grepl("ECOTOX", res$source))){
+    # Dedup ECOTOX where all values are identical except study_duration (filter out lower duration entries)
+    res_ecotox = res %>%
+      dplyr::filter(grepl("ECOTOX", source))
+
+    # Get all fields except study_duration and others that arbitrarily differ
+    eco_hash_cols = names(res)[!names(res) %in% c("source_hash", "study_duration_value", "study_duration_units",
+                                                  "qc_status", "critical_effect", "critical_effect_category",
+                                                  "critical_effect_category_original", "critical_effect_category_temp", "crit_key",
+                                                  "study_group", "study_duration_class", "qc_category",
+                                                  "final_model1", "final_model2")]
+    # # Ignore study_type for repeat dose and repro dev entries
+    # eco_hash_cols_type = c(eco_hash_cols, "type", "study_type")
+
+    # Perform deduping on entries that are not repeat dose/repro dev
+    # ecotox_no_study_type = res_ecotox %>%
+    #   dplyr::filter(!type %in% c("repeat dose", "repro dev"))
+
+    ecotox_dedup = res_ecotox %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(study_duration_norm = convert_units(study_duration_value,
+                                                        units=study_duration_units,
+                                                        desired="days")
+      ) %>%
+      dplyr::ungroup() %>%
+      # Get groups of entries that are identical except for study_duration/study_type
+      dplyr::group_by(dplyr::across(dplyr::any_of(eco_hash_cols))) %>%
+      # Select entry with maximum study_duration value
+      # dplyr::summarise(max_duration = max(study_duration_norm))
+      dplyr::mutate(
+        max_duration = max(study_duration_norm),
+        # Store original max duration selection
+        max_duration_sel = paste0(study_duration_value[which(study_duration_value == max_duration)], "_",
+                                  study_duration_units[which(study_duration_value == max_duration)])
+      ) %>%
+      dplyr::ungroup()
+
+    # Collapse groups
+    ecotox_dedup =
+      toxval.source.import.dedup(ecotox_dedup %>%
+                                   dplyr::rename(source_hash_toxval=source_hash),
+                                 hashing_cols=eco_hash_cols) %>%
+      # Replace "|::|" in critical_effect with "|" delimiter
+      dplyr::mutate(dplyr::across(dplyr::any_of(c("critical_effect", "critical_effect_category_original",
+                                                  "critical_effect_category", "critical_effect_category_temp")),
+                                  ~gsub(" \\|::\\| ", "|", .)
+      ),
+      source_hash = source_hash_toxval %>%
+        gsub(" \\|::\\| ", ",", .)
+      ) %>%
+      dplyr::select(-source_hash_toxval, -study_duration_value, -study_duration_units,
+                    -max_duration, -study_duration_norm) %>%
+      tidyr::separate(max_duration_sel, into=c("study_duration_value", "study_duration_units"), sep = "_") %>%
+      dplyr::mutate(study_duration_value = as.numeric(study_duration_value))
+
+    # Add filtered ECOTOX data back to res
+    res = res %>%
+      dplyr::filter(!grepl("ECOTOX", source)) %>%
+      dplyr::bind_rows(ecotox_dedup)
+  }
 
   # Get conceptual model by critical_effect_category
   conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res) %>%
@@ -489,78 +783,19 @@ export.for.bmdh <- function(toxval.db="res_toxval_v95", include.pesticides=FALSE
     dplyr::rename(critical_effect_category = critical_effect_category_temp) %>%
     dplyr::left_join(grouped_dtxsid, by="dtxsid")
 
-  # ECOTOX specific filtering
-  if(any(grepl("ECOTOX", res$source))){
-    # Dedup ECOTOX where all values are identical except study_duration (filter out lower duration entries)
-    res_ecotox = res %>%
-      dplyr::filter(grepl("ECOTOX", source))
-
-    # Get all fields except study_duration and others that arbitrarily differ
-    eco_hash_cols = names(mat)[!names(mat) %in% c("source_hash", "study_duration_value", "study_duration_units",
-                                                  "qc_status", "critical_effect", "critical_effect_category",
-                                                  "study_group", "study_duration_class")]
-    # Ignore study_type for repeat dose and repro dev entries
-    eco_hash_cols_type = c(eco_hash_cols, "type", "study_type")
-
-    # Perform deduping on entries that are not repeat dose/repro dev
-    ecotox_no_study_type = res_ecotox %>%
-      dplyr::filter(!type %in% c("repeat dose", "repro dev")) %>%
-      # Get groups of entries that are identical except for study_duration
-      dplyr::group_by_at(eco_hash_cols) %>%
-      # Select entry with maximum study_duration value
-      dplyr::mutate(
-        max_duration = max(study_duration_value),
-
-        keep = dplyr::case_when(
-          study_duration_value == max_duration ~ 1,
-          TRUE ~ 0
-        )
-      ) %>%
-      dplyr::filter(keep == 1) %>%
-      dplyr::select(-c("max_duration", "keep")) %>%
-      # In case of ties, select first alphabetical entry by study_group
-      dplyr::arrange(study_group) %>%
-      dplyr::slice(1) %>%
-      dplyr::ungroup()
-
-    # Perform deduping on entries that are repeat dose/repro dev
-    ecotox_study_type = res_ecotox %>%
-      dplyr::filter(type %in% c("repeat dose", "repro dev")) %>%
-      # Get groups of entries that are identical except for study_duration/study_type
-      dplyr::group_by_at(eco_hash_cols_type) %>%
-      # Select entry with maximum study_duration value
-      dplyr::mutate(
-        max_duration = max(study_duration_value),
-
-        keep = dplyr::case_when(
-          study_duration_value == max_duration ~ 1,
-          TRUE ~ 0
-        )
-      ) %>%
-      dplyr::filter(keep == 1) %>%
-      dplyr::select(-c("max_duration", "keep")) %>%
-      # In case of ties, select first alphabetical entry by study_group
-      dplyr::arrange(study_group) %>%
-      dplyr::slice(1) %>%
-      dplyr::ungroup()
-
-    # Add filtered ECOTOX data back to res
-    res = res %>%
-      dplyr::filter(!grepl("ECOTOX", source)) %>%
-      dplyr::bind_rows(ecotox_no_study_type, ecotox_study_type)
-  }
-
   cat("Exporting results...\n")
   # Write unique toxval_type values included in full data
   unique_toxval_type = res %>%
     dplyr::select(source, toxval_type) %>%
     dplyr::distinct()
+
   file = paste0(output_dir,"results/bmdh_export_toxval_type.xlsx")
   writexl::write_xlsx(unique_toxval_type, file)
 
   # Trim string size to fit Excel character limit
   res = res %>%
-    dplyr::mutate(dplyr::across(dplyr::where(is.character), ~stringr::str_sub(., 1, 32000)))
+    dplyr::mutate(dplyr::across(dplyr::where(is.character), ~stringr::str_sub(., 1, 32000) %>%
+                                  tidyr::replace_na("-")))
 
   # Write full data to file
   file = paste0(output_dir,"results/ToxValDB for BMDh ",toxval.db,".xlsx")
