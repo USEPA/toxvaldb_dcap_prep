@@ -4,6 +4,8 @@
 #' @param toxval.db Database version
 #' @param include.pesticides Flag to include pesticides in output or not
 #' @param include.drugs Flag to include drugs in output or not
+#' @param include.epa_dws Flag to include drugs in output or not
+#' @param include.food_add Flag to include drugs in output or not
 #' @param run_name The desired name for the output directory (Default: current date)
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
 #' @details Exports all of the data required for the BMDh calculations.
@@ -33,6 +35,7 @@ export.for.bmdh <- function(toxval.db,
                             include.pesticides=FALSE,
                             include.drugs=FALSE,
                             include.epa_dws=FALSE,
+                            include.food_add=FALSE,
                             run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
   input_dir = "data/input/"
@@ -107,6 +110,21 @@ export.for.bmdh <- function(toxval.db,
     epa_dws_addition = ""
   } else {
     epa_dws_addition = paste0(" and b.dtxsid NOT IN ('", epa_dws_dtxsid, "')")
+  }
+
+  # Read in Food Additives Chemical list
+
+  food_add_file = Sys.getenv("food_additives")
+  food_add_dtxsid = readxl::read_xlsx(food_add_file) %>%
+    dplyr::pull(DTXSID) %>%
+    unique() %>%
+    paste0(., collapse="', '")
+
+  # Set epa_dws addition according to parameter
+  if(include.food_add) {
+    food_add_addition = ""
+  } else {
+    food_add_addition = paste0(" and b.dtxsid NOT IN ('", food_add_dtxsid, "')")
   }
 
   # # Get priority values for each specified source
@@ -206,6 +224,8 @@ export.for.bmdh <- function(toxval.db,
                    # "and b.exposure_route='oral'",
                    pesticide_addition,
                    drug_addition,
+                   epa_dws_addition,
+                   food_add_addition,
                    # " and f.priority='", priority, "'",
                    iuclid_addition
     )

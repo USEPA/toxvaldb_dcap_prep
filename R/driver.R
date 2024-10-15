@@ -18,11 +18,13 @@
 #' @rdname driver
 #-------------------------------------------------------------------------------
 driver <- function(toxval.db, run_name=Sys.Date(), run.export=TRUE,
-                   include.pesticides=FALSE, include.drugs=FALSE, include.epa_dws=FALSE) {
+                   include.pesticides=FALSE, include.drugs=FALSE, include.epa_dws=FALSE,
+                   include.food_add=FALSE) {
   printCurrentFunction()
   if(include.pesticides) run_name = paste0(run_name, "_pesticides")
   if(include.drugs) run_name = paste0(run_name, "_drugs")
   if(include.epa_dws) run_name = paste0(run_name, "_epa_dws")
+  if(include.food_add) run_name = paste0(run_name, "_food_add")
 
   if(run.export) {
     init.current.run.directory(run_name)
