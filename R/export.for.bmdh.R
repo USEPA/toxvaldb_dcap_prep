@@ -4,8 +4,8 @@
 #' @param toxval.db Database version
 #' @param include.pesticides Flag to include pesticides in output or not
 #' @param include.drugs Flag to include drugs in output or not
-#' @param include.epa_dws Flag to include drugs in output or not
-#' @param include.food_add Flag to include drugs in output or not
+#' @param include.epa_dws Flag to include EPA DWS in output or not
+#' @param include.food_add Flag to include food additives in output or not
 #' @param run_name The desired name for the output directory (Default: current date)
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
 #' @details Exports all of the data required for the BMDh calculations.
