@@ -100,10 +100,10 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
   res_init = res0 %>%
     dplyr::filter(!source_table %in% auth_sources,
                   !study_group %in% key_finding_study_groups
-                  ) %>%
+    ) %>%
     dplyr::mutate(filter_pod_group = "non_auth") %>%
     dplyr::bind_rows(res_auth, res_auth_not_key#, non_auth_key_findings
-                     ) %>%
+    ) %>%
     dplyr::mutate(
       # Standardize toxval_type values to "{TYPE} {MODIFIER}"
       tts = dplyr::case_when(
@@ -203,10 +203,11 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
         TRUE ~ 999
       ),
 
-      repro_dev_fix = dplyr::case_when(
-        ttr %in% c("BMDL", "NOAEL", "LOAEL", "NEL", "LEL", "FEL") & study_type == "reproduction developmental" ~ 1,
-        TRUE ~ 0
-      ),
+      # Commenting out for now to troubleshoot use (2024-10-16)
+      # repro_dev_fix = dplyr::case_when(
+      #   ttr %in% c("BMDL", "NOAEL", "LOAEL", "NEL", "LEL", "FEL") & study_type == "reproduction developmental" ~ 1,
+      #   TRUE ~ 0
+      # ),
 
       # Pick row with highest priority
       selected_row = min(keep_flag, na.rm = TRUE),
@@ -271,21 +272,22 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
   res = res_init %>%
     dplyr::filter(selected_row == keep_flag,
                   remove_flag != 1) %>%
-    # Handle case where repro dev causes multiple selections per study_group
-    dplyr::group_by(study_group, filter_pod_group) %>%
-    dplyr::mutate(
-      n = dplyr::n(),
-
-      drop = dplyr::case_when(
-        n > 1 & repro_dev_fix == 0 ~ 1,
-        TRUE ~ 0
-      )
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::filter(drop == 0) %>%
-    dplyr::select(-c("tts", "ttr", "low_loael", "low_lel", "low_noael", "low_nel", "min_val", "max_val", "remove_flag",
-                     "keep_flag", "selected_row", "reason_for_filtering", "repro_dev_fix", "n", "drop",
-                     "keep_flag_tie"))
+    # # Commenting out for now to troubleshoot use (2024-10-16)
+    # # Handle case where repro dev causes multiple selections per study_group
+    # dplyr::group_by(study_group, filter_pod_group) %>%
+    # dplyr::mutate(
+    #   n = dplyr::n(),
+    #
+    #   drop = dplyr::case_when(
+    #     n > 1 & repro_dev_fix == 0 ~ 1,
+    #     TRUE ~ 0
+    #   )
+    # ) %>%
+    # dplyr::ungroup() %>%
+    # dplyr::filter(drop == 0) %>%
+    dplyr::select(-dplyr::any_of(c("tts", "ttr", "low_loael", "low_lel", "low_noael", "low_nel", "min_val", "max_val", "remove_flag",
+                                   "keep_flag", "selected_row", "reason_for_filtering", "repro_dev_fix", "n", "drop",
+                                   "keep_flag_tie")))
 
   # Select rows that were filtered out
   filtered_out_non_auth = res_init %>%
@@ -297,7 +299,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
   # Combine filtered out data from authoritative and non-authoritative sources
   filtered_out = dplyr::bind_rows(
     filtered_out_non_auth, filtered_out_auth_non_key_study_group
-    )
+  )
 
   if(nrow(filtered_out) + nrow(res) != nrow(res0)){
     # Check for any accidental overlap between selected and filtered groups
@@ -449,10 +451,10 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
   res = res %>%
     dplyr::left_join(calibration_dict,
                      by = "source_hash")
-    # dplyr::mutate(calibration_class = dplyr::case_when(
-    #   study_type %in% c("chronic", "subchronic") & calibration_flag %in% c(1) ~ study_type,
-    #   TRUE ~ NA
-    # ))
+  # dplyr::mutate(calibration_class = dplyr::case_when(
+  #   study_type %in% c("chronic", "subchronic") & calibration_flag %in% c(1) ~ study_type,
+  #   TRUE ~ NA
+  # ))
 
   res = res %>%
     # Select calibration_record by chemical based on calibration_class
@@ -475,6 +477,36 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     )) %>%
     # Remove intermediate fields
     dplyr::select(-rank_calibration_class)
+
+  # Flag case where an entire study_group was removed
+  if(any(!unique(filtered_out$study_group) %in% unique(res$study_group))){
+    tmp = unique(filtered_out$study_group)[!unique(filtered_out$study_group) %in% unique(res$study_group)]
+    message("study_groups completely filtered out: ", length(tmp))
+    browser()
+  }
+
+  # Flag case where multiple records chosen per study_group
+  if(any(duplicated(res$study_group))){
+    tmp = res %>%
+      dplyr::filter(duplicated(study_group)) %>%
+      dplyr::pull(study_group)
+    message("study_groups with multiple records selected: ", length(tmp))
+    message("Collapsing...")
+    res_collapsed = toxval.source.import.dedup(res %>%
+                                                 dplyr::rename(source_hash_toxval=source_hash),
+                                               hashing_cols=c("study_group", "toxval_type", "toxval_numeric"),
+                                               delim=" <::> ") %>%
+      # Replace "|::|" in critical_effect with "|" delimiter
+      dplyr::mutate(dplyr::across(dplyr::any_of(c("critical_effect", "critical_effect_category_original", "critical_effect_category")),
+                                  ~gsub(" <::> ", "|", ., fixed = TRUE)
+      ),
+      source_hash = source_hash_toxval %>%
+        gsub(" <::> ", ",", ., fixed = TRUE)
+
+      ) %>%
+      dplyr::select(-source_hash_toxval)
+
+  }
 
   # Write results to Excel
   writexl::write_xlsx(res, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx"))

@@ -6,6 +6,7 @@
 #' @param include.drugs Flag to include drugs in output or not
 #' @param include.epa_dws Flag to include EPA DWS in output or not
 #' @param include.food_add Flag to include food additives in output or not
+#' @param reset.study_group Flag to reset study_group
 #' @param run_name The desired name for the output directory (Default: current date)
 #' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
 #' @details Exports all of the data required for the BMDh calculations.
@@ -34,8 +35,9 @@
 export.for.bmdh <- function(toxval.db,
                             include.pesticides=FALSE,
                             include.drugs=FALSE,
-                            include.epa_dws=FALSE,
+                            include.epa_dws=TRUE,
                             include.food_add=FALSE,
+                            reset.study_group=FALSE,
                             run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
   input_dir = "data/input/"
@@ -167,6 +169,7 @@ export.for.bmdh <- function(toxval.db,
                    "b.toxval_id, ",
                    "a.dtxsid, a.casrn, a.name, ",
                    "b.source, ",
+                   "b.subsource, ",
                    "b.source_table, ",
                    "e.toxval_type_supercategory, ",
                    "b.toxval_type, ",
@@ -238,6 +241,15 @@ export.for.bmdh <- function(toxval.db,
         !(grepl("ECOTOX",source) & dtxsid=="DTXSID2024246" & toxval_numeric==7621 & toxval_units=="mg/kg-day"),
         !(grepl("ToxRefDB", source) & dtxsid == "DTXSID6040371")
       )
+
+    if(reset.study_group){
+      study_group_new = fix.study_group(df=mat)
+
+      mat = mat %>%
+        dplyr::rename(study_group_toxval = study_group) %>%
+        dplyr::left_join(study_group_new,
+                         by = "toxval_id")
+    }
 
     # Special case for IRIS and HESS. toxval_type_supercategory DRSV set toxval_subtype to "-"
     if(grepl("IRIS$|HESS$", src)){
@@ -660,9 +672,16 @@ export.for.bmdh <- function(toxval.db,
 
     if(src %in% slist){#[!slist %in% c("ECHA IUCLID", "ECOTOX")]){#c("NTP PFAS", "ECHA IUCLID", "HAWC Project",  "PFAS 150 SEM v2")){
       # Special logic implemented for now to further collapse source records post-ToxVal
+
+      # If reset study_group, ignoring year and reference information
+      hashing_cols=c("study_group", "toxval_type", "toxval_numeric", "record_source_info")
+      if(reset.study_group){
+        hashing_cols = hashing_cols[!hashing_cols %in% c("record_source_info")]
+      }
+
       mat = toxval.source.import.dedup(mat %>%
                                          dplyr::rename(source_hash_toxval=source_hash),
-                                       hashing_cols=c("study_group", "toxval_type", "toxval_numeric", "record_source_info")) %>%
+                                       hashing_cols=hashing_cols) %>%
         # Replace "|::|" in critical_effect with "|" delimiter
         dplyr::mutate(dplyr::across(dplyr::any_of(c("critical_effect", "critical_effect_category_original", "critical_effect_category")),
                                     ~gsub(" \\|::\\| ", "|", .)
@@ -736,6 +755,10 @@ export.for.bmdh <- function(toxval.db,
                                                   "critical_effect_category_original", "critical_effect_category_temp", "crit_key",
                                                   "study_group", "study_duration_class", "qc_category",
                                                   "final_model1", "final_model2")]
+
+    if(reset.study_group){
+      eco_hash_cols = eco_hash_cols[!eco_hash_cols %in% c("record_source_info")]
+    }
     # # Ignore study_type for repeat dose and repro dev entries
     # eco_hash_cols_type = c(eco_hash_cols, "type", "study_type")
 
