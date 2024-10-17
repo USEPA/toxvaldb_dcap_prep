@@ -147,19 +147,19 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
       ),
       low_lel = suppressWarnings(min(low_lel, na.rm = TRUE)),
 
-      low_noael = dplyr::case_when(
+      max_noael = dplyr::case_when(
         ttr == "NOAEL" ~ toxval_numeric,
         TRUE ~ NA
       ),
-      low_noael = suppressWarnings(min(low_noael, na.rm = TRUE)),
+      max_noael = suppressWarnings(max(max_noael, na.rm = TRUE)),
 
-      low_nel = dplyr::case_when(
+      max_nel = dplyr::case_when(
         ttr == "NEL" ~ toxval_numeric,
         TRUE ~ NA
       ),
-      low_nel = suppressWarnings(min(low_nel, na.rm = TRUE)),
+      max_nel = suppressWarnings(max(max_nel, na.rm = TRUE)),
       # Replace Inf with NA from min with only NA values
-      dplyr::across(c(low_loael, low_lel, low_noael, low_nel), ~dplyr::na_if(., Inf))
+      dplyr::across(c(low_loael, low_lel, max_noael, max_nel), ~dplyr::na_if(., Inf))
     ) %>%
     dplyr::ungroup() %>%
     # Remove NOAEL/NEL greater than minimum LOAEL/LEL
@@ -214,12 +214,12 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
 
       # Special case to check where NOAEL/LOAEL, NOEL/LOEL, or NEL/LEL may have the same dose, keep the L form
       keep_flag_tie = dplyr::case_when(
-        all(c(4, 7) %in% keep_flag) & remove_flag != 1 & any(low_loael == low_noael) & any(c(4, 7) %in% selected_row) ~ 7,
-        all(c(5, 8) %in% keep_flag) & remove_flag != 1 & any(low_loael == low_noael) & any(c(5, 8) %in% selected_row) ~ 8,
-        all(c(6, 9) %in% keep_flag) & remove_flag != 1 & any(low_loael == low_noael) & any(c(6, 9) %in% selected_row) ~ 9,
-        all(c(10, 13) %in% keep_flag) & remove_flag != 1 & any(low_lel == low_nel) & any(c(10, 13) %in% selected_row) ~ 13,
-        all(c(11, 14) %in% keep_flag) & remove_flag != 1 & any(low_lel == low_nel) & any(c(11, 14) %in% selected_row) ~ 14,
-        all(c(12, 15) %in% keep_flag) & remove_flag != 1 & any(low_lel == low_nel) & any(c(12, 15) %in% selected_row) ~ 15,
+        all(c(4, 7) %in% keep_flag) & remove_flag != 1 & any(low_loael == max_noael) & any(c(4, 7) %in% selected_row) ~ 7,
+        all(c(5, 8) %in% keep_flag) & remove_flag != 1 & any(low_loael == max_noael) & any(c(5, 8) %in% selected_row) ~ 8,
+        all(c(6, 9) %in% keep_flag) & remove_flag != 1 & any(low_loael == max_noael) & any(c(6, 9) %in% selected_row) ~ 9,
+        all(c(10, 13) %in% keep_flag) & remove_flag != 1 & any(low_lel == max_nel) & any(c(10, 13) %in% selected_row) ~ 13,
+        all(c(11, 14) %in% keep_flag) & remove_flag != 1 & any(low_lel == max_nel) & any(c(11, 14) %in% selected_row) ~ 14,
+        all(c(12, 15) %in% keep_flag) & remove_flag != 1 & any(low_lel == max_nel) & any(c(12, 15) %in% selected_row) ~ 15,
         TRUE ~ NA
       ),
 
@@ -285,7 +285,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     # ) %>%
     # dplyr::ungroup() %>%
     # dplyr::filter(drop == 0) %>%
-    dplyr::select(-dplyr::any_of(c("tts", "ttr", "low_loael", "low_lel", "low_noael", "low_nel", "min_val", "max_val", "remove_flag",
+    dplyr::select(-dplyr::any_of(c("tts", "ttr", "low_loael", "low_lel", "max_noael", "max_nel", "min_val", "max_val", "remove_flag",
                                    "keep_flag", "selected_row", "reason_for_filtering", "repro_dev_fix", "n", "drop",
                                    "keep_flag_tie")))
 
@@ -323,6 +323,13 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     if(nrow(missing)){
       browser("...Records missing from filtering process...")
     }
+  }
+
+  # Flag case where an entire study_group was removed
+  if(any(!unique(filtered_out$study_group) %in% unique(res$study_group))){
+    tmp = unique(filtered_out$study_group)[!unique(filtered_out$study_group) %in% unique(res$study_group)]
+    message("study_groups completely filtered out: ", length(tmp))
+    browser()
   }
 
   # Perform deduping on identical records with different source_hash values
@@ -385,6 +392,29 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     ) %>%
     dplyr::distinct() %>%
     dplyr::select(-source_hash_temp)
+
+  # Flag and collapse case where multiple records chosen per study_group
+  # Use special delimiter
+  if(any(duplicated(res$study_group))){
+    tmp = res %>%
+      dplyr::filter(duplicated(study_group)) %>%
+      dplyr::pull(study_group)
+    message("study_groups with multiple records selected: ", length(tmp))
+    message("Collapsing...")
+    res = toxval.source.import.dedup(res %>%
+                                       dplyr::rename(source_hash_toxval=source_hash),
+                                     hashing_cols=c("study_group", "toxval_type", "toxval_numeric"),
+                                     delim=" <::> ") %>%
+      # Replace "|::|" in critical_effect with "|" delimiter
+      dplyr::mutate(dplyr::across(dplyr::any_of(c("critical_effect", "critical_effect_category_original", "critical_effect_category")),
+                                  ~gsub(" <::> ", "|", ., fixed = TRUE)
+      ),
+      source_hash = source_hash_toxval %>%
+        gsub(" <::> ", ",", ., fixed = TRUE)
+
+      ) %>%
+      dplyr::select(-source_hash_toxval)
+  }
 
   # Add duration_adjustment field to POD filtered output
   dedup_fields = c("study_type", "duration_adjustment")
@@ -478,35 +508,13 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     # Remove intermediate fields
     dplyr::select(-rank_calibration_class)
 
-  # Flag case where an entire study_group was removed
-  if(any(!unique(filtered_out$study_group) %in% unique(res$study_group))){
-    tmp = unique(filtered_out$study_group)[!unique(filtered_out$study_group) %in% unique(res$study_group)]
-    message("study_groups completely filtered out: ", length(tmp))
-    browser()
-  }
+  # Get conceptual model by critical_effect_category
+  conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res) %>%
+    dplyr::select(-study_type, -critical_effect_category)
 
-  # Flag case where multiple records chosen per study_group
-  if(any(duplicated(res$study_group))){
-    tmp = res %>%
-      dplyr::filter(duplicated(study_group)) %>%
-      dplyr::pull(study_group)
-    message("study_groups with multiple records selected: ", length(tmp))
-    message("Collapsing...")
-    res_collapsed = toxval.source.import.dedup(res %>%
-                                                 dplyr::rename(source_hash_toxval=source_hash),
-                                               hashing_cols=c("study_group", "toxval_type", "toxval_numeric"),
-                                               delim=" <::> ") %>%
-      # Replace "|::|" in critical_effect with "|" delimiter
-      dplyr::mutate(dplyr::across(dplyr::any_of(c("critical_effect", "critical_effect_category_original", "critical_effect_category")),
-                                  ~gsub(" <::> ", "|", ., fixed = TRUE)
-      ),
-      source_hash = source_hash_toxval %>%
-        gsub(" <::> ", ",", ., fixed = TRUE)
-
-      ) %>%
-      dplyr::select(-source_hash_toxval)
-
-  }
+  res = res %>%
+    dplyr::left_join(conceptual_model_map,
+                     by = "source_hash")
 
   # Write results to Excel
   writexl::write_xlsx(res, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx"))

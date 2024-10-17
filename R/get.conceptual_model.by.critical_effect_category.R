@@ -26,7 +26,7 @@ get.conceptual_model.by.critical_effect_category <- function(df){
   df_dcap <- df %>%
     dplyr::mutate(
       piped_critical_effect = dplyr::case_when(
-        grepl("\\|", critical_effect_category_temp) ~ "1",
+        grepl("\\|", critical_effect_category) ~ "1",
         TRUE ~ "0"
       )
     ) %>%
