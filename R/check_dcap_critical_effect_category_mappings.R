@@ -23,13 +23,13 @@ check_dcap_critical_effect_category_mappings <- function(toxval.db, get_suggesti
                   'source_iuclid_neurotoxicity',
                   'source_iuclid_toxicityreproduction')
 
-  dcap_sources = c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
+  dcap_sources = c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA",
                    "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430", "Health Canada",
                    "HEAST", "HESS", "HPVIS", "IRIS", "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)",
                    "ToxRefDB", "WHO JECFA Tox Studies")
 
   dcap_sources = c(
-    "ATSDR", "EPA HAWC", "Cal OEHHA", "Copper Manufacturers", "ECHA IUCLID", "EPA ECOTOX",
+    "ATSDR", "EPA HAWC", "Cal OEHHA", "ECHA IUCLID", "EPA ECOTOX",
     "EFSA OpenFoodTox", "EPA HHTV", "Health Canada", "EPA HEAST", "NITE HESS", "EPA HPVIS",
     "EPA IRIS", "NTP PFAS", "EPA PPRTV", "EPA ToxRefDB", "WHO JECFA"
   )

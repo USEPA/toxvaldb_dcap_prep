@@ -43,13 +43,13 @@ export.for.bmdh <- function(toxval.db,
   input_dir = "data/input/"
   output_dir = paste0("data/results/", run_name, "/")
 
-  slist =  c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
+  slist =  c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA",
              "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
              "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
              "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
   # sources by supersource name
   # slist = c(
-  #   "ATSDR", "EPA HAWC", "Cal OEHHA", "Copper Manufacturers", "ECHA IUCLID", "EPA ECOTOX",
+  #   "ATSDR", "EPA HAWC", "Cal OEHHA", "ECHA IUCLID", "EPA ECOTOX",
   #   "EFSA OpenFoodTox", "EPA HHTV", "Health Canada", "EPA HEAST", "NITE HESS", "EPA HPVIS",
   #   "EPA IRIS", "NTP PFAS", "EPA PPRTV", "EPA ToxRefDB", "WHO JECFA"
   # )
