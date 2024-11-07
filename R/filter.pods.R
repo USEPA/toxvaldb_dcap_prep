@@ -43,7 +43,9 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     #"HEAST",
     "source_heast",
     #"PPRTV (CPHEA)"
-    "source_pprtv_cphea"
+    "source_pprtv_cphea",
+    #"EPA OPP"
+    "source_opp"
   )
 
   cat("Filtering authoritative sources:\n", paste0("- ", sort(unique(res0$source[res0$source_table %in% auth_sources])),
@@ -416,6 +418,8 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
       dplyr::select(-source_hash_toxval)
   }
 
+  # res$critical_effect_category[grepl("ToxValhc_588aba8b214220f10302d03dfdaab1c9|ToxValhc_b67010d01feae0e8ec9023ea570ae651", res$source_hash)]
+
   # Add duration_adjustment field to POD filtered output
   dedup_fields = c("study_type", "duration_adjustment")
   hashing_fields = names(res)[!names(res) %in% dedup_fields]
@@ -515,6 +519,14 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
   res = res %>%
     dplyr::left_join(conceptual_model_map,
                      by = "source_hash")
+
+  # Renaming critical_effect_category for reporting purposes/clarity
+  res = res %>%
+    dplyr::mutate(critical_effect_category_fix = dplyr::case_when(
+      grepl("\\|", critical_effect_category) ~ "multiple",
+      critical_effect_category == "none" & !grepl("NO?A?EL", toxval_type) ~ "other",
+      TRUE ~ critical_effect_category
+    ))
 
   # Write results to Excel
   writexl::write_xlsx(res, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx"))

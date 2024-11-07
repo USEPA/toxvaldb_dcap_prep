@@ -28,11 +28,11 @@ check_dcap_critical_effect_category_mappings <- function(toxval.db, get_suggesti
                    "HEAST", "HESS", "HPVIS", "IRIS", "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)",
                    "ToxRefDB", "WHO JECFA Tox Studies")
 
-  dcap_sources = c(
-    "ATSDR", "EPA HAWC", "Cal OEHHA", "ECHA IUCLID", "EPA ECOTOX",
-    "EFSA OpenFoodTox", "EPA HHTV", "Health Canada", "EPA HEAST", "NITE HESS", "EPA HPVIS",
-    "EPA IRIS", "NTP PFAS", "EPA PPRTV", "EPA ToxRefDB", "WHO JECFA"
-  )
+  # dcap_sources = c(
+  #   "ATSDR", "HAWC Project", "EPA HAWC", "Cal OEHHA", "ECHA IUCLID", "EPA ECOTOX",
+  #   "EFSA OpenFoodTox", "EPA HHTV", "Health Canada", "EPA HEAST", "NITE HESS", "EPA HPVIS",
+  #   "EPA IRIS", "NTP PFAS", "EPA PPRTV", "EPA ToxRefDB", "WHO JECFA"
+  # )
 
   # Copy over study_type collapse lists from old Python script logic
   repeat_study_types = c('immunotoxicity','intermediate','repeat dose other','subchronic',

@@ -43,10 +43,10 @@ export.for.bmdh <- function(toxval.db,
   input_dir = "data/input/"
   output_dir = paste0("data/results/", run_name, "/")
 
-  slist =  c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA",
+  slist =  c("EPA OPP", "ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA",
              "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
              "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
-             "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
+             "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB", "WHO JECFA Tox Studies")
   # sources by supersource name
   # slist = c(
   #   "ATSDR", "EPA HAWC", "Cal OEHHA", "ECHA IUCLID", "EPA ECOTOX",
@@ -549,7 +549,7 @@ export.for.bmdh <- function(toxval.db,
       dplyr::select(source_hash, critical_effect, study_type) %>%
       tidyr::separate_rows(critical_effect, sep = "\\|") %>%
       dplyr::mutate(critical_effect = stringr::str_squish(critical_effect)) %>%
-      dplyr::filter(!critical_effect %in% c("-", "", "none", "None")) %>%
+      dplyr::filter(!critical_effect %in% c("", "none", "None")) %>%
       tidyr::unite(col = "crit_key",
                    source_hash, critical_effect,
                    sep = "_",
@@ -650,8 +650,9 @@ export.for.bmdh <- function(toxval.db,
     crit_cat_map = crit_cat_map %>%
       # Remove select terms
       # term not in ('none') and critical_effect_category not in ('cancer')
-      dplyr::filter(!term %in% c("None", "none"),
-                    !critical_effect_category %in% c("cancer")) %>%
+      dplyr::filter(!term %in% c("None", "none")#,
+                    #!critical_effect_category %in% c("cancer")
+                    ) %>%
       dplyr::select(-term, -study_type, -crit_key) %>%
       dplyr::group_by(source_hash) %>%
       dplyr::mutate(critical_effect_category = paste0(unique(critical_effect_category[!is.na(critical_effect_category)]),
@@ -733,8 +734,16 @@ export.for.bmdh <- function(toxval.db,
       critical_effect_category = critical_effect_category %>%
         gsub("\\|cancer\\|", "|", .) %>%
         gsub("\\|cancer|cancer\\|", "", .)
-    ) %>%
-    # Drop records with critical_effect_category "cancer"
+    )
+
+  # Store cancer records removed (ones with only cancer as a critical_effect_category)
+  writexl::write_xlsx(res %>%
+                        dplyr::filter(critical_effect_category_temp == "cancer"),
+                      paste0(output_dir, "results/ToxValDB for BMDh ", toxval.db, "_cancer_removed.xlsx")
+                      )
+
+  res = res %>%
+  # Drop records with critical_effect_category "cancer"
     dplyr::filter(critical_effect_category_temp != "cancer") %>%
     # Remove non-experimental records
     dplyr::filter(!experimental_record %in% c("no", "No", "not experimental", "Not experimental")) %>%
@@ -745,6 +754,7 @@ export.for.bmdh <- function(toxval.db,
 
   # ECOTOX specific filtering
   if(any(grepl("ECOTOX", res$source))){
+    message("Reminder to remove this logic following ECOTOX QC/curation of duration field")
     # Dedup ECOTOX where all values are identical except study_duration (filter out lower duration entries)
     res_ecotox = res %>%
       dplyr::filter(grepl("ECOTOX", source))
