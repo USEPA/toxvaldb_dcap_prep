@@ -14,7 +14,7 @@
 #-----------------------------------------------------------------------------------
 init.current.run.directory <- function(run_name=Sys.Date()) {
   printCurrentFunction()
-  new_directory = paste0("data/results/", run_name)
+  new_directory = paste0(Sys.getenv("datapath"), "data/results/", run_name)
   if(dir.exists(new_directory)) {
     cat(paste0("Directory '", new_directory, "' already exists. Continuing will overwrite previous data.\n"))
     browser()

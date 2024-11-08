@@ -25,7 +25,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
 
   # Read in initial export data
-  dir = paste0("data/results/", run_name, "/")
+  dir = paste0(Sys.getenv("datapath"), "data/results/", run_name, "/")
   file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db,".xlsx")
   res0 = readxl::read_xlsx(file) %>%
     dplyr::mutate(dplyr::across(dplyr::where(is.character), ~tidyr::replace_na(., "-")))
@@ -456,7 +456,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     dplyr::rename(calibration_flag = key_finding, source_hash = source_hash_old)
 
   # Load calibration dictionary
-  calibration_dict = readxl::read_xlsx(Sys.getenv("calibration_dict"), guess_max = 21474836) %>%
+  calibration_dict = readxl::read_xlsx(paste0(Sys.getenv("datapath"), Sys.getenv("calibration_dict")), guess_max = 21474836) %>%
     dplyr::filter(!is.na(calibration_class)) %>%
     dplyr::select(source_hash, calibration_class)
 

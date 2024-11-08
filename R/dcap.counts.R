@@ -20,7 +20,7 @@
 #-----------------------------------------------------------------------------------
 dcap.counts <- function(toxval.db, run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
-  dir = paste0("data/results/", run_name, "/")
+  dir = paste0(Sys.getenv("datapath"), "data/results/", run_name, "/")
   file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx")
   print(file)
   res = readxl::read_xlsx(file)

@@ -22,7 +22,7 @@
 #-----------------------------------------------------------------------------------
 filter.summary <- function(toxval.db, run_name=Sys.Date(), do.load=TRUE) {
   printCurrentFunction(toxval.db)
-  dir = paste0("data/results/", run_name, "/")
+  dir = paste0(Sys.getenv("datapath"), "data/results/", run_name, "/")
 
   if(do.load) {
     file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db,".xlsx")
@@ -56,5 +56,5 @@ filter.summary <- function(toxval.db, run_name=Sys.Date(), do.load=TRUE) {
 
   file = paste0(dir,"results/ToxValDB summary stats ",toxval.db,".xlsx")
   sty = openxlsx::createStyle(halign="center",valign="center",textRotation=90,textDecoration = "bold")
-  openxlsx::write.xlsx(chems,file,firstRow=T,headerStyle=sty)
+  openxlsx::write.xlsx(chems,file,firstRow=TRUE,headerStyle=sty)
 }

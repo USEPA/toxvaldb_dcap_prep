@@ -31,7 +31,7 @@
 #-------------------------------------------------------------------------------
 toxvaldb.statplots <- function(to.file=FALSE, toxval.db, run_name=Sys.Date()) {
   printCurrentFunction()
-  dir = paste0("data/results/", run_name, "/")
+  dir = paste0(Sys.getenv("datapath"), "data/results/", run_name, "/")
   file = paste0(dir,"results/ToxValDB summary stats ",toxval.db,".xlsx")
   print(file)
   res = openxlsx::read.xlsx(file)

@@ -40,8 +40,8 @@ export.for.bmdh <- function(toxval.db,
                             reset.study_group=FALSE,
                             run_name=Sys.Date()) {
   printCurrentFunction(toxval.db)
-  input_dir = "data/input/"
-  output_dir = paste0("data/results/", run_name, "/")
+  input_dir = paste0(Sys.getenv("datapath"), "data/input/")
+  output_dir = paste0(Sys.getenv("datapath"), "data/results/", run_name, "/")
 
   slist =  c("EPA OPP", "ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA",
              "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
@@ -58,7 +58,7 @@ export.for.bmdh <- function(toxval.db,
   # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
   # Updated list: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/BCPCPEST
   # Current approach combines original and updated lists
-  pesticide_file = Sys.getenv("pesticide_file")
+  pesticide_file = paste0(Sys.getenv("datapath"), Sys.getenv("pesticide_file"))
   pesticide_dtxsid = switch(tools::file_ext(pesticide_file),
                             "xls" = {
                               readxl::read_xls(pesticide_file) %>%
@@ -85,7 +85,7 @@ export.for.bmdh <- function(toxval.db,
 
   # Read in drug DTXSID values to exclude
   # List of drugs found at: https://comptox.epa.gov/dashboard/chemical-lists/FDAORANGE
-  drug_file = Sys.getenv("drug_file")
+  drug_file = paste0(Sys.getenv("datapath"), Sys.getenv("drug_file"))
   drug_dtxsid = readxl::read_xlsx(drug_file) %>%
     dplyr::pull(DTXSID) %>%
     unique() %>%
@@ -101,7 +101,7 @@ export.for.bmdh <- function(toxval.db,
   # Read in EPA drinking water standards chemical list
   # List found at: https://comptox.epa.gov/dashboard/chemical-lists/EPADWS
 
-  epa_dws_file = Sys.getenv("epa_dws_file")
+  epa_dws_file = paste0(Sys.getenv("datapath"), Sys.getenv("epa_dws_file"))
   epa_dws_dtxsid = readxl::read_xlsx(epa_dws_file) %>%
     dplyr::pull(DTXSID) %>%
     unique() %>%
@@ -116,7 +116,7 @@ export.for.bmdh <- function(toxval.db,
 
   # Read in Food Additives Chemical list
 
-  food_add_file = Sys.getenv("food_additives")
+  food_add_file = paste0(Sys.getenv("datapath"), Sys.getenv("food_additives"))
   food_add_dtxsid = readxl::read_xlsx(food_add_file) %>%
     dplyr::pull(DTXSID) %>%
     unique() %>%
@@ -261,7 +261,7 @@ export.for.bmdh <- function(toxval.db,
     }
 
     # Special source_hash fixes
-    hash_specific_changes = readxl::read_xlsx("data/input/dictionary conversions for DCAP.xlsx") %>%
+    hash_specific_changes = readxl::read_xlsx(paste0(Sys.getenv("datapath"), "data/input/dictionary conversions for DCAP.xlsx")) %>%
       dplyr::filter(source_hash %in% mat$source_hash)
 
     if(nrow(hash_specific_changes)){
