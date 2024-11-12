@@ -43,9 +43,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     #"HEAST",
     "source_heast",
     #"PPRTV (CPHEA)"
-    "source_pprtv_cphea",
-    #"EPA OPP"
-    "source_opp"
+    "source_pprtv_cphea"
   )
 
   cat("Filtering authoritative sources:\n", paste0("- ", sort(unique(res0$source[res0$source_table %in% auth_sources])),
