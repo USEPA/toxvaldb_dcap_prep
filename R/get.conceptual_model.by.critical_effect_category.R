@@ -21,7 +21,7 @@
 #' @importFrom stringr str_squish
 #' @importFrom readr read_csv cols
 get.conceptual_model.by.critical_effect_category <- function(df){
-  dir = "data/"
+  dir = paste0(Sys.getenv("datapath"), "data/")
 
   df_dcap <- df %>%
     dplyr::mutate(
