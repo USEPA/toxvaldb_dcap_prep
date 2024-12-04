@@ -41,7 +41,7 @@ bmdh.per.chemical <- function(toxval.db, run_name=Sys.Date(),
                               )
 ) {
   printCurrentFunction()
-  dir = paste0("data/results/", run_name, "/")
+  dir = paste0(Sys.getenv("datapath"), "data/results/", run_name, "/")
 
   file = paste0(dir,"results/ToxValDB BMDh per study ",toxval.db,".xlsx")
   print(file)

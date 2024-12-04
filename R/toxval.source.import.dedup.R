@@ -7,16 +7,16 @@
 #' @param delim string used to separate collapsed values, Default: ' |::| '
 #' @return dataframe containing deduped source data
 #' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[dplyr]{select}}, \code{\link[dplyr]{group_by}}, \code{\link[dplyr]{summarise}}, \code{\link[dplyr]{context}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{across}}, \code{\link[dplyr]{reexports}}, \code{\link[dplyr]{na_if}}, \code{\link[dplyr]{distinct}}
 #' @rdname toxval.source.import.dedup
-#' @export 
+#' @export
 #' @importFrom dplyr select group_by summarise n filter mutate across any_of na_if ungroup distinct
 #--------------------------------------------------------------------------------------
 toxval.source.import.dedup <- function(res,
@@ -57,7 +57,8 @@ toxval.source.import.dedup <- function(res,
                                   ~paste0(sort(unique(.[!is.na(.)])), collapse=!!delim) %>%
                                     dplyr::na_if("NA") %>%
                                     dplyr::na_if("") %>%
-                                    dplyr::na_if("-")
+                                    # Replace NA with "-"
+                                    tidyr::replace_na("-")
       )) %>%
       dplyr::ungroup() %>%
       dplyr::distinct()

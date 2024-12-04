@@ -31,7 +31,7 @@ write_dcap_summary <- function(toxval.db, sys.date=Sys.Date()) {
     dplyr::mutate(toxval_type_supercategory = "Point of Departure")
 
   # Write list containing all DCAP sources
-  dcap_list = c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA", "Copper Manufacturers",
+  dcap_list = c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA",
                 "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
                 "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
                 "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB","WHO JECFA Tox Studies")
