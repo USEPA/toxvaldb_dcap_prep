@@ -174,6 +174,7 @@ export.for.bmdh <- function(toxval.db,
                    "e.toxval_type_supercategory, ",
                    "b.toxval_type, ",
                    "b.toxval_subtype, ",
+                   "b.toxval_numeric_qualifier_original, ",
                    "b.toxval_numeric_qualifier, ",
                    "b.toxval_numeric, ",
                    "b.toxval_units, ",
@@ -235,6 +236,8 @@ export.for.bmdh <- function(toxval.db,
 
     # Get unique entries using query
     mat = runQuery(query, toxval.db) %>%
+      # Store original toxval_type assignment before DCAP
+      dplyr::mutate(toxval_type_orig_dcap = toxval_type) %>%
       dplyr::distinct() %>%
       # Remove specific ECOTOX entry that should be QC failed
       dplyr::filter(
@@ -754,7 +757,7 @@ export.for.bmdh <- function(toxval.db,
 
   # ECOTOX specific filtering
   if(any(grepl("ECOTOX", res$source))){
-    message("Reminder to remove this logic following ECOTOX QC/curation of duration field")
+    # message("Reminder to remove this logic following ECOTOX QC/curation of duration field")
     # Dedup ECOTOX where all values are identical except study_duration (filter out lower duration entries)
     res_ecotox = res %>%
       dplyr::filter(grepl("ECOTOX", source))
@@ -812,6 +815,42 @@ export.for.bmdh <- function(toxval.db,
                     -max_duration, -study_duration_norm) %>%
       tidyr::separate(max_duration_sel, into=c("study_duration_value", "study_duration_units"), sep = "_") %>%
       dplyr::mutate(study_duration_value = as.numeric(study_duration_value))
+
+    # Fix study_duration_class collapse, choose longest
+    # chronic > subchronic > short-term > acute
+
+    ecotox_study_duration_class_fix = ecotox_dedup %>%
+      # dplyr::select(source_hash, study_duration_class) %>%
+      dplyr::filter(grepl("|::|", study_duration_class, fixed = TRUE)) %>%
+      dplyr::mutate(study_duration_class = study_duration_class %>%
+                      # Substitute into numbers
+                      # TODO improve logic to not remove any parenthetical from the reassignment
+                      # for now, there's not a case of a collapsed study_duration_class with parenthetics
+                      gsub("\\bchronic\\b", "1", .) %>%
+                      gsub("\\bsubchronic\\b", "2", .) %>%
+                      gsub("\\bshort-term\\b", "3", .) %>%
+                      gsub("\\bacute\\b", "4", .) %>%
+                      gsub(" |::| ", ", ", ., fixed = TRUE)) %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(study_duration_class = study_duration_class %>%
+                      strsplit(., split = ", ") %>%
+                      unlist() %>%
+                      stringr::str_squish() %>%
+                      # Find min if in a list
+                      min(na.rm = TRUE)) %>%
+      dplyr::ungroup() %>%
+      dplyr::distinct() %>%
+      dplyr::mutate(study_duration_class = dplyr::case_when(
+        study_duration_class == "1" ~ "chronic",
+        study_duration_class == "2" ~ "subchronic",
+        study_duration_class == "3" ~ "short-term",
+        study_duration_class == "4" ~ "acute",
+        TRUE ~ study_duration_class
+      ))
+
+    ecotox_dedup = ecotox_dedup %>%
+      dplyr::filter(!source_hash %in% ecotox_study_duration_class_fix$source_hash) %>%
+      dplyr::bind_rows(ecotox_study_duration_class_fix)
 
     # Add filtered ECOTOX data back to res
     res = res %>%

@@ -208,13 +208,13 @@ run_qc_traceback <- function(){
 
   # Convert to long_form to join
   DCAP_full = old_DCAP %>%
-    dplyr::select(-dplyr::all_of(rm_cols)) %>%
+    dplyr::select(-dplyr::all_of(src_tbl_cols)) %>%
     tidyr::pivot_longer(cols = -source_hash,
                         values_transform = as.character) %>%
     dplyr::mutate(run_name = old_run_name) %>%
     dplyr::bind_rows(
       new_DCAP %>%
-        dplyr::select(-dplyr::all_of(rm_cols)) %>%
+        dplyr::select(-dplyr::all_of(src_tbl_cols)) %>%
         tidyr::pivot_longer(cols = -source_hash,
                             values_transform = as.character) %>%
         dplyr::mutate(run_name = new_run_name)
@@ -410,7 +410,7 @@ run_qc_traceback <- function(){
   report$general_summary = append(report$general_summary,
                                   data.frame(report="old_not_selected_er_lost",
                                              value = nrow(rm_now_pod_study_group_summ),
-                                             hash_list = paste0(rm_now_pod_study_group_summ$source_hash[rm_now_pod_study_group_summ$er_lost == 1], collapse = ", "),
+                                             hash_list = paste0(rm_now_pod_study_group_summ$source_hash[rm_now_pod_study_group_summ$er_lost == 1], collapse = ", ")
 
                                   )
   )
