@@ -454,13 +454,13 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     dplyr::rename(calibration_flag = key_finding, source_hash = source_hash_old)
 
   # Load calibration dictionary
-  calibration_dict = readxl::read_xlsx(paste0(Sys.getenv("datapath"), Sys.getenv("calibration_dict")), guess_max = 21474836) %>%
-    dplyr::filter(!is.na(calibration_class)) %>%
-    dplyr::select(source_hash, calibration_class)
+  calibration_dict = readxl::read_xlsx(paste0(Sys.getenv("datapath"), Sys.getenv("calibration_dict")),
+                                       guess_max = 21474836) %>%
+    dplyr::distinct()
 
   # Remove and export duplicate mappings
   dup_calib_dict = calibration_dict %>%
-    dplyr::group_by(source_hash) %>%
+    dplyr::group_by(source, dtxsid, toxval_type, toxval_numeric, study_duration_class, study_duration_value, study_duration_units) %>%
     dplyr::filter(dplyr::n()>1)
 
   if(nrow(dup_calib_dict)){
@@ -471,8 +471,11 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
 
   # Export missing calibration dictionary
   missing_calibration_dict = res %>%
+    dplyr::mutate(calibration_string = paste(source, dtxsid, toxval_type, toxval_numeric, study_duration_class, study_duration_value, study_duration_units,
+                                             sep = "_")) %>%
     dplyr::filter(calibration_flag %in% c(1),
-                  !source_hash %in% calibration_dict$source_hash)
+                  !calibration_string %in% calibration_dict$calibration_string) %>%
+    dplyr::select(calibration_string, source, dtxsid, toxval_type, toxval_numeric, study_duration_class, study_duration_value, study_duration_units)
 
   if(nrow(missing_calibration_dict)){
     writexl::write_xlsx(missing_calibration_dict,
@@ -482,7 +485,8 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
   # Add calibration_class field for calibration_flag records
   res = res %>%
     dplyr::left_join(calibration_dict,
-                     by = "source_hash")
+                     by = c("source", "dtxsid", "toxval_type", "toxval_numeric",
+                            "study_duration_class", "study_duration_value", "study_duration_units"))
   # dplyr::mutate(calibration_class = dplyr::case_when(
   #   study_type %in% c("chronic", "subchronic") & calibration_flag %in% c(1) ~ study_type,
   #   TRUE ~ NA
