@@ -340,7 +340,15 @@ export.for.bmdh <- function(toxval.db,
                                "quality ",
                                "FROM record_source ",
                                "WHERE toxval_id in (", toString(mat$toxval_id), ")"),
-                        toxval.db) %>%
+                        toxval.db)
+
+    # Filter out HPVIS "origin" PDFs while they're being re-cataloged
+    if(src == "HPVIS"){
+      mat_refs = mat_refs %>%
+        dplyr::filter(!record_source_level %in% c("origin"))
+    }
+
+    mat_refs = mat_refs %>%
       dplyr::mutate(record_source_info = convert.fields.to.json(dplyr::select(.,
                                                                               -tidyr::any_of(c("toxval_id"))))) %>%
       dplyr::select(toxval_id, record_source_info) %>%
