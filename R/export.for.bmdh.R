@@ -185,6 +185,7 @@ export.for.bmdh <- function(toxval.db,
                    "b.supersource, ",
                    "b.subsource_url, ",
                    "f.clowder_doc_id, ",
+                   "f.record_source_level, ",
                    "d.common_name, ",
                    "b.species_original, ",
                    "b.strain, ",
@@ -261,7 +262,15 @@ export.for.bmdh <- function(toxval.db,
           toxval_type_supercategory %in% c("Dose Response Summary Value") ~ "-",
           TRUE ~ toxval_subtype
         ))
+    } else if(src == "HPVIS"){
+      # Filter out HPVIS "origin" PDFs while they're being re-cataloged
+      mat = mat %>%
+        dplyr::filter(!record_source_level %in% c("origin"))
     }
+
+    # Remove record_source_level field used for HPVIS special filtering
+    mat = mat %>%
+      dplyr::select(-record_source_level)
 
     # Special source_hash fixes
     hash_specific_changes = readxl::read_xlsx(paste0(Sys.getenv("datapath"), "data/input/dictionary conversions for DCAP.xlsx")) %>%
