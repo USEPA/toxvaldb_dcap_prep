@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-#' @param toxval.db Database version
+#' @param toxval.db Database name
 #' @param run_name The desired name for the output directory (Default: current date)
 #' @param run.export Whether to run the export.for.bmdh function (Default: TRUE)
 #' @param include.pesticides Flag to include pesticides in output or not

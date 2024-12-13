@@ -5,10 +5,12 @@
 \title{export.for.bmdh}
 \usage{
 export.for.bmdh(
-  toxval.db = "res_toxval_v95",
+  toxval.db,
   include.pesticides = FALSE,
   include.drugs = FALSE,
-  include.epa_dws = FALSE,
+  include.epa_dws = TRUE,
+  include.food_add = FALSE,
+  reset.study_group = FALSE,
   run_name = Sys.Date()
 )
 }
@@ -18,6 +20,12 @@ export.for.bmdh(
 \item{include.pesticides}{Flag to include pesticides in output or not}
 
 \item{include.drugs}{Flag to include drugs in output or not}
+
+\item{include.epa_dws}{Flag to include EPA DWS in output or not}
+
+\item{include.food_add}{Flag to include food additives in output or not}
+
+\item{reset.study_group}{Flag to reset study_group}
 
 \item{run_name}{The desired name for the output directory (Default: current date)}
 }

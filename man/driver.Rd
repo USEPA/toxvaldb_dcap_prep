@@ -5,16 +5,18 @@
 \title{driver}
 \usage{
 driver(
-  toxval.db = "res_toxval_v95",
+  toxval.db,
   run_name = Sys.Date(),
   run.export = TRUE,
   include.pesticides = FALSE,
   include.drugs = FALSE,
-  include.epa_dws = FALSE
+  include.epa_dws = TRUE,
+  include.food_add = FALSE,
+  reset.study_group = FALSE
 )
 }
 \arguments{
-\item{toxval.db}{Database version}
+\item{toxval.db}{Database name}
 
 \item{run_name}{The desired name for the output directory (Default: current date)}
 
@@ -23,6 +25,12 @@ driver(
 \item{include.pesticides}{Flag to include pesticides in output or not}
 
 \item{include.drugs}{Flag to include drugs in output or not}
+
+\item{include.epa_dws}{Flag to include EPA DWS in output or not}
+
+\item{include.food_add}{Flag to include food additives in output or not}
+
+\item{reset.study_group}{Flag to reset study_group}
 }
 \value{
 None

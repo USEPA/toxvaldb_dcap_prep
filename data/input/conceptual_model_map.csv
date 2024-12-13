@@ -1,0 +1,23 @@
+standard,model1,model2
+body weight,Continuous,-
+clinical chemistry,Continuous,-
+clinical signs,Quantal-Deterministic,-
+development,Continuous,Quantal-Stochastic
+enzyme activity,Continuous,-
+food and/or water consumption,Continuous,-
+food or water consumption,Continuous,-
+food/water consumption,Continuous,-
+gross pathology,Quantal-Deterministic,-
+hematology,Continuous,-
+mortality/survival,Quantal-Stochastic,-
+multiple,Continuous,Quantal-Deterministic / Quantal-Stochastic
+neurobehavior,Continuous,Quantal-Deterministic
+neurobehaviour,Continuous,Quantal-Deterministic
+neurotransmitter,Continuous,-
+none,Continuous,Quantal-Deterministic / Quantal-Stochastic
+nonneoplastic histopathology,Quantal-Deterministic,-
+non-neoplastic histopathology,Quantal-Deterministic,-
+organ weight,Continuous,-
+other,Continuous,Quantal-Deterministic / Quantal-Stochastic
+reproduction,Continuous,Quantal-Stochastic
+urinalysis,Continuous,-

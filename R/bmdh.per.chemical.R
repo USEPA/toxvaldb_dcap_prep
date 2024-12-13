@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-#' @param toxval.db Database version
+#' @param toxval.db Database name
 #' @param run_name The desired name for the output directory (Default: current date)
 #' @param regulatory.sources This is the list of sources that will be used to select the #' optimal quantile to use for selecting the final chemical-level BMDh.
 #' @return Write a file with the results: toxval_PODs_for_BMDh chemical level {toxval.db} {sys.date}.xlsx

@@ -6,7 +6,7 @@
 \usage{
 bmdh.percentile.plot(
   to.file = FALSE,
-  toxval.db = "res_toxval_v95",
+  toxval.db,
   run_name = Sys.Date(),
   minstudies = 3,
   cutoff.logsd = 2
@@ -15,7 +15,7 @@ bmdh.percentile.plot(
 \arguments{
 \item{to.file}{If TRUE, send the plot to a file}
 
-\item{toxval.db}{Database version}
+\item{toxval.db}{Database name}
 
 \item{run_name}{The desired name for the output directory (Default: current date)}
 

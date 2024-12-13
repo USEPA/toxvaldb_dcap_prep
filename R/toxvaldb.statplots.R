@@ -3,7 +3,7 @@
 #' @title toxvaldb.statplots
 #' @description Plot statistics for ToxValDB for DCAP sources
 #' @param to.file Whether to write plots to file or simply view them, Default: F
-#' @param toxval.db Database version
+#' @param toxval.db Database name
 #' @param run_name The desired name for the output directory (Default: current date)
 #' @return None; plots are generated
 #' @details DETAILS

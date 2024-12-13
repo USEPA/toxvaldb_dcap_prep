@@ -5,14 +5,14 @@
 \title{bmdh.per.chemical}
 \usage{
 bmdh.per.chemical(
-  toxval.db = "res_toxval_v95",
+  toxval.db,
   run_name = Sys.Date(),
-  regulatory.sources = c("source_atsdr_mrls", "source_caloehha", "source_epa_hhtv",
-    "source_health_canada", "source_iris", "source_heast", "source_pprtv_cphea")
+  regulatory.sources = c("source_atsdr_mrls", "source_epa_hhtv", "source_health_canada",
+    "source_iris", "source_heast", "source_pprtv_cphea")
 )
 }
 \arguments{
-\item{toxval.db}{Database version}
+\item{toxval.db}{Database name}
 
 \item{run_name}{The desired name for the output directory (Default: current date)}
 

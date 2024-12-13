@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------------------
-#' @param toxval.db Database version
+#' @param toxval.db Database name
 #' @param run_name The desired name for the output directory (Default: current date)
 #' @return None; filtered results are recorded in Excel file
 #' @export
@@ -333,9 +333,9 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
   }
 
   # Perform deduping on identical records with different source_hash values
-  non_hashing_cols = c("source_hash", "record_source_info", "critical_effect", "name",
-                       "toxval_subtype", "critical_effect_category", "multiple_flag",
-                       "critical_effect_category_original")
+  non_hashing_cols = c("source_hash", "record_source_info", "toxicological_effect", "name",
+                       "toxval_subtype", "toxicological_effect_category", "multiple_flag",
+                       "toxicological_effect_category_original")
   # Add model and record_source fields to non_hashing_cols
   record_source_cols = runQuery("DESC record_source", toxval.db) %>%
     dplyr::pull(Field)
@@ -385,9 +385,9 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     dplyr::ungroup() %>%
     dplyr::mutate(
       # Replace |::| with | where appropriate
-      critical_effect = gsub(" \\|::\\| ", "|", critical_effect),
-      critical_effect_category = gsub(" \\|::\\| ", "|", critical_effect_category),
-      critical_effect_category_original = gsub(" \\|::\\| ", "|", critical_effect_category_original),
+      toxicological_effect = gsub(" \\|::\\| ", "|", toxicological_effect),
+      toxicological_effect_category = gsub(" \\|::\\| ", "|", toxicological_effect_category),
+      toxicological_effect_category_original = gsub(" \\|::\\| ", "|", toxicological_effect_category_original),
       dplyr::across(!!model_non_hash_cols, ~gsub(" \\|::\\| ", "|", .))
     ) %>%
     dplyr::distinct() %>%
@@ -405,8 +405,8 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
                                        dplyr::rename(source_hash_toxval=source_hash),
                                      hashing_cols=c("study_group", "toxval_type", "toxval_numeric"),
                                      delim=" <::> ") %>%
-      # Replace "|::|" in critical_effect with "|" delimiter
-      dplyr::mutate(dplyr::across(dplyr::any_of(c("critical_effect", "critical_effect_category_original", "critical_effect_category")),
+      # Replace "|::|" in toxicological_effect with "|" delimiter
+      dplyr::mutate(dplyr::across(dplyr::any_of(c("toxicological_effect", "toxicological_effect_category_original", "toxicological_effect_category")),
                                   ~gsub(" <::> ", "|", ., fixed = TRUE)
       ),
       source_hash = source_hash_toxval %>%
@@ -416,7 +416,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
       dplyr::select(-source_hash_toxval)
   }
 
-  # res$critical_effect_category[grepl("ToxValhc_588aba8b214220f10302d03dfdaab1c9|ToxValhc_b67010d01feae0e8ec9023ea570ae651", res$source_hash)]
+  # res$toxicological_effect_category[grepl("ToxValhc_588aba8b214220f10302d03dfdaab1c9|ToxValhc_b67010d01feae0e8ec9023ea570ae651", res$source_hash)]
 
   # Add duration_adjustment field to POD filtered output
   dedup_fields = c("study_type", "duration_adjustment")
@@ -427,7 +427,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     # Use rules to assign correct duration_adjustment
     dplyr::mutate(
       duration_adjustment = dplyr::case_when(
-        grepl("development|reproduction", critical_effect_category_original) ~ "no adjustment",
+        grepl("development|reproduction", toxicological_effect_category_original) ~ "no adjustment",
         study_type == "developmental" ~ "no adjustment",
         study_type %in% c("short-term", "subchronic", "chronic") ~ study_type,
         study_type %in% c("clinical", "repeat dose other") ~ "subchronic",
@@ -514,20 +514,20 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     # Remove intermediate fields
     dplyr::select(-rank_calibration_class)
 
-  # Get conceptual model by critical_effect_category
-  conceptual_model_map = get.conceptual_model.by.critical_effect_category(df = res) %>%
-    dplyr::select(-study_type, -critical_effect_category)
+  # Get conceptual model by toxicological_effect_category
+  conceptual_model_map = get.conceptual_model.by.toxicological_effect_category(df = res) %>%
+    dplyr::select(-study_type, -toxicological_effect_category)
 
   res = res %>%
     dplyr::left_join(conceptual_model_map,
                      by = "source_hash")
 
-  # Renaming critical_effect_category for reporting purposes/clarity
+  # Renaming toxicological_effect_category for reporting purposes/clarity
   res = res %>%
-    dplyr::mutate(critical_effect_category_fix = dplyr::case_when(
-      grepl("\\|", critical_effect_category) ~ "multiple",
-      critical_effect_category == "none" & !grepl("NO?A?EL", toxval_type) ~ "other",
-      TRUE ~ critical_effect_category
+    dplyr::mutate(toxicological_effect_category_fix = dplyr::case_when(
+      grepl("\\|", toxicological_effect_category) ~ "multiple",
+      toxicological_effect_category == "none" & !grepl("NO?A?EL", toxval_type) ~ "other",
+      TRUE ~ toxicological_effect_category
     ))
 
   # Write results to Excel

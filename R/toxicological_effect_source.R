@@ -3,7 +3,7 @@
 #' @param user The username for the MySQL database. The database instance is #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.
 #' @export
-#' @title critical_effect_source
+#' @title toxicological_effect_source
 #' @description Find the source for odd critical effect chunks.
 #' @return Writes output to file
 #' @details DETAILS
@@ -15,12 +15,12 @@
 #' }
 #' @seealso
 #'  \code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
-#' @rdname critical_effect_source
+#' @rdname toxicological_effect_source
 #' @importFrom openxlsx read.xlsx write.xlsx
 #-----------------------------------------------------------------------------------
-critical_effect_source <- function(toxval.db="res_toxval_v95",user, password) {
+toxicological_effect_source <- function(toxval.db="res_toxval_v95",user, password) {
   printCurrentFunction(toxval.db)
-  dir = "data/critical_effects/"
+  dir = "data/toxicological_effects/"
   setDBConn(user=user,password=password)
   file = paste0(dir,"devito other calls with comments.xlsx")
   print(file)
@@ -33,8 +33,8 @@ critical_effect_source <- function(toxval.db="res_toxval_v95",user, password) {
     query = paste0("SELECT
                     a.dtxsid,a.name,
                     b.source,
-                    b.critical_effect_original,
-                    b.critical_effect,
+                    b.toxicological_effect_original,
+                    b.toxicological_effect,
                     b.study_type,
                     b.toxval_type,
                     f.long_ref,
@@ -46,7 +46,7 @@ critical_effect_source <- function(toxval.db="res_toxval_v95",user, password) {
                     LEFT JOIN species d on b.species_id=d.species_id
                     INNER JOIN record_source f on b.toxval_id=f.toxval_id
                     WHERE
-                    b.critical_effect_original like '%",term,"%'")
+                    b.toxicological_effect_original like '%",term,"%'")
     temp = runQuery(query,toxval.db)
     if(nrow(temp)>0) {
       temp$term = term
@@ -54,6 +54,6 @@ critical_effect_source <- function(toxval.db="res_toxval_v95",user, password) {
       res = rbind(res,temp)
     }
   }
-  file = paste0(dir,"critical_effect_source.xlsx")
+  file = paste0(dir,"toxicological_effect_source.xlsx")
   openxlsx::write.xlsx(res,file)
 }

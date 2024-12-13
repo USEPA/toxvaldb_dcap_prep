@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 #' @param to.file If TRUE, send the plot to a file
-#' @param toxval.db Database version
+#' @param toxval.db Database name
 #' @param run_name The desired name for the output directory (Default: current date)
 #' @param minstudies - only chemicals with this minimum number of studies will be used in the calculation
 #' @param cutoff.logsd Only chemicals with their log SD of BMDh values will be used in the calculation

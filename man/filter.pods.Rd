@@ -4,10 +4,10 @@
 \alias{filter.pods}
 \title{filter.pods}
 \usage{
-\method{filter}{pods}(toxval.db = "res_toxval_v95", run_name = Sys.Date())
+\method{filter}{pods}(toxval.db, run_name = Sys.Date())
 }
 \arguments{
-\item{toxval.db}{Database version}
+\item{toxval.db}{Database name}
 
 \item{run_name}{The desired name for the output directory (Default: current date)}
 }

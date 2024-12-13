@@ -26,7 +26,6 @@
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname export.for.bmdh
 #' @importFrom openxlsx createStyle write.xlsx
-#' @importFrom toxvaldbBMDh printCurrentFunction runQuery
 #' @importFrom dplyr distinct filter mutate case_when select
 #' @importFrom tidyr replace_na
 #' @importFrom writexl write_xlsx
@@ -185,6 +184,7 @@ export.for.bmdh <- function(toxval.db,
                    "b.supersource, ",
                    "b.subsource_url, ",
                    "f.clowder_doc_id, ",
+                   "f.record_source_level, ",
                    "d.common_name, ",
                    "b.species_original, ",
                    "b.strain, ",
@@ -194,7 +194,7 @@ export.for.bmdh <- function(toxval.db,
                    "b.exposure_route, ",
                    "b.exposure_method, ",
                    "b.exposure_form, ",
-                   "b.critical_effect, ",
+                   "b.toxicological_effect, ",
                    "b.year, ",
                    # "f.long_ref, ",
                    # "f.url, ",
@@ -261,7 +261,15 @@ export.for.bmdh <- function(toxval.db,
           toxval_type_supercategory %in% c("Dose Response Summary Value") ~ "-",
           TRUE ~ toxval_subtype
         ))
+    } else if(src == "HPVIS"){
+      # Filter out HPVIS "origin" PDFs while they're being re-cataloged
+      mat = mat %>%
+        dplyr::filter(!record_source_level %in% c("origin"))
     }
+
+    # Remove record_source_level field used for HPVIS special filtering
+    mat = mat %>%
+      dplyr::select(-record_source_level)
 
     # Special source_hash fixes
     hash_specific_changes = readxl::read_xlsx(paste0(Sys.getenv("datapath"), "data/input/dictionary conversions for DCAP.xlsx")) %>%
@@ -340,7 +348,15 @@ export.for.bmdh <- function(toxval.db,
                                "quality ",
                                "FROM record_source ",
                                "WHERE toxval_id in (", toString(mat$toxval_id), ")"),
-                        toxval.db) %>%
+                        toxval.db)
+
+    # Filter out HPVIS "origin" PDFs while they're being re-cataloged
+    if(src == "HPVIS"){
+      mat_refs = mat_refs %>%
+        dplyr::filter(!record_source_level %in% c("origin"))
+    }
+
+    mat_refs = mat_refs %>%
       dplyr::mutate(record_source_info = convert.fields.to.json(dplyr::select(.,
                                                                               -tidyr::any_of(c("toxval_id"))))) %>%
       dplyr::select(toxval_id, record_source_info) %>%
@@ -448,9 +464,9 @@ export.for.bmdh <- function(toxval.db,
 
     # Source specific filtering
     if(grepl("ECOTOX", src)) {
-      # Filter out critical_effect values with "accumulation" if source is ECOTOX
+      # Filter out toxicological_effect values with "accumulation" if source is ECOTOX
       mat = mat %>%
-        dplyr::filter(!grepl("accumulation", critical_effect, ignore.case=TRUE))
+        dplyr::filter(!grepl("accumulation", toxicological_effect, ignore.case=TRUE))
 
       # Get long_ref by source_hash
       ecotox_longref = mat %>%
@@ -525,11 +541,11 @@ export.for.bmdh <- function(toxval.db,
 
     cat("[4]",src,":",nrow(mat),"\n\n")
 
-    # Map critical_effect_category
+    # Map toxicological_effect_category
     # https://stackoverflow.com/questions/5629111/how-can-i-make-sql-case-sensitive-string-comparison-on-mysql
-    crit_cat_map <- runQuery(paste0("SELECT distinct source_hash, BINARY term as term, study_type, critical_effect_category, ",
+    crit_cat_map <- runQuery(paste0("SELECT distinct source_hash, BINARY term as term, study_type, toxicological_effect_category, ",
                                     "CONCAT(source_hash, '_', term) as crit_key ",
-                                    "FROM critical_effect_terms ",
+                                    "FROM toxicological_effect_terms ",
                                     "WHERE source_hash in ('",
                                     paste0(mat$source_hash, collapse = "', '")
                                     ,"') "),
@@ -547,14 +563,14 @@ export.for.bmdh <- function(toxval.db,
                              'extended one-generation reproductive toxicity - with F2 generation (Cohorts 1A, and 1B with extension)',
                              'developmental')
 
-    # Unwrap critical_effect and export missing critical_effect_category mappings
+    # Unwrap toxicological_effect and export missing toxicological_effect_category mappings
     missing_crit_cat = mat %>%
-      dplyr::select(source_hash, critical_effect, study_type) %>%
-      tidyr::separate_rows(critical_effect, sep = "\\|") %>%
-      dplyr::mutate(critical_effect = stringr::str_squish(critical_effect)) %>%
-      dplyr::filter(!critical_effect %in% c("", "none", "None")) %>%
+      dplyr::select(source_hash, toxicological_effect, study_type) %>%
+      tidyr::separate_rows(toxicological_effect, sep = "\\|") %>%
+      dplyr::mutate(toxicological_effect = stringr::str_squish(toxicological_effect)) %>%
+      dplyr::filter(!toxicological_effect %in% c("", "none", "None")) %>%
       tidyr::unite(col = "crit_key",
-                   source_hash, critical_effect,
+                   source_hash, toxicological_effect,
                    sep = "_",
                    remove = FALSE) %>%
       dplyr::distinct() %>%
@@ -572,7 +588,7 @@ export.for.bmdh <- function(toxval.db,
           TRUE ~ study_type
         )
       ) %>%
-      dplyr::select(source_hash, term=critical_effect, dplyr::everything())
+      dplyr::select(source_hash, term=toxicological_effect, dplyr::everything())
 
     if(nrow(missing_crit_cat)){
       # Handle case of long source_hash list XLSX character limit
@@ -615,8 +631,8 @@ export.for.bmdh <- function(toxval.db,
       # max(stringr::str_length(missing_crit_cat$source_hash))
 
       # Try to provide suggestions
-      crit_suggs <- runQuery(paste0("SELECT distinct term, study_type, critical_effect_category, CONCAT(term, study_type) as crit_key ",
-                                    "FROM res_toxval_v96.critical_effect_terms ",
+      crit_suggs <- runQuery(paste0("SELECT distinct term, study_type, toxicological_effect_category, CONCAT(term, study_type) as crit_key ",
+                                    "FROM res_toxval_v96.toxicological_effect_terms ",
                                     "HAVING crit_key in ('", paste0(missing_crit_cat$term %>%
                                                                       # Escape "'" for query
                                                                       gsub("'", "''", .),
@@ -652,13 +668,13 @@ export.for.bmdh <- function(toxval.db,
 
     crit_cat_map = crit_cat_map %>%
       # Remove select terms
-      # term not in ('none') and critical_effect_category not in ('cancer')
+      # term not in ('none') and toxicological_effect_category not in ('cancer')
       dplyr::filter(!term %in% c("None", "none")#,
-                    #!critical_effect_category %in% c("cancer")
+                    #!toxicological_effect_category %in% c("cancer")
                     ) %>%
       dplyr::select(-term, -study_type, -crit_key) %>%
       dplyr::group_by(source_hash) %>%
-      dplyr::mutate(critical_effect_category = paste0(unique(critical_effect_category[!is.na(critical_effect_category)]),
+      dplyr::mutate(toxicological_effect_category = paste0(unique(toxicological_effect_category[!is.na(toxicological_effect_category)]),
                                                       collapse = "|")) %>%
       dplyr::distinct() %>%
       dplyr::ungroup()
@@ -666,10 +682,10 @@ export.for.bmdh <- function(toxval.db,
     mat = mat %>%
       dplyr::left_join(crit_cat_map,
                        by="source_hash") %>%
-      dplyr::mutate(critical_effect_category = dplyr::case_when(
-        # Set to "none" if no critical_effect present
-        critical_effect %in% c(NA, "-") ~ "none",
-        TRUE ~ critical_effect_category
+      dplyr::mutate(toxicological_effect_category = dplyr::case_when(
+        # Set to "none" if no toxicological_effect present
+        toxicological_effect %in% c(NA, "-") ~ "none",
+        TRUE ~ toxicological_effect_category
       ))
 
     rm(crit_cat_map)
@@ -686,8 +702,8 @@ export.for.bmdh <- function(toxval.db,
       mat = toxval.source.import.dedup(mat %>%
                                          dplyr::rename(source_hash_toxval=source_hash),
                                        hashing_cols=hashing_cols) %>%
-        # Replace "|::|" in critical_effect with "|" delimiter
-        dplyr::mutate(dplyr::across(dplyr::any_of(c("critical_effect", "critical_effect_category_original", "critical_effect_category")),
+        # Replace "|::|" in toxicological_effect with "|" delimiter
+        dplyr::mutate(dplyr::across(dplyr::any_of(c("toxicological_effect", "toxicological_effect_category_original", "toxicological_effect_category")),
                                     ~gsub(" \\|::\\| ", "|", .)
         ),
         source_hash = source_hash_toxval %>%
@@ -722,36 +738,36 @@ export.for.bmdh <- function(toxval.db,
         grepl("NO?A?EL", toxval_type) & toxval_numeric_qualifier %in% c("<") ~ gsub("^N", "L", toxval_type),
         TRUE ~ toxval_type
       ),
-      # Set critical_effect_category values for NOAEL/related toxval_type to none
-      critical_effect_category_original = critical_effect_category,
-      critical_effect_category = dplyr::case_when(
+      # Set toxicological_effect_category values for NOAEL/related toxval_type to none
+      toxicological_effect_category_original = toxicological_effect_category,
+      toxicological_effect_category = dplyr::case_when(
         grepl("NO?A?EL", toxval_type) ~ "none",
-        TRUE ~ critical_effect_category
+        TRUE ~ toxicological_effect_category
       ),
       # Set all toxval_numeric_qualifier values to "=".
       toxval_numeric_qualifier = "=",
 
-      # Create critical_effect_category field w/o "cancer" for conceptual model mapping
-      critical_effect_category_temp = critical_effect_category %>%
+      # Create toxicological_effect_category field w/o "cancer" for conceptual model mapping
+      toxicological_effect_category_temp = toxicological_effect_category %>%
         tidyr::replace_na("-"),
-      critical_effect_category = critical_effect_category %>%
+      toxicological_effect_category = toxicological_effect_category %>%
         gsub("\\|cancer\\|", "|", .) %>%
         gsub("\\|cancer|cancer\\|", "", .)
     )
 
-  # Store cancer records removed (ones with only cancer as a critical_effect_category)
+  # Store cancer records removed (ones with only cancer as a toxicological_effect_category)
   writexl::write_xlsx(res %>%
-                        dplyr::filter(critical_effect_category_temp == "cancer"),
+                        dplyr::filter(toxicological_effect_category_temp == "cancer"),
                       paste0(output_dir, "results/ToxValDB for BMDh ", toxval.db, "_cancer_removed.xlsx")
                       )
 
   res = res %>%
-  # Drop records with critical_effect_category "cancer"
-    dplyr::filter(critical_effect_category_temp != "cancer") %>%
+  # Drop records with toxicological_effect_category "cancer"
+    dplyr::filter(toxicological_effect_category_temp != "cancer") %>%
     # Remove non-experimental records
     dplyr::filter(!experimental_record %in% c("no", "No", "not experimental", "Not experimental")) %>%
     dplyr::mutate(
-      critical_effect_category_temp = critical_effect_category_temp %>%
+      toxicological_effect_category_temp = toxicological_effect_category_temp %>%
         dplyr::na_if("-")
     )
 
@@ -764,8 +780,8 @@ export.for.bmdh <- function(toxval.db,
 
     # Get all fields except study_duration and others that arbitrarily differ
     eco_hash_cols = names(res)[!names(res) %in% c("source_hash", "study_duration_value", "study_duration_units",
-                                                  "qc_status", "critical_effect", "critical_effect_category",
-                                                  "critical_effect_category_original", "critical_effect_category_temp", "crit_key",
+                                                  "qc_status", "toxicological_effect", "toxicological_effect_category",
+                                                  "toxicological_effect_category_original", "toxicological_effect_category_temp", "crit_key",
                                                   "study_group", "study_duration_class", "qc_category",
                                                   "final_model1", "final_model2")]
 
@@ -803,9 +819,9 @@ export.for.bmdh <- function(toxval.db,
       toxval.source.import.dedup(ecotox_dedup %>%
                                    dplyr::rename(source_hash_toxval=source_hash),
                                  hashing_cols=eco_hash_cols) %>%
-      # Replace "|::|" in critical_effect with "|" delimiter
-      dplyr::mutate(dplyr::across(dplyr::any_of(c("critical_effect", "critical_effect_category_original",
-                                                  "critical_effect_category", "critical_effect_category_temp")),
+      # Replace "|::|" in toxicological_effect with "|" delimiter
+      dplyr::mutate(dplyr::across(dplyr::any_of(c("toxicological_effect", "toxicological_effect_category_original",
+                                                  "toxicological_effect_category", "toxicological_effect_category_temp")),
                                   ~gsub(" \\|::\\| ", "|", .)
       ),
       source_hash = source_hash_toxval %>%
@@ -865,8 +881,8 @@ export.for.bmdh <- function(toxval.db,
 
   # Map DTXSID group
   res = res %>%
-    dplyr::select(-critical_effect_category) %>%
-    dplyr::rename(critical_effect_category = critical_effect_category_temp) %>%
+    dplyr::select(-toxicological_effect_category) %>%
+    dplyr::rename(toxicological_effect_category = toxicological_effect_category_temp) %>%
     dplyr::left_join(grouped_dtxsid, by="dtxsid")
 
   cat("Exporting results...\n")

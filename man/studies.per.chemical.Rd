@@ -4,10 +4,10 @@
 \alias{studies.per.chemical}
 \title{studies.per.chemical}
 \usage{
-studies.per.chemical(toxval.db = "res_toxval_v95", run_name = Sys.Date())
+studies.per.chemical(toxval.db, run_name = Sys.Date())
 }
 \arguments{
-\item{toxval.db}{Database version}
+\item{toxval.db}{Database name}
 
 \item{run_name}{The desired name for the output directory (Default: current date)}
 }
@@ -28,5 +28,5 @@ if(interactive()){
 }
 }
 \seealso{
-\code{\link[openxlsx]{read.xlsx}}, \code{\link[openxlsx]{write.xlsx}}
+\code{\link[readxl]{read_xlsx}}, \code{\link[writexl]{write_xlsx}}
 }
