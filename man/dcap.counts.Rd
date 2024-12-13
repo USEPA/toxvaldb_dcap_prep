@@ -4,7 +4,7 @@
 \alias{dcap.counts}
 \title{dcap.counts}
 \usage{
-dcap.counts(toxval.db = "res_toxval_v95", run_name = Sys.Date())
+dcap.counts(toxval.db, run_name = Sys.Date())
 }
 \arguments{
 \item{toxval.db}{Database version}

@@ -6,7 +6,7 @@
 \usage{
 bmdh.percentile.plot(
   to.file = FALSE,
-  toxval.db = "res_toxval_v95",
+  toxval.db,
   run_name = Sys.Date(),
   minstudies = 3,
   cutoff.logsd = 2

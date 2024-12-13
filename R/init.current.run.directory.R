@@ -23,7 +23,7 @@ init.current.run.directory <- function(run_name=Sys.Date()) {
     do.call(file.remove, list(list.files(paste0(new_directory, "/DCAP"), full.names = TRUE)))
   } else {
     cat(paste0("Initializing directory: ", new_directory, "\n"))
-    dir.create(new_directory)
+    dir.create(new_directory, recursive = TRUE)
     dir.create(paste0(new_directory, "/results"))
     dir.create(paste0(new_directory, "/DCAP"))
     dir.create(paste0(new_directory, "/missing_crit_cat"))

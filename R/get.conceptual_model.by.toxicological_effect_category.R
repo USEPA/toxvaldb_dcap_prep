@@ -1,8 +1,8 @@
-#' @title get.conceptual_model.by.critical_effect_category
-#' @description Get the conceptual model based on critical_effect_category
-#' @param df Input dataframe of study_type and critical_effect data.
+#' @title get.conceptual_model.by.toxicological_effect_category
+#' @description Get the conceptual model based on toxicological_effect_category
+#' @param df Input dataframe of study_type and toxicological_effect data.
 #' @export
-#' @return DataFrame map of models by critical_effect and study_type
+#' @return DataFrame map of models by toxicological_effect and study_type
 #' @details DETAILS
 #' @examples
 #' \dontrun{
@@ -15,23 +15,23 @@
 #'  \code{\link[tidyr]{separate_rows}}, \code{\link[tidyr]{replace_na}}
 #'  \code{\link[stringr]{str_trim}}
 #'  \code{\link[readr]{read_delim}}, \code{\link[readr]{cols}}
-#' @rdname get.conceptual_model.by.critical_effect_category
+#' @rdname get.conceptual_model.by.toxicological_effect_category
 #' @importFrom dplyr select distinct mutate n case_when left_join rename across where group_by any_of na_if ungroup
 #' @importFrom tidyr separate_rows replace_na
 #' @importFrom stringr str_squish
 #' @importFrom readr read_csv cols
-get.conceptual_model.by.critical_effect_category <- function(df){
+get.conceptual_model.by.toxicological_effect_category <- function(df){
   dir = paste0(Sys.getenv("datapath"), "data/")
 
   df_dcap <- df %>%
     dplyr::mutate(
-      piped_critical_effect = dplyr::case_when(
-        grepl("\\|", critical_effect_category) ~ "1",
+      piped_toxicological_effect = dplyr::case_when(
+        grepl("\\|", toxicological_effect_category) ~ "1",
         TRUE ~ "0"
       )
     ) %>%
-    dplyr::select(source_hash, study_type, critical_effect_category, critical_effect_category_original, piped_critical_effect) %>%
-    dplyr::mutate(critical_effect_category = fix.replace.unicode(critical_effect_category)) %>%
+    dplyr::select(source_hash, study_type, toxicological_effect_category, toxicological_effect_category_original, piped_toxicological_effect) %>%
+    dplyr::mutate(toxicological_effect_category = fix.replace.unicode(toxicological_effect_category)) %>%
     dplyr::distinct() %>%
     dplyr::mutate(hash_group = 1:dplyr::n()) %>%
     # Spread out collapsed source_hash
@@ -40,11 +40,11 @@ get.conceptual_model.by.critical_effect_category <- function(df){
                     stringr::str_squish())
 
   df2_dcap <- df_dcap %>%
-    tidyr::separate_rows(critical_effect_category, sep = "\\|") %>%
+    tidyr::separate_rows(toxicological_effect_category, sep = "\\|") %>%
     dplyr::distinct() %>%
     dplyr::mutate(type_map = dplyr::case_when(
-      study_type == "reproduction developmental" & !grepl("development|reproduction", critical_effect_category_original) ~ "repeat dose",
-      grepl("development|reproduction", critical_effect_category_original) ~ "repro dev",
+      study_type == "reproduction developmental" & !grepl("development|reproduction", toxicological_effect_category_original) ~ "repeat dose",
+      grepl("development|reproduction", toxicological_effect_category_original) ~ "repro dev",
       grepl("chronic", study_type, ignore.case=TRUE) ~ "repeat dose",
       grepl("subchronic", study_type, ignore.case=TRUE) ~ "repeat dose",
       grepl("28-day", study_type, ignore.case=TRUE) ~ "repeat dose",
@@ -60,7 +60,7 @@ get.conceptual_model.by.critical_effect_category <- function(df){
       !is.na(type_map) ~ type_map,
       TRUE ~ study_type)) %>%
     dplyr::select(-type_map) %>%
-    # dplyr::select(source_hash, study_type, type, critical_effect_category) %>%
+    # dplyr::select(source_hash, study_type, type, toxicological_effect_category) %>%
     dplyr::distinct()
 
   # Read in map for standard term to conceptual model
@@ -71,12 +71,12 @@ get.conceptual_model.by.critical_effect_category <- function(df){
                        dplyr::rename(model1_all = model1,
                                      model2_all = model2),
               # map terms to matching conceptual model
-              by=c("critical_effect_category" = "standard")) %>%
+              by=c("toxicological_effect_category" = "standard")) %>%
     dplyr::mutate(dplyr::across(dplyr::where(is.character), ~tidyr::replace_na(., "-"))) %>%
     # Recollapse category and conceptual models
     dplyr::group_by(source_hash) %>%
     dplyr::mutate(dplyr::across(dplyr::any_of(names(.)[!names(.) %in% c("source_hash", "study_type",
-                                                                        "type", "piped_critical_effect")]),
+                                                                        "type", "piped_toxicological_effect")]),
                                 ~paste0(., collapse="|") %>%
                                   dplyr::na_if("NA") %>%
                                   dplyr::na_if("") %>%
@@ -98,13 +98,13 @@ get.conceptual_model.by.critical_effect_category <- function(df){
     ) %>%
     dplyr::mutate(multiple_flag = dplyr::case_when(
       # Add a flag for multiples to use in model2
-      grepl("1", piped_critical_effect) ~ "multiple",
+      grepl("1", piped_toxicological_effect) ~ "multiple",
       (grepl("cont", model1_all, ignore.case=TRUE) & grepl("det", model1_all, ignore.case=TRUE)) ~ "multiple",
       (grepl("cont", model1_all, ignore.case=TRUE) & grepl("stoch", model1_all, ignore.case=TRUE)) ~ "multiple",
       (grepl("det", model1_all, ignore.case=TRUE) & grepl("stoch", model1_all, ignore.case=TRUE)) ~ "multiple",
       TRUE ~ NA_character_
     )) %>%
-    dplyr::select(-piped_critical_effect) %>%
+    dplyr::select(-piped_toxicological_effect) %>%
     dplyr::mutate(model2 = dplyr::case_when(
       (grepl("det", model2_all, ignore.case=TRUE) & grepl("stoch", model2_all) & type == "repeat dose") ~ "quantal-deterministic",
       (grepl("det", model2_all, ignore.case=TRUE) & grepl("stoch", model2_all) & type == "repro dev") ~ "quantal-stochastic",
@@ -130,7 +130,7 @@ get.conceptual_model.by.critical_effect_category <- function(df){
     dplyr::ungroup() %>%
     dplyr::distinct() %>%
     dplyr::select(-dplyr::any_of(c("hash_group", "multiple_flag", "model1", "model2",
-                                   "model1_all", "model2_all", "critical_effect_category_original")))
+                                   "model1_all", "model2_all", "toxicological_effect_category_original")))
 
   return(final)
 }

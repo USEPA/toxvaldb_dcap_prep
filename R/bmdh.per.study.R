@@ -149,7 +149,7 @@ bmdh.per.study <- function(toxval.db, run_name=Sys.Date()) {
     dplyr::select(
       tidyselect::any_of(
         c("dtxsid","casrn","name","source","source_table","toxval_type","toxval_type_standard","study_type",
-          "study_type_standard", "sts2", "critical_effect",
+          "study_type_standard", "sts2", "toxicological_effect",
           "bmdh1","bmdh2","bmdh",
           "F1","F2","F31","F32","F4","F5",
           "common_name","toxval_numeric","toxval_units",

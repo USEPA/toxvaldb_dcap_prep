@@ -4,7 +4,7 @@
 \alias{filter.pods}
 \title{filter.pods}
 \usage{
-\method{filter}{pods}(toxval.db = "res_toxval_v95", run_name = Sys.Date())
+\method{filter}{pods}(toxval.db, run_name = Sys.Date())
 }
 \arguments{
 \item{toxval.db}{Database version}

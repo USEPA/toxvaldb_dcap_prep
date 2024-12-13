@@ -4,7 +4,7 @@
 \alias{bmdh.per.study}
 \title{bmdh.per.study}
 \usage{
-bmdh.per.study(toxval.db = "res_toxval_v95", run_name = Sys.Date())
+bmdh.per.study(toxval.db, run_name = Sys.Date())
 }
 \arguments{
 \item{toxval.db}{Database version}

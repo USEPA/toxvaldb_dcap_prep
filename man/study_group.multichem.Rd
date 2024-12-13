@@ -4,7 +4,7 @@
 \alias{study_group.multichem}
 \title{study_group.multichem}
 \usage{
-study_group.multichem(toxval.db = "res_toxval_v95", run_name = Sys.Date())
+study_group.multichem(toxval.db, run_name = Sys.Date())
 }
 \arguments{
 \item{toxval.db}{Database version}

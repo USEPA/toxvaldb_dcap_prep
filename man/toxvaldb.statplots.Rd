@@ -4,11 +4,7 @@
 \alias{toxvaldb.statplots}
 \title{toxvaldb.statplots}
 \usage{
-toxvaldb.statplots(
-  to.file = FALSE,
-  toxval.db = "res_toxval_v95",
-  run_name = Sys.Date()
-)
+toxvaldb.statplots(to.file = FALSE, toxval.db, run_name = Sys.Date())
 }
 \arguments{
 \item{to.file}{Whether to write plots to file or simply view them, Default: F}
