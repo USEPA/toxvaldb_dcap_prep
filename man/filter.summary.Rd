@@ -7,7 +7,7 @@
 \method{filter}{summary}(toxval.db, run_name = Sys.Date(), do.load = TRUE)
 }
 \arguments{
-\item{toxval.db}{Database version}
+\item{toxval.db}{Database name}
 
 \item{run_name}{The desired name for the output directory (Default: current date)}
 

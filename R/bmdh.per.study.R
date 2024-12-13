@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------------------
-#' @param toxval.db Database version
+#' @param toxval.db Database name
 #' @param run_name The desired name for the output directory (Default: current date)
 #' @return Write a file with the results: toxval_PODs_for_BMDh {toxval.db} {sys.date}.xlsx
 #' @export

@@ -9,7 +9,7 @@ toxvaldb.statplots(to.file = FALSE, toxval.db, run_name = Sys.Date())
 \arguments{
 \item{to.file}{Whether to write plots to file or simply view them, Default: F}
 
-\item{toxval.db}{Database version}
+\item{toxval.db}{Database name}
 
 \item{run_name}{The desired name for the output directory (Default: current date)}
 

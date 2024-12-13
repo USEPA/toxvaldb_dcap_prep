@@ -1,0 +1,18 @@
+# Input file data path
+datapath = ""
+
+# Filter files
+pesticide_file = "data/input/EPA ECHA EFSA Combined Pest Active_10_15_24.xlsx"
+drug_file = "data/input/Chemical List FDAORANGE-2024-10-15.xlsx"
+epa_dws_file = "data/input/Chemical List EPADWS-2024-08-19.xlsx"
+food_additives = "data/input/Chemical List Food Additives_2024-10-15.xlsx"
+
+# Dictionaries
+calibration_dict = "data/input/calibration_class_dictionary.xlsx"
+
+# Database Connection Info
+db_user = ""
+db_pass = ""
+db_server = ""
+db_port = 3306
+toxval.db = "res_toxval_v96"

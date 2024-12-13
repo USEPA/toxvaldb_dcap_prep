@@ -49,8 +49,6 @@ po/*~
 rsconnect/
 
 # Ignore local user directories
-Repo/
-data/
-cw/
-input/
+data/results/
 data_old/
+README_dev

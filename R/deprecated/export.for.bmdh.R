@@ -1,5 +1,3 @@
-library(openxlsx)
-library(digest)
 #-----------------------------------------------------------------------------------
 #' Export records required for calculating BMDh values.
 #'
@@ -10,7 +8,7 @@ library(digest)
 #' Dog, Mouse, Rat and Rabbit. If more species are to be included, then allometric
 #' scaling factors for those need to added to the function bmd.per.study().
 #'
-#' @param toxval.db Database version
+#' @param toxval.db Database name
 #' @param user The username for the MySQL database. The database instance is
 #' hard-coded in the function setDBConn().
 #' @param password The user's MySQL database password.

@@ -12,7 +12,7 @@ bmdh.per.chemical(
 )
 }
 \arguments{
-\item{toxval.db}{Database version}
+\item{toxval.db}{Database name}
 
 \item{run_name}{The desired name for the output directory (Default: current date)}
 

@@ -26,7 +26,6 @@
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
 #' @rdname export.for.bmdh
 #' @importFrom openxlsx createStyle write.xlsx
-#' @importFrom toxvaldbBMDh printCurrentFunction runQuery
 #' @importFrom dplyr distinct filter mutate case_when select
 #' @importFrom tidyr replace_na
 #' @importFrom writexl write_xlsx
