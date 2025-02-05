@@ -148,13 +148,13 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
       low_lel = suppressWarnings(min(low_lel, na.rm = TRUE)),
 
       max_noael = dplyr::case_when(
-        ttr == "NOAEL" ~ toxval_numeric,
+        ttr == "NOAEL" & toxval_numeric < low_loael ~ toxval_numeric,
         TRUE ~ NA
       ),
       max_noael = suppressWarnings(max(max_noael, na.rm = TRUE)),
 
       max_nel = dplyr::case_when(
-        ttr == "NEL" ~ toxval_numeric,
+        ttr == "NEL" & toxval_numeric < low_lel ~ toxval_numeric,
         TRUE ~ NA
       ),
       max_nel = suppressWarnings(max(max_nel, na.rm = TRUE)),
@@ -165,8 +165,8 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     # Remove NOAEL/NEL greater than minimum LOAEL/LEL
     dplyr::mutate(
       remove_flag = dplyr::case_when(
-        ttr == "NOAEL" & toxval_numeric > low_loael & !is.na(low_loael) ~ 1,
-        ttr == "NEL" & toxval_numeric > low_lel & !is.na(low_lel) ~ 1,
+        ttr == "NOAEL" & toxval_numeric >= low_loael & !is.na(low_loael) ~ 1,
+        ttr == "NEL" & toxval_numeric >= low_lel & !is.na(low_lel) ~ 1,
         TRUE ~ 0
       )
     ) %>%
@@ -185,15 +185,15 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
         tts == "BMDL HED" & toxval_numeric == min_val ~ 1,
         tts == "BMDL ADJ" & toxval_numeric == min_val ~ 2,
         tts == "BMDL" & toxval_numeric == min_val ~ 3,
-        tts == "NOAEL HED" & toxval_numeric == max_val ~ 4,
-        tts == "NOAEL ADJ" & toxval_numeric == max_val ~ 5,
-        tts == "NOAEL" & toxval_numeric == max_val ~ 6,
+        tts == "NOAEL HED" & toxval_numeric == max_val & remove_flag != 1 ~ 4,
+        tts == "NOAEL ADJ" & toxval_numeric == max_val & remove_flag != 1 ~ 5,
+        tts == "NOAEL" & toxval_numeric == max_val & remove_flag != 1 ~ 6,
         tts == "LOAEL HED" & toxval_numeric == min_val ~ 7,
         tts == "LOAEL ADJ" & toxval_numeric == min_val ~ 8,
         tts == "LOAEL" & toxval_numeric == min_val ~ 9,
-        tts == "NEL HED" & toxval_numeric == max_val ~ 10,
-        tts == "NEL ADJ" & toxval_numeric == max_val ~ 11,
-        tts == "NEL" & toxval_numeric == max_val ~ 12,
+        tts == "NEL HED" & toxval_numeric == max_val & remove_flag != 1 ~ 10,
+        tts == "NEL ADJ" & toxval_numeric == max_val & remove_flag != 1 ~ 11,
+        tts == "NEL" & toxval_numeric == max_val & remove_flag != 1 ~ 12,
         tts == "LEL HED" & toxval_numeric == min_val ~ 13,
         tts == "LEL ADJ" & toxval_numeric == min_val ~ 14,
         tts == "LEL" & toxval_numeric == min_val ~ 15,
@@ -214,12 +214,12 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
 
       # Special case to check where NOAEL/LOAEL, NOEL/LOEL, or NEL/LEL may have the same dose, keep the L form
       keep_flag_tie = dplyr::case_when(
-        all(c(4, 7) %in% keep_flag) & remove_flag != 1 & any(low_loael == max_noael) & any(c(4, 7) %in% selected_row) ~ 7,
-        all(c(5, 8) %in% keep_flag) & remove_flag != 1 & any(low_loael == max_noael) & any(c(5, 8) %in% selected_row) ~ 8,
-        all(c(6, 9) %in% keep_flag) & remove_flag != 1 & any(low_loael == max_noael) & any(c(6, 9) %in% selected_row) ~ 9,
-        all(c(10, 13) %in% keep_flag) & remove_flag != 1 & any(low_lel == max_nel) & any(c(10, 13) %in% selected_row) ~ 13,
-        all(c(11, 14) %in% keep_flag) & remove_flag != 1 & any(low_lel == max_nel) & any(c(11, 14) %in% selected_row) ~ 14,
-        all(c(12, 15) %in% keep_flag) & remove_flag != 1 & any(low_lel == max_nel) & any(c(12, 15) %in% selected_row) ~ 15,
+        all(c(4, 7) %in% keep_flag) & all(remove_flag != 1) & any(low_loael == max_noael) & any(c(4, 7) %in% selected_row) ~ 7,
+        all(c(5, 8) %in% keep_flag) & all(remove_flag != 1) & any(low_loael == max_noael) & any(c(5, 8) %in% selected_row) ~ 8,
+        all(c(6, 9) %in% keep_flag) & all(remove_flag != 1) & any(low_loael == max_noael) & any(c(6, 9) %in% selected_row) ~ 9,
+        all(c(10, 13) %in% keep_flag) & all(remove_flag != 1) & any(low_lel == max_nel) & any(c(10, 13) %in% selected_row) ~ 13,
+        all(c(11, 14) %in% keep_flag) & all(remove_flag != 1) & any(low_lel == max_nel) & any(c(11, 14) %in% selected_row) ~ 14,
+        all(c(12, 15) %in% keep_flag) & all(remove_flag != 1) & any(low_lel == max_nel) & any(c(12, 15) %in% selected_row) ~ 15,
         TRUE ~ NA
       ),
 
@@ -266,7 +266,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     dplyr::ungroup()
 
   # Check assignments
-  # View(res_init %>% select(dplyr::any_of(c("study_group", "toxval_type", "toxval_numeric", "toxval_units", "tts", "ttr", "low_loael", "low_lel", "remove_flag", "min_val", "max_val", "selected_row", "keep_flag", "reason_for_filtering"))) %>% distinct())
+  # View(res_init %>% select(dplyr::any_of(c("study_group", "toxval_type", "toxval_numeric", "toxval_units", "tts", "ttr", "low_loael", "low_lel", "max_noael", "max_nel", "remove_flag", "min_val", "max_val", "selected_row", "keep_flag", "keep_flag_tie", "reason_for_filtering"))) %>% distinct())
 
   # Select chosen rows
   res = res_init %>%
