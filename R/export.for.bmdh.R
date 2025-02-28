@@ -128,6 +128,10 @@ export.for.bmdh <- function(toxval.db,
     food_add_addition = paste0(" and b.dtxsid NOT IN ('", food_add_dtxsid, "')")
   }
 
+  # Dictionary of critical_category suggestions already present in database
+  crit_suggs_dict = runQuery(paste0('SELECT distinct term, study_type, toxicological_effect_category, CONCAT(term, study_type) as crit_key ',
+                                    'FROM toxicological_effect_terms'),
+                             toxval.db)
   # # Get priority values for each specified source
   # plist = vector(mode="integer",length=length(slist))
   # plist[] = 1
@@ -484,7 +488,7 @@ export.for.bmdh <- function(toxval.db,
         dplyr::distinct()
 
       # Alert to unhandled cases
-      if(any(!unique(mat$toxval_type) %in% c("NOEL", "LOEL"))){
+      if(any(!unique(mat$toxval_type) %in% c("NOEL", "LOEL", "NOAEL", "LOAEL"))){
         cat("Need to handle missing ECOTOX toxval_type filtering cases:\n", paste0("- ", unique(mat$toxval_type)[!unique(mat$toxval_type) %in% c("NOEL", "LOEL")],
                                                                                    collapse="\n "),
             "\n")
@@ -495,18 +499,32 @@ export.for.bmdh <- function(toxval.db,
       ecotox_noel_filter = mat %>%
         dplyr::left_join(ecotox_longref,
                          by="source_hash") %>%
-        dplyr::group_by(dtxsid, long_ref, common_name, study_duration_value, study_duration_units, sex, lifestage, generation) %>%
+        dplyr::group_by(dtxsid, long_ref, common_name,
+                        study_duration_class, study_duration_value, study_duration_units,
+                        sex, lifestage, generation) %>%
         # Get minimum LOAEL/LEL values to initially filter out NOAEL/NEL > LOAEL/LEL
         dplyr::mutate(
-          low_loel = dplyr::case_when(
+          low_loael = dplyr::case_when(
+            toxval_type == "LOAEL" ~ toxval_numeric,
+            TRUE ~ NA
+          ),
+          low_loael = suppressWarnings(min(low_loael, na.rm = TRUE)),
+
+          low_lel = dplyr::case_when(
             toxval_type == "LOEL" ~ toxval_numeric,
             TRUE ~ NA
           ),
-          low_loel = suppressWarnings(min(low_loel, na.rm = TRUE)),
+          low_lel = suppressWarnings(min(low_lel, na.rm = TRUE)),
+
           # Replace Inf with NA from min with only NA values
-          dplyr::across(c(low_loel), ~dplyr::na_if(., Inf)),
+          dplyr::across(c(low_loael, low_lel), ~dplyr::na_if(., Inf))
+        ) %>%
+        dplyr::ungroup() %>%
+        # Remove NOAEL/NEL greater than minimum LOAEL/LEL
+        dplyr::mutate(
           remove_flag = dplyr::case_when(
-            toxval_type == "NOEL" & toxval_numeric > low_loel & !is.na(low_loel) ~ 1,
+            toxval_type == "NOAEL" & toxval_numeric >= low_loael & !is.na(low_loael) ~ 1,
+            toxval_type == "NOEL" & toxval_numeric >= low_lel & !is.na(low_lel) ~ 1,
             TRUE ~ 0
           )
         ) %>%
@@ -631,13 +649,18 @@ export.for.bmdh <- function(toxval.db,
       # max(stringr::str_length(missing_crit_cat$source_hash))
 
       # Try to provide suggestions
-      crit_suggs <- runQuery(paste0("SELECT distinct term, study_type, toxicological_effect_category, CONCAT(term, study_type) as crit_key ",
-                                    "FROM res_toxval_v96.toxicological_effect_terms ",
-                                    "HAVING crit_key in ('", paste0(missing_crit_cat$term %>%
-                                                                      # Escape "'" for query
-                                                                      gsub("'", "''", .),
-                                                                    missing_crit_cat$study_type, collapse="', '"), "')"),
-                             toxval.db) %>%
+      # Database-side pull that had issues with quotation marks, so moved to storing in session and filtering in R
+      # crit_suggs <- runQuery(paste0('SELECT distinct term, study_type, toxicological_effect_category, CONCAT(term, study_type) as crit_key ',
+      #                               'FROM toxicological_effect_terms ',
+      #                               'HAVING crit_key in ("', paste0(missing_crit_cat$term, # %>%
+      #                                                                 # Escape "'" for query
+      #                                                                 # gsub("'", "''", .),
+      #                                                               missing_crit_cat$study_type, collapse='", "'), '")'),
+      #                        toxval.db) %>%
+      #   dplyr::select(-crit_key)
+
+      crit_suggs <- crit_suggs_dict %>%
+        dplyr::filter(crit_key %in% paste0(missing_crit_cat$term, missing_crit_cat$study_type)) %>%
         dplyr::select(-crit_key)
 
       tryCatch(
