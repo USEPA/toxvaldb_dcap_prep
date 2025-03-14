@@ -1,6 +1,7 @@
 #' @title get.conceptual_model.by.toxicological_effect_category
 #' @description Get the conceptual model based on toxicological_effect_category
 #' @param df Input dataframe of study_type and toxicological_effect data.
+#' @param run_name The desired name for the output directory (Default: current date)
 #' @export
 #' @return DataFrame map of models by toxicological_effect and study_type
 #' @details DETAILS
@@ -20,7 +21,7 @@
 #' @importFrom tidyr separate_rows replace_na
 #' @importFrom stringr str_squish
 #' @importFrom readr read_csv cols
-get.conceptual_model.by.toxicological_effect_category <- function(df){
+get.conceptual_model.by.toxicological_effect_category <- function(df, run_name){
   dir = paste0(Sys.getenv("datapath"), "data/")
 
   df_dcap <- df %>%
@@ -63,6 +64,76 @@ get.conceptual_model.by.toxicological_effect_category <- function(df){
     # dplyr::select(source_hash, study_type, type, toxicological_effect_category) %>%
     dplyr::distinct()
 
+  ##############################################################################
+  # Reassign "type" based on input dictionary
+  type_remap_dict <- readxl::read_xlsx(paste0(dir, "input/toxicological_effect_cat_remap_type_dict.xlsx")) %>%
+    dplyr::select(source_hash,
+                  toxicological_effect_category_original = toxicological_effect_category,
+                  type_remap) %>%
+    tidyr::separate_longer_delim(source_hash, delim = ", ") %>%
+    tidyr::separate_longer_delim(source_hash, delim = "|::|") %>%
+    dplyr::mutate(source_hash = source_hash %>%
+                    stringr::str_squish())
+
+  df2_dcap = df2_dcap %>%
+    # Spread out source_hash matches
+    dplyr::mutate(type_remap_index = source_hash) %>%
+    tidyr::separate_longer_delim(source_hash, delim = ", ") %>%
+    tidyr::separate_longer_delim(source_hash, delim = "|::|") %>%
+    dplyr::left_join(type_remap_dict,
+                     by = c("source_hash", "toxicological_effect_category_original"))
+
+  missing_type_remap = df2_dcap %>%
+    dplyr::filter(grepl("multiple", toxicological_effect_category_original),
+                  is.na(type_remap)) %>%
+    dplyr::select(source_hash, type_remap) %>%
+    dplyr::left_join(df,
+                     by = "source_hash") %>%
+    dplyr::select(source_hash,
+                  term = toxicological_effect,
+                  study_type,
+                  toxicological_effect_category=toxicological_effect_category_original,
+                  type_remap) %>%
+    # Collapse to unique entries
+    dplyr::group_by(dplyr::across(c(-source_hash))) %>%
+    dplyr::summarise(source_hash = toString(source_hash)) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct() %>%
+    dplyr::select(source_hash, dplyr::everything())
+
+  if(nrow(missing_type_remap)){
+    writexl::write_xlsx(missing_type_remap,
+                        paste0(dir, "results/", run_name, "/missing_toxicological_effect_cat_remap_type_dict.xlsx"))
+  }
+
+  df2_dcap = df2_dcap %>%
+    # Collapse back
+    dplyr::group_by(type_remap_index) %>%
+    dplyr::mutate(
+      dplyr::across(c("type_remap", "source_hash"), ~ toString(unique(.[!is.na(.)])))
+      ) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct()
+
+  type_remap_check = df2_dcap %>%
+    dplyr::filter(!is.na(type_remap))
+
+  # Export reassignments to check if they were correct
+  if(nrow(type_remap_check)){
+    writexl::write_xlsx(type_remap_check %>%
+                          dplyr::filter(!is.na(type_remap)),
+                        paste0(dir, "results/", run_name, "/toxicological_effect_cat_type_remap_check.xlsx"))
+  }
+
+  df2_dcap = df2_dcap %>%
+    dplyr::mutate(type = dplyr::case_when(
+      !is.na(type_remap) ~ type_remap,
+      TRUE ~ type
+    )) %>%
+    dplyr::select(-type_remap, -source_hash) %>%
+    dplyr::rename(source_hash = type_remap_index)
+
+  ##############################################################################
   # Read in map for standard term to conceptual model
   model_map <- readr::read_csv(paste0(dir, "input/conceptual_model_map.csv"), col_types = readr::cols())
 
