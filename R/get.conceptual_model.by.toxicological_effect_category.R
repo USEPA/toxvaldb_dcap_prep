@@ -70,29 +70,39 @@ get.conceptual_model.by.toxicological_effect_category <- function(df, run_name){
     dplyr::select(source_hash,
                   toxicological_effect_category_original = toxicological_effect_category,
                   type_remap) %>%
-    tidyr::separate_longer_delim(source_hash, delim = ", ") %>%
+    tidyr::separate_longer_delim(source_hash, delim = ",") %>%
     tidyr::separate_longer_delim(source_hash, delim = "|::|") %>%
     dplyr::mutate(source_hash = source_hash %>%
-                    stringr::str_squish())
+                    stringr::str_squish()) %>%
+    dplyr::distinct()
 
   df2_dcap = df2_dcap %>%
     # Spread out source_hash matches
     dplyr::mutate(type_remap_index = source_hash) %>%
-    tidyr::separate_longer_delim(source_hash, delim = ", ") %>%
+    tidyr::separate_longer_delim(source_hash, delim = ",") %>%
     tidyr::separate_longer_delim(source_hash, delim = "|::|") %>%
+    dplyr::mutate(source_hash = source_hash %>%
+                    stringr::str_squish()) %>%
     dplyr::left_join(type_remap_dict,
                      by = c("source_hash", "toxicological_effect_category_original"))
 
   missing_type_remap = df2_dcap %>%
     dplyr::filter(grepl("multiple", toxicological_effect_category_original),
-                  is.na(type_remap)) %>%
+                  is.na(type_remap),
+                  !source_hash %in% type_remap_dict$source_hash) %>%
     dplyr::select(source_hash, type_remap) %>%
-    dplyr::left_join(df,
+    dplyr::distinct() %>%
+    dplyr::left_join(df %>%
+                       tidyr::separate_longer_delim(source_hash, delim = ",") %>%
+                       tidyr::separate_longer_delim(source_hash, delim = "|::|") %>%
+                       dplyr::mutate(source_hash = source_hash %>%
+                                       stringr::str_squish()),
                      by = "source_hash") %>%
     dplyr::select(source_hash,
                   term = toxicological_effect,
                   study_type,
                   toxicological_effect_category=toxicological_effect_category_original,
+                  type,
                   type_remap) %>%
     # Collapse to unique entries
     dplyr::group_by(dplyr::across(c(-source_hash))) %>%
@@ -110,7 +120,9 @@ get.conceptual_model.by.toxicological_effect_category <- function(df, run_name){
     # Collapse back
     dplyr::group_by(type_remap_index) %>%
     dplyr::mutate(
-      dplyr::across(c("type_remap", "source_hash"), ~ toString(unique(.[!is.na(.)])))
+      dplyr::across(c("type_remap", "source_hash"),
+                    ~toString(unique(.[!is.na(.)])) %>%
+                      dplyr::na_if(""))
       ) %>%
     dplyr::ungroup() %>%
     dplyr::distinct()
