@@ -515,7 +515,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     dplyr::select(-rank_calibration_class)
 
   # Get conceptual model by toxicological_effect_category
-  conceptual_model_map = get.conceptual_model.by.toxicological_effect_category(df = res) %>%
+  conceptual_model_map = get.conceptual_model.by.toxicological_effect_category(df = res, run_name=run_name) %>%
     dplyr::select(-study_type, -toxicological_effect_category)
 
   res = res %>%

@@ -34,17 +34,9 @@ check_dcap_toxicological_effect_category_mappings <- function(toxval.db, get_sug
   #   "EPA IRIS", "NTP PFAS", "EPA PPRTV", "EPA ToxRefDB", "WHO JECFA"
   # )
 
-  # Copy over study_type collapse lists from old Python script logic
-  repeat_study_types = c('immunotoxicity','intermediate','repeat dose other','subchronic',
-                         'neurotoxicity subchronic','neurotoxicity chronic',
-                         'neurotoxicity 28-day', 'neurotoxicity','intermediate','1','104','14','2','24', #typo
-                         'immunotoxicity subchronic','immunotoxicity chronic',
-                         'immunotoxicity 28-day','immunotoxicity','growth','chronic','28-day', 'short-term')
-  reprodev_study_types = c('reproduction developmental',
-                           'extended one-generation reproductive toxicity - with F2 generation and developmental neurotoxicity (Cohorts 1A, 1B with extension, 2A and 2B)',
-                           'extended one-generation reproductive toxicity - with F2 generation and both developmental neuro- and immunotoxicity (Cohorts 1A, 1B with extension, 2A, 2B, and 3)',
-                           'extended one-generation reproductive toxicity - with F2 generation (Cohorts 1A, and 1B with extension)',
-                           'developmental')
+  # List of types to overwrite as repeated dose or reprodev
+  repeat_study_types = global_vars()$repeat_study_types
+  reprodev_study_types = global_vars()$reprodev_study_types
 
   # Get all existing toxicological_effect_terms and the source_hashes that they cover
   toxicological_effect_terms = runQuery("SELECT * FROM toxicological_effect_terms", toxval.db) %>%
