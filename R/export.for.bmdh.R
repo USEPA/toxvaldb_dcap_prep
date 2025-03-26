@@ -765,9 +765,11 @@ export.for.bmdh <- function(toxval.db,
       # Create toxicological_effect_category field w/o "cancer" for conceptual model mapping
       toxicological_effect_category_temp = toxicological_effect_category %>%
         tidyr::replace_na("-"),
-      toxicological_effect_category = toxicological_effect_category %>%
+      toxicological_effect_category_temp = toxicological_effect_category %>%
         gsub("\\|cancer\\|", "|", .) %>%
-        gsub("\\|cancer|cancer\\|", "", .)
+        gsub("\\|cancer|cancer\\|", "", .) %>%
+        gsub("cancer\\|", "", .) %>%
+        stringr::str_squish()
     )
 
   # Store cancer records removed (ones with only cancer as a toxicological_effect_category)

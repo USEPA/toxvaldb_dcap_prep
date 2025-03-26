@@ -30,6 +30,16 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
   res0 = readxl::read_xlsx(file) %>%
     dplyr::mutate(dplyr::across(dplyr::where(is.character), ~tidyr::replace_na(., "-")))
 
+  # Additional check to remove "cancer" form toxicological_effect_category since export.for.bmdh()
+  res0 = res0 %>%
+    dplyr::mutate(
+      toxicological_effect_category = toxicological_effect_category %>%
+        gsub("\\|cancer\\|", "|", .) %>%
+        gsub("\\|cancer|cancer\\|", "", .) %>%
+        gsub("cancer\\|", "", .) %>%
+        stringr::str_squish()
+    )
+
   # Establish list of authoritative sources
   auth_sources = c(
     # "ATSDR MRLs"

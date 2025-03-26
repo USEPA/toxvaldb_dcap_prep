@@ -102,7 +102,6 @@ get.conceptual_model.by.toxicological_effect_category <- function(df, run_name){
                   term = toxicological_effect,
                   study_type,
                   toxicological_effect_category=toxicological_effect_category_original,
-                  type,
                   type_remap) %>%
     # Collapse to unique entries
     dplyr::group_by(dplyr::across(c(-source_hash))) %>%
@@ -189,8 +188,8 @@ get.conceptual_model.by.toxicological_effect_category <- function(df, run_name){
     )) %>%
     dplyr::select(-piped_toxicological_effect) %>%
     dplyr::mutate(model2 = dplyr::case_when(
-      (grepl("det", model2_all, ignore.case=TRUE) & grepl("stoch", model2_all) & type == "repeat dose") ~ "quantal-deterministic",
-      (grepl("det", model2_all, ignore.case=TRUE) & grepl("stoch", model2_all) & type == "repro dev") ~ "quantal-stochastic",
+      (grepl("det", model2_all, ignore.case=TRUE) & grepl("stoch", model2_all, ignore.case = TRUE) & type == "repeat dose") ~ "quantal-deterministic",
+      (grepl("det", model2_all, ignore.case=TRUE) & grepl("stoch", model2_all, ignore.case = TRUE) & type == "repro dev") ~ "quantal-stochastic",
       grepl("det", model2_all, ignore.case=TRUE) ~ "quantal-deterministic",
       grepl("stoch", model2_all, ignore.case=TRUE) ~ "quantal-stochastic",
       TRUE ~ NA_character_)
@@ -198,6 +197,7 @@ get.conceptual_model.by.toxicological_effect_category <- function(df, run_name){
 
   final <- df4 %>%
     dplyr::mutate(final_model2 = dplyr::case_when(
+      is.na(model2) ~ NA_character_,
       model2 == "quantal-stochastic" ~ "quantal-stochastic",
       model2 == "quantal-deterministic" ~ "quantal-deterministic",
       multiple_flag == "multiple" & type == "repeat dose" ~ "quantal-deterministic",
