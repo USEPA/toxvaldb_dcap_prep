@@ -1,4 +1,3 @@
-
 # toxvaldbBMDh
 
 # Background
@@ -8,16 +7,16 @@ ToxValDB is a large compilation of in vivo toxicology data and risk assessment v
 This repository contains the input files and R scripts used to generate the files used for DCAP analysis using ToxValDB v9.6.1 data.
 
 # Where to access ToxValDB data
-
 - [CompTox Chemicals Dashboard](https://comptox.epa.gov/dashboard/)
 	 - Navigate to the "Hazard Data" sidebar tab from a chemical page
 	 - Note: Current CCD version is ToxValDB v9.5.0, it will be updated in Fall 2025
-- [US EPA Clowder Repository](https://clowder.edap-cluster.com/datasets/61147fefe4b0856fdc65639b#folderId=62e184ebe4b055edffbfc22b)
+- [US EPA FigShare Dataset](https://doi.org/10.23645/epacomptox.20394501)
 	- Versioned releases of ToxValDB in XLSX and MySQL dump file format with associated documentation
-	- Version v9.6.1 released as a [Zenodo Dataset](https://doi.org/10.5281/zenodo.15169253)
+	- Note, the FigShare DOI link will land on the most recent version of the FigShare posting. Use the version dropdown menu to navigate to the desired release version based on the dataset title.
+	- Version v9.6.1 was also released as a [Zenodo Dataset](https://zenodo.org/records/15169253)
 
 # ToxValDB Repository Links
-- [toxvaldbstage](https://github.com/usepa/toxval_stage)
+- [toxvaldbstage](https://github.com/usepa/toxvalstage)
 - [toxvaldbmain](https://github.com/usepa/toxvaldbmain/)
 
 # Run Workflow to Generate Export from ToxValDB
