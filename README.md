@@ -16,7 +16,7 @@ This repository contains the input files and R scripts used to generate the file
 	- Version v9.6.1 was also released as a [Zenodo Dataset](https://zenodo.org/records/15169253)
 
 # ToxValDB Repository Links
-- [toxvaldbstage](https://github.com/usepa/toxvalstage)
+- [toxvaldbstage](https://github.com/usepa/toxvaldbstage)
 - [toxvaldbmain](https://github.com/usepa/toxvaldbmain/)
 
 # Run Workflow to Generate Export from ToxValDB
@@ -52,3 +52,6 @@ This repository contains the input files and R scripts used to generate the file
 		- List of records filtered out from the POD filtered file with removal reason
 
 > Submit any questions to Taylor Wall (wall.taylor@epa.gov) or Chelsea Weitekamp (weitekamp.chelsea@epa.gov)
+
+# Disclaimer
+The United States Environmental Protection Agency (EPA) GitHub project code is provided on an "as is" basis and the user assumes responsibility for its use.  EPA has relinquished control of the information and no longer has responsibility to protect the integrity , confidentiality, or availability of the information.  Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favoring by EPA.  The EPA seal and logo shall not be used in any manner to imply endorsement of any commercial product or activity by EPA or the United States Government.
