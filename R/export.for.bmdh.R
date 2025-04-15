@@ -132,6 +132,12 @@ export.for.bmdh <- function(toxval.db,
   crit_suggs_dict = runQuery(paste0('SELECT distinct term, study_type, toxicological_effect_category, CONCAT(term, study_type) as crit_key ',
                                     'FROM toxicological_effect_terms'),
                              toxval.db)
+
+  # Special ToxValDB v9.6.1 dictionary of records that should have been flagged as
+  # qc_status "fail" due to the deduplication hierarchy, but were not.
+  qc_status_fail_dict = readxl::read_xlsx(paste0(Sys.getenv("datapath"), "data/input/ToxVal v9.6.1 Additional dedup hierarchy fail records.xlsx")) %>%
+    dplyr::pull(source_hash)
+
   # # Get priority values for each specified source
   # plist = vector(mode="integer",length=length(slist))
   # plist[] = 1
@@ -239,14 +245,20 @@ export.for.bmdh <- function(toxval.db,
     )
 
     # Get unique entries using query
-    mat = runQuery(query, toxval.db) %>%
+    mat = runQuery(query, toxval.db)
+
+    # Fix known toxval_type issues (original reported as BMC, converted to BMD)
+    mat$toxval_type[mat$source_hash == "ToxValhc_d12b6774a6a719ad5de87f4048e3a0b4"] = 'BMD (05)'
+
+    mat = mat %>%
       # Store original toxval_type assignment before DCAP
       dplyr::mutate(toxval_type_orig_dcap = toxval_type) %>%
       dplyr::distinct() %>%
       # Remove specific ECOTOX entry that should be QC failed
       dplyr::filter(
         !(grepl("ECOTOX",source) & dtxsid=="DTXSID2024246" & toxval_numeric==7621 & toxval_units=="mg/kg-day"),
-        !(grepl("ToxRefDB", source) & dtxsid == "DTXSID6040371")
+        !(grepl("ToxRefDB", source) & dtxsid == "DTXSID6040371"),
+        !source_hash %in% qc_status_fail_dict
       )
 
     if(reset.study_group){
