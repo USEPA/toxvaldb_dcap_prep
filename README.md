@@ -4,7 +4,7 @@
 ToxValDB is a large compilation of in vivo toxicology data and risk assessment values. The database originated in response to the need for consistently annotated and computable toxicology data for use in the development and validation of non-animal new approach methods (NAMs). The database has two major components. The first, ToxValDB Stage contains data that closely match data from each source, in both structure and terminology. The second (the main ToxValDB database) maps all source data to a consistent structure and set of vocabularies. The current version of the database (9.6.1) contains 255,417 records covering 41,769 chemicals from 36 sources (55 source tables).
 
 # Repository Content
-This repository contains the input files and R scripts used to generate the files used for DCAP analysis using ToxValDB v9.6.1 data.
+This repository contains the input files and R scripts used to generate the files used for the Database Calibrated Assessment Process (DCAP) analysis using ToxValDB v9.6.1 data.
 
 # Where to access ToxValDB data
 - [CompTox Chemicals Dashboard](https://comptox.epa.gov/dashboard/)
@@ -13,7 +13,11 @@ This repository contains the input files and R scripts used to generate the file
 - [US EPA FigShare Dataset](https://doi.org/10.23645/epacomptox.20394501)
 	- Versioned releases of ToxValDB in XLSX and MySQL dump file format with associated documentation
 	- Note, the FigShare DOI link will land on the most recent version of the FigShare posting. Use the version dropdown menu to navigate to the desired release version based on the dataset title.
-	- Version v9.6.1 was also released as a [Zenodo Dataset](https://zenodo.org/records/15169253)
+	- Version v9.6.1 was also released as a [Zenodo Dataset](https://zenodo.org/records/15231010)
+	
+# Where to access DCAP results
+- [US EPA FigShare Dataset](https://doi.org/10.23645/epacomptox.28780757)
+  - The DCAP results were also released as a [Zenodo Dataset](https://zenodo.org/uploads/15237622)
 
 # ToxValDB Repository Links
 - [toxvaldbstage](https://github.com/usepa/toxvaldbstage)
