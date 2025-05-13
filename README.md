@@ -17,7 +17,7 @@ This repository contains the input files and R scripts used to generate the file
 	
 # Where to access DCAP results
 - [US EPA FigShare Dataset](https://doi.org/10.23645/epacomptox.28780757)
-  - The DCAP results were also released as a [Zenodo Dataset](https://zenodo.org/uploads/15237622)
+  - The DCAP results were also released as a [Zenodo Dataset](https://zenodo.org/uploads/15357834)
 
 # ToxValDB Repository Links
 - [toxvaldbstage](https://github.com/usepa/toxvaldbstage)
