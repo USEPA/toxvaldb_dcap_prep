@@ -7,25 +7,15 @@
 source_hash_vectorized(res, hashing_cols)
 }
 \arguments{
-\item{res}{The data frame to be processed}
+\item{res}{The data frame to receive a hash key.}
 
-\item{hashing_cols}{Optional list of columns to use for generating source_hash}
+\item{hashing_cols}{Optional list of columns to use for generating hash key field.}
 }
 \value{
-Input dataframe with new source_hash field
+Modified input dataframe with new source_hash field.
 }
 \description{
-Generate the hash key for a source table based on hashing columns
-}
-\details{
-DETAILS
-}
-\examples{
-\dontrun{
-if(interactive()){
- #EXAMPLE1
- }
-}
+Generate the hash key for an input table based on hashing columns. The hash key helps identify duplicate records in a dataframe.
 }
 \seealso{
 \code{\link[digest]{digest}}

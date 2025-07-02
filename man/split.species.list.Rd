@@ -7,23 +7,13 @@
 \method{split}{species.list}(df)
 }
 \arguments{
-\item{df}{Input dataframe with species lists to split}
+\item{df}{Input dataframe with species lists to split.}
 }
 \value{
-Modified input df with split species lists into multiple rows
+Modified input "df" with split species lists into multiple rows.
 }
 \description{
-Split species lists into multiple rows
-}
-\details{
-DETAILS
-}
-\examples{
-\dontrun{
-if(interactive()){
- #EXAMPLE1
- }
-}
+Split species lists into multiple rows.
 }
 \seealso{
 \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{case_when}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{bind_rows}}, \code{\link[dplyr]{group_by}}, \code{\link[dplyr]{summarise}}

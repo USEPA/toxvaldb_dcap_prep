@@ -1,28 +1,20 @@
-#--------------------------------------------------------------------------------------
-#' @title toxval.source.import.dedup
-#' @description Perform deduping on data before it is sent to toxval_source
-#' @param res dataframe containing the source data to dedup
-#' @param dedup_fields vector containing field names to dedup, Default: NULL (all fields but hashing cols)
-#' @param hashing_cols vector containing field names of hashing columns, Default: toxval.config()$hashing_cols
-#' @param delim string used to separate collapsed values, Default: ' |::| '
-#' @return dataframe containing deduped source data
-#' @details DETAILS
-#' @examples
-#' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
-#' }
+#' @title toxval.record.dedup
+#' @description Perform deduplication on data based on select identifier fields. Non-identifier fields will be collapsed based on the input delimiter.
+#' @param res Dataframe to process and collapse duplicate record fields.
+#' @param dedup_fields vector containing field names to deduplicate, default NULL (all fields but hashing cols).
+#' @param hashing_cols vector containing field names of hashing columns, default NULL.
+#' @param delim String used to separate collapsed values, default ' |::| '.
+#' @return Dataframe containing deduplicated data, with duplicate records collapsed by delimiter in non-identifier fields.
 #' @seealso
 #'  \code{\link[dplyr]{select}}, \code{\link[dplyr]{group_by}}, \code{\link[dplyr]{summarise}}, \code{\link[dplyr]{context}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{across}}, \code{\link[dplyr]{reexports}}, \code{\link[dplyr]{na_if}}, \code{\link[dplyr]{distinct}}
 #' @rdname toxval.source.import.dedup
 #' @export
 #' @importFrom dplyr select group_by summarise n filter mutate across any_of na_if ungroup distinct
-#--------------------------------------------------------------------------------------
-toxval.source.import.dedup <- function(res,
-                                       dedup_fields=NULL,
-                                       hashing_cols=NULL,
-                                       delim=" |::| ") {
+#' @importFrom tidyr replace_na
+toxval.record.dedup <- function(res,
+                                dedup_fields=NULL,
+                                hashing_cols=NULL,
+                                delim=" |::| ") {
   cat("Deduping data\n")
 
   # If no hashing_cols provided, use toxval.config()$hashing_cols

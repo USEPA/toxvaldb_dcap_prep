@@ -7,23 +7,20 @@
 \method{filter}{pods}(toxval.db, run_name = Sys.Date())
 }
 \arguments{
-\item{toxval.db}{Database name}
+\item{toxval.db}{Database name.}
 
-\item{run_name}{The desired name for the output directory (Default: current date)}
+\item{run_name}{The desired name for the output directory, default current date.}
 }
 \value{
-None; filtered results are recorded in Excel file
+None; Filtered results are recorded in Excel file.
 }
 \description{
-Filter values for BMDh according to specified POD rules
-}
-\details{
-Filtering steps differ between authoritative and non-authoritative sources
+Filter values for DCAP according to specified POD rules.
 }
 \examples{
 \dontrun{
 if(interactive()){
- #EXAMPLE1
+ filter.pods(toxval.db = "res_toxval_v96_1")
  }
 }
 }

@@ -1,4 +1,4 @@
-# toxvaldbBMDh
+# toxvaldb_dcap_prep
 
 # Background
 ToxValDB is a large compilation of in vivo toxicology data and risk assessment values. The database originated in response to the need for consistently annotated and computable toxicology data for use in the development and validation of non-animal new approach methods (NAMs). The database has two major components. The first, ToxValDB Stage contains data that closely match data from each source, in both structure and terminology. The second (the main ToxValDB database) maps all source data to a consistent structure and set of vocabularies. The current version of the database (9.6.1) contains 255,417 records covering 41,769 chemicals from 36 sources (55 source tables).
@@ -41,18 +41,18 @@ This repository contains the input files and R scripts used to generate the file
 	 >- `toxval.db`
 		 - Name of the ToxValDB database (default of res_toxval_v96)
 
- 3. Open an RStudio session using the `toxvaldbBMDh.Rproj` file
+ 3. Open an RStudio session using the `toxvaldb_dcap_prep.Rproj` file
  4. Load the package using `devtools::load_all()`
 	- Install missing packages as needed. See `NAMESPACE` file
- 5. Open the `R/driver.R` script
- 6. Run the `driver()` function with desired parameters
+ 5. Open the `R/run_toxvaldb_dcap_prep.R` script
+ 6. Run the `run_toxvaldb_dcap_prep()` function with desired parameters
  7. Wait for export to run (~10-20 minutes depending on how many DTXSID values are included or filtered out)
  8. Review `data/results/*run_name*` subfolder that is produced. Notable files are:
-	- /results/ToxValDB for BMDh res_toxval_v96.xlsx
+	- /results/ToxValDB for DCAP res_toxval_v96.xlsx
 		- Full dataset pulled from ToxValDB as initially qualifying records
-	- /results/ToxValDB for BMDh res_toxval_v96 POD filtered.xlsx
+	- /results/ToxValDB for DCAP res_toxval_v96 POD filtered.xlsx
 		- Full dataset filtered to a single POD per study_group
-	- /results/ToxValDB for BMDh res_toxval_v96 removed entries.xlsx
+	- /results/ToxValDB for DCAP res_toxval_v96 removed entries.xlsx
 		- List of records filtered out from the POD filtered file with removal reason
 
 > Submit any questions to Taylor Wall (wall.taylor@epa.gov) or Chelsea Weitekamp (weitekamp.chelsea@epa.gov)

@@ -1,16 +1,9 @@
 #' @title get.conceptual_model.by.toxicological_effect_category
-#' @description Get the conceptual model based on toxicological_effect_category
+#' @description Get the conceptual model based on toxicological_effect_category.
 #' @param df Input dataframe of study_type and toxicological_effect data.
-#' @param run_name The desired name for the output directory (Default: current date)
+#' @param run_name The desired name for the output directory, default current date.
 #' @export
-#' @return DataFrame map of models by toxicological_effect and study_type
-#' @details DETAILS
-#' @examples
-#' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
-#' }
+#' @return DataFrame map of models by toxicological_effect and study_type.
 #' @seealso
 #'  \code{\link[dplyr]{select}}, \code{\link[dplyr]{distinct}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{context}}, \code{\link[dplyr]{case_when}}, \code{\link[dplyr]{mutate-joins}}, \code{\link[dplyr]{rename}}, \code{\link[dplyr]{across}}, \code{\link[dplyr]{reexports}}, \code{\link[dplyr]{group_by}}, \code{\link[dplyr]{na_if}}
 #'  \code{\link[tidyr]{separate_rows}}, \code{\link[tidyr]{replace_na}}
@@ -21,6 +14,8 @@
 #' @importFrom tidyr separate_rows replace_na
 #' @importFrom stringr str_squish
 #' @importFrom readr read_csv cols
+#' @importFrom readxl read_xlsx
+#' @importFrom writexl write_xlsx
 get.conceptual_model.by.toxicological_effect_category <- function(df, run_name){
   dir = paste0(Sys.getenv("datapath"), "data/")
 
@@ -204,7 +199,7 @@ get.conceptual_model.by.toxicological_effect_category <- function(df, run_name){
       multiple_flag == "multiple" & type == "repro dev" ~ "quantal-stochastic",
       TRUE ~ NA_character_)
     ) %>%
-    distinct()
+    dplyr::distinct()
 
   # Collapse source_hash again
   final = final %>%

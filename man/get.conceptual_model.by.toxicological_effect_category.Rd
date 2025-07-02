@@ -5,26 +5,18 @@
 \alias{get.conceptual_model.by.toxicological_effect_category}
 \title{get.conceptual_model.by.toxicological_effect_category}
 \usage{
-get.conceptual_model.by.toxicological_effect_category(df)
+get.conceptual_model.by.toxicological_effect_category(df, run_name)
 }
 \arguments{
 \item{df}{Input dataframe of study_type and toxicological_effect data.}
+
+\item{run_name}{The desired name for the output directory, default current date.}
 }
 \value{
-DataFrame map of models by toxicological_effect and study_type
+DataFrame map of models by toxicological_effect and study_type.
 }
 \description{
-Get the conceptual model based on toxicological_effect_category
-}
-\details{
-DETAILS
-}
-\examples{
-\dontrun{
-if(interactive()){
- #EXAMPLE1
- }
-}
+Get the conceptual model based on toxicological_effect_category.
 }
 \seealso{
 \code{\link[dplyr]{select}}, \code{\link[dplyr]{distinct}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{context}}, \code{\link[dplyr]{case_when}}, \code{\link[dplyr]{mutate-joins}}, \code{\link[dplyr]{rename}}, \code{\link[dplyr]{across}}, \code{\link[dplyr]{reexports}}, \code{\link[dplyr]{group_by}}, \code{\link[dplyr]{na_if}}

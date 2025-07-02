@@ -1,39 +1,34 @@
-#--------------------------------------------------------------------------------------
-#' @title check_dcap_toxicological_effect_category_mappings
-#' @description Attempts to remap previously-mapped toxicological_effect_category values to DCAP entries
-#' @returns None; output is written to Excel files
+#' @title check_dcap_critical_effect_category_mappings
+#' @description Attempts to remap previously-mapped toxicological_effect_category values to DCAP entries.
+#' @param toxval.db The version of ToxVal to use.
+#' @param get_suggestions Whether to provide mapping suggestions (Default: TRUE).
+#' @param input_file The file to pull missing toxicological_effect_category from (typically the filtered POD output file).
+#' @param output_dir The directory to write the output file.
+#' @return None, output is written to Excel files for additional review.
 #' @details
 #' The output Excel files are as follows:
-#' - dcap_mappings_identified.xlsx: All toxicological_effect_categories that could be confidently remapped
-#' - dcap_mappings_still_missing.xlsx: Full data for entries missing categorizations
-#' - dcap_missing_categorization.xlsx: Just toxicological_effect, study_type values missing categorizations
-#' - dcap_mapping_suggestions.xlsx: Mapping suggestions based on close, but not exact, matches
-#' @param toxval.db The version of ToxVal to use
-#' @param get_suggestions Whether to provide mapping suggestions (Default: TRUE)
-#' @param input_file The file to pull missing toxicological_effect_category from.
-#' @param output_dir The folder used to write output to
-#--------------------------------------------------------------------------------------
-check_dcap_toxicological_effect_category_mappings <- function(toxval.db, get_suggestions=TRUE,
+#' - dcap_mappings_identified.xlsx: All toxicological_effect_categories that could be confidently remapped.
+#' - dcap_mappings_still_missing.xlsx: Full data for entries missing categorizations.
+#' - dcap_missing_categorization.xlsx: Just toxicological_effect, study_type values missing categorizations.
+#' - dcap_mapping_suggestions.xlsx: Mapping suggestions based on close, but not exact, matches.
+#' @seealso
+#'  \code{\link[dplyr]{rename}}, \code{\link[dplyr]{pull}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{select}}, \code{\link[dplyr]{distinct}}, \code{\link[dplyr]{mutate-joins}}, \code{\link[dplyr]{case_when}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{group_by}}
+#'  \code{\link[readxl]{read_excel}}
+#'  \code{\link[tidyr]{separate_rows}}
+#'  \code{\link[stringr]{str_trim}}
+#'  \code{\link[writexl]{write_xlsx}}
+#' @rdname check_dcap_critical_effect_category_mappings
+#' @export
+#' @importFrom dplyr rename pull mutate select distinct inner_join case_when filter left_join group_by ungroup
+#' @importFrom readxl read_xlsx
+#' @importFrom tidyr separate_rows
+#' @importFrom stringr str_squish str_trim
+#' @importFrom writexl write_xlsx
+check_dcap_critical_effect_category_mappings <- function(toxval.db, get_suggestions=TRUE,
                                                          input_file="", output_dir=""){
-  # Get list of DCAP tables to check
-  iuclid_dcap = c('source_iuclid_repeateddosetoxicityoral',
-                  'source_iuclid_developmentaltoxicityteratogenicity',
-                  'source_iuclid_carcinogenicity',
-                  'source_iuclid_immunotoxicity',
-                  'source_iuclid_neurotoxicity',
-                  'source_iuclid_toxicityreproduction')
-
-  dcap_sources = c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA",
-                   "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430", "Health Canada",
-                   "HEAST", "HESS", "HPVIS", "IRIS", "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)",
-                   "ToxRefDB", "WHO JECFA Tox Studies")
-
-  # dcap_sources = c(
-  #   "ATSDR", "HAWC Project", "EPA HAWC", "Cal OEHHA", "ECHA IUCLID", "EPA ECOTOX",
-  #   "EFSA OpenFoodTox", "EPA HHTV", "Health Canada", "EPA HEAST", "NITE HESS", "EPA HPVIS",
-  #   "EPA IRIS", "NTP PFAS", "EPA PPRTV", "EPA ToxRefDB", "WHO JECFA"
-  # )
-
+  # Get list of DCAP sources to check
+  iuclid_dcap = global_vars()$iuclid_dcap
+  dcap_sources = global_vars()$dcap_sources
   # List of types to overwrite as repeated dose or reprodev
   repeat_study_types = global_vars()$repeat_study_types
   reprodev_study_types = global_vars()$reprodev_study_types
@@ -45,7 +40,7 @@ check_dcap_toxicological_effect_category_mappings <- function(toxval.db, get_sug
     dplyr::pull(source_hash) %>%
     unique()
 
-  # Get source_hash values included in most recent filtered DCAP data
+  # Get source_hash values included in filtered DCAP input data
   dcap_hashes = readxl::read_xlsx(input_file) %>%
     tidyr::separate_rows(source_hash, sep=",") %>%
     tidyr::separate_rows(source_hash, sep=" \\|::\\| ") %>%
@@ -141,7 +136,7 @@ check_dcap_toxicological_effect_category_mappings <- function(toxval.db, get_sug
     mapping_suggestions = remaining_categorizations %>%
       dplyr::filter(!is.na(toxicological_effect_category)) %>%
       dplyr::mutate(s_temp = source_hash) %>%
-      toxval.source.import.dedup(hashing_cols=c("source_hash", "s_temp", "toxicological_effect", "study_type", "source_table"),
+      toxval.record.dedup(hashing_cols=c("source_hash", "s_temp", "toxicological_effect", "study_type", "source_table"),
                                  delim="|") %>%
       dplyr::rename(source_hash = s_temp)
 

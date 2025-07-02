@@ -2,34 +2,32 @@
 % Please edit documentation in R/convert_units.R
 \name{convert_units}
 \alias{convert_units}
-\title{FUNCTION_TITLE}
+\title{convert_units}
 \usage{
 convert_units(x, units, desired, conv_factor = NA)
 }
 \arguments{
-\item{x}{Numeric to be converted}
+\item{x}{Numeric to be converted.}
 
-\item{units}{Original units to be converted}
+\item{units}{Original units to be converted.}
 
-\item{desired}{Desired units to convert the input value into}
+\item{desired}{Desired units to convert the input value into.}
 
-\item{conv_factor}{Conversion factor to use (such as Molecular weight, tissue Density, etc.)}
+\item{conv_factor}{Conversion factor to use (such as Molecular weight, tissue Density, etc.).}
 
 \item{overwrite_units}{Boolean to overwrite the 'units' with desired units.}
 }
 \value{
-OUTPUT_DESCRIPTION
+Modified input "x" parameter converted to desired units.
 }
 \description{
-A helper function to convert input values to desired units.
-}
-\details{
-DETAILS
+Function to convert input values to desired units.
 }
 \examples{
 \dontrun{
 if(interactive()){
- #EXAMPLE1
+ # Convert input "24" days into hours - expected result of "576" hours
+ convert_units(x=24, units = "days", desired = "hours")
  }
 }
 }

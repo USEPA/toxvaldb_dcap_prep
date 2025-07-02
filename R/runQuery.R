@@ -1,26 +1,24 @@
-#' @description Runs a database query and returns a result set
-#'
-#' @param query a properly formatted SQL query as a string
-#' @param db the name of the database
-#' @param do.halt if TRUE, halt on errors or warnings
-#' @param verbose if TRUE, print diagnostic information
-#' @export
 #' @title runQuery
-#' @return Query results
-#' @details DETAILS
+#' @description Runs a database query and returns a result set.
+#' @param query A properly formatted SQL query as a string.
+#' @param db The name of the database.
+#' @param do.halt If TRUE, halt on errors or warnings, default TRUE.
+#' @param verbose If TRUE, print diagnostic information, default FALSE.
+#' @return Dataframe of query results.
 #' @examples
 #' \dontrun{
 #' if(interactive()){
-#'  #EXAMPLE1
+#'  runQuery(query = "SELECT * FROM toxval LIMIT 1", db = "res_toxval_v96_1")
 #'  }
 #' }
 #' @seealso
 #'  \code{\link[RMySQL]{character(0)}}, \code{\link[RMySQL]{MySQLDriver-class}}
 #'  \code{\link[utils]{flush.console}}
-#' @rdname runQuery
-#' @importFrom RMySQL dbConnect MySQL dbSendQuery dbFetch dbHasCompleted dbClearResult dbDisconnect
+#' @importFrom RMySQL MySQL
+#' @importFrom DBI dbConnect dbSendQuery dbFetch dbHasCompleted dbClearResult dbDisconnect
 #' @importFrom utils flush.console
-#--------------------------------------------------------------------------------------
+#' @export
+#' @rdname runQuery
 runQuery <- function(query=NULL, db, do.halt=TRUE, verbose=FALSE) {
 
   if(is.null(query)){
@@ -44,32 +42,32 @@ runQuery <- function(query=NULL, db, do.halt=TRUE, verbose=FALSE) {
   }
 
   tryCatch({
-    con <- RMySQL::dbConnect(drv=RMySQL::MySQL(),
+    con <- DBI::dbConnect(drv=RMySQL::MySQL(),
                              user=Sys.getenv("db_user"),
                              password=Sys.getenv("db_pass"),
                              host=Sys.getenv("db_server"),
                              dbname=db,
                              port=as.numeric(Sys.getenv("db_port"))
                              )
-    rs <- suppressWarnings(RMySQL::dbSendQuery(con, query))
-    d1 <- RMySQL::dbFetch(rs, n = -1)
+    rs <- suppressWarnings(DBI::dbSendQuery(con, query))
+    d1 <- DBI::dbFetch(rs, n = -1)
     if(verbose) {
       print(d1)
       utils::flush.console()
     }
-    RMySQL::dbHasCompleted(rs)
-    RMySQL::dbClearResult(rs)
-    RMySQL::dbDisconnect(con)
+    DBI::dbHasCompleted(rs)
+    DBI::dbClearResult(rs)
+    DBI::dbDisconnect(con)
     return(d1)
   }, warning = function(w) {
     cat("WARNING:",query,"\n")
-    RMySQL::dbDisconnect(con)
+    DBI::dbDisconnect(con)
     if(do.halt) browser()
     return(NULL)
   }, error = function(e) {
     #cat("ERROR:",query,"\n")
     cat("Error messge: ",paste0(e, collapse=" | "), "\n")
-    RMySQL::dbDisconnect(con)
+    DBI::dbDisconnect(con)
     if(do.halt) browser()
     return(NULL)
   })

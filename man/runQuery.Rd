@@ -7,27 +7,24 @@
 runQuery(query = NULL, db, do.halt = TRUE, verbose = FALSE)
 }
 \arguments{
-\item{query}{a properly formatted SQL query as a string}
+\item{query}{A properly formatted SQL query as a string.}
 
-\item{db}{the name of the database}
+\item{db}{The name of the database.}
 
-\item{do.halt}{if TRUE, halt on errors or warnings}
+\item{do.halt}{If TRUE, halt on errors or warnings, default TRUE.}
 
-\item{verbose}{if TRUE, print diagnostic information}
+\item{verbose}{If TRUE, print diagnostic information, default FALSE.}
 }
 \value{
-Query results
+Dataframe of query results.
 }
 \description{
-Runs a database query and returns a result set
-}
-\details{
-DETAILS
+Runs a database query and returns a result set.
 }
 \examples{
 \dontrun{
 if(interactive()){
- #EXAMPLE1
+ runQuery(query = "SELECT * FROM toxval LIMIT 1", db = "res_toxval_v96_1")
  }
 }
 }

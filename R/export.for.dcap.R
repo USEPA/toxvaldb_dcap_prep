@@ -1,57 +1,41 @@
-#-----------------------------------------------------------------------------------
-#' @title export.for.bmdh
-#' @description Export records required for calculating BMDh values.
-#' @param toxval.db Database version
-#' @param include.pesticides Flag to include pesticides in output or not
-#' @param include.drugs Flag to include drugs in output or not
-#' @param include.epa_dws Flag to include EPA DWS in output or not
-#' @param include.food_add Flag to include food additives in output or not
-#' @param reset.study_group Flag to reset study_group
-#' @param run_name The desired name for the output directory (Default: current date)
-#' @return Write a file with the results: ToxValDB for BMDh {toxval.db} {Sys.Date()}.xlsx
-#' @details Exports all of the data required for the BMDh calculations.
-#' The main query may need to be modified to extract more columns if needed for
-#' the final application. Certain sources have been excluded because they have a high
-#' percentage of read-across values. Species are filtered to only include Human,
-#' Dog, Mouse, Rat and Rabbit. If more species are to be included, then allometric
-#' scaling factors for those need to added to the function bmd.per.study().
+#' @title export.for.dcap
+#' @description Export records required for DCAP.
+#' @param toxval.db Database version.
+#' @param include.pesticides Flag to include pesticides in output or not, default FALSE.
+#' @param include.drugs Flag to include drugs in output or not, default FALSE.
+#' @param include.epa_dws Flag to include EPA DWS in output or not, default TRUE.
+#' @param include.food_add Flag to include food additives in output or not, default FALSE.
+#' @param run_name The desired name for the output directory, default current date.
+#' @return Write a file with the results: ToxValDB for DCAP {toxval.db} {Sys.Date()}.xlsx
+#' @details None, exports all of the data required for the DCAP calculations as XLSX files.
 #' @export
 #' @examples
 #' \dontrun{
 #' if(interactive()){
-#'  #EXAMPLE1
+#'  export.for.dcap(toxval.db = "res_toxval_v96_1")
 #'  }
 #' }
 #' @seealso
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
-#' @rdname export.for.bmdh
+#' @rdname export.for.DCAP
 #' @importFrom openxlsx createStyle write.xlsx
 #' @importFrom dplyr distinct filter mutate case_when select
 #' @importFrom tidyr replace_na
 #' @importFrom writexl write_xlsx
 #' @importFrom readxl read_xls
-#-----------------------------------------------------------------------------------
-export.for.bmdh <- function(toxval.db,
+export.for.dcap <- function(toxval.db,
                             include.pesticides=FALSE,
                             include.drugs=FALSE,
                             include.epa_dws=TRUE,
                             include.food_add=FALSE,
-                            reset.study_group=FALSE,
                             run_name=Sys.Date()) {
+
   printCurrentFunction(toxval.db)
+
   input_dir = paste0(Sys.getenv("datapath"), "data/input/")
   output_dir = paste0(Sys.getenv("datapath"), "data/results/", run_name, "/")
-
-  slist =  c("ATSDR MRLs", "HAWC Project", "ATSDR PFAS 2021", "Cal OEHHA",
-             "ECHA IUCLID", "ECOTOX", "EFSA", "EPA HHTV", "HAWC PFAS 150", "HAWC PFAS 430",
-             "Health Canada", "HEAST", "HESS", "HPVIS", "IRIS",
-             "NTP PFAS", "PFAS 150 SEM v2", "PPRTV (CPHEA)", "ToxRefDB", "WHO JECFA Tox Studies")
-  # sources by supersource name
-  # slist = c(
-  #   "ATSDR", "EPA HAWC", "Cal OEHHA", "ECHA IUCLID", "EPA ECOTOX",
-  #   "EFSA OpenFoodTox", "EPA HHTV", "Health Canada", "EPA HEAST", "NITE HESS", "EPA HPVIS",
-  #   "EPA IRIS", "NTP PFAS", "EPA PPRTV", "EPA ToxRefDB", "WHO JECFA"
-  # )
+  dcap_sources =  global_vars()$dcap_sources
+  iuclid_dcap = global_vars()$iuclid_dcap
 
   # Read in pesticide DTXSID values to exclude
   # List of pesticides found at: https://ccte-res-ncd.epa.gov/dashboard/chemical_lists/PESTCHELSEA
@@ -114,7 +98,6 @@ export.for.bmdh <- function(toxval.db,
   }
 
   # Read in Food Additives Chemical list
-
   food_add_file = paste0(Sys.getenv("datapath"), Sys.getenv("food_additives"))
   food_add_dtxsid = readxl::read_xlsx(food_add_file) %>%
     dplyr::pull(DTXSID) %>%
@@ -138,40 +121,20 @@ export.for.bmdh <- function(toxval.db,
   qc_status_fail_dict = readxl::read_xlsx(paste0(Sys.getenv("datapath"), "data/input/ToxVal v9.6.1 Additional dedup hierarchy fail records.xlsx")) %>%
     dplyr::pull(source_hash)
 
-  # # Get priority values for each specified source
-  # plist = vector(mode="integer",length=length(slist))
-  # plist[] = 1
-  # for(i in seq_len(length(slist))) {
-  #   src = slist[i]
-  #   query = paste0("select distinct priority from record_source where source LIKE '%",src,"%' and long_ref!='-'")
-  #   vals = runQuery(query,toxval.db)[,1]
-  #   cat(src,paste(vals,collapse="|"),"\n")
-  #   if(length(vals)>0) plist[i] = vals[1]
-  #   else {
-  #     if(src %in% c("HEAST", "EPA HEAST",
-  #                   "HESS", "NITE HESS",
-  #                   "ECHA IUCLID")) plist[i] = 1
-  #   }
-  # }
-
   # Query ToxVal for source data
   res = data.frame()
 
-  for(i in seq_len(length(slist))) {
-    src = slist[i]
+  for(i in seq_len(length(dcap_sources))) {
+    src = dcap_sources[i]
     # priority = plist[i]
-    cat("Pulling ", src, " (", i, " of ", length(slist), ")\n")
+    cat("Pulling ", src, " (", i, " of ", length(dcap_sources), ")\n")
 
     # Handle inclusion of only specified IUCLID OHTs
     iuclid_addition = NULL
     if(grepl("ECHA IUCLID", src)) {
-      iuclid_addition = paste0(" AND b.source_table in ",
-                               "('source_iuclid_repeateddosetoxicityoral', ",
-                               "'source_iuclid_developmentaltoxicityteratogenicity', ",
-                               "'source_iuclid_carcinogenicity', ",
-                               "'source_iuclid_immunotoxicity', ",
-                               "'source_iuclid_neurotoxicity', ",
-                               "'source_iuclid_toxicityreproduction')")
+      iuclid_addition = paste0(" AND b.source_table in ('",
+                               paste0(iuclid_dcap, collapse = "', '"),
+                               "')")
     }
 
     query = paste0("SELECT ",
@@ -260,15 +223,6 @@ export.for.bmdh <- function(toxval.db,
         !(grepl("ToxRefDB", source) & dtxsid == "DTXSID6040371"),
         !source_hash %in% qc_status_fail_dict
       )
-
-    if(reset.study_group){
-      study_group_new = fix.study_group(df=mat)
-
-      mat = mat %>%
-        dplyr::rename(study_group_toxval = study_group) %>%
-        dplyr::left_join(study_group_new,
-                         by = "toxval_id")
-    }
 
     # Special case for IRIS and HESS. toxval_type_supercategory DRSV set toxval_subtype to "-"
     if(grepl("IRIS$|HESS$", src)){
@@ -545,7 +499,7 @@ export.for.bmdh <- function(toxval.db,
 
       if(nrow(ecotox_noel_filter)){
         # Export filtered out records for review
-        writexl::write_xlsx(ecotox_noel_filter, paste0(output_dir,"results/ToxValDB for BMDh ",toxval.db," ECOTOX NOEL filtered.xlsx"))
+        writexl::write_xlsx(ecotox_noel_filter, paste0(output_dir,"results/ToxValDB for DCAP ",toxval.db," ECOTOX NOEL filtered.xlsx"))
         mat = mat %>%
           dplyr::filter(!source_hash %in% ecotox_noel_filter$source_hash)
       }
@@ -717,16 +671,13 @@ export.for.bmdh <- function(toxval.db,
 
     rm(crit_cat_map)
 
-    if(src %in% slist){#[!slist %in% c("ECHA IUCLID", "ECOTOX")]){#c("NTP PFAS", "ECHA IUCLID", "HAWC Project",  "PFAS 150 SEM v2")){
+    if(src %in% dcap_sources){
       # Special logic implemented for now to further collapse source records post-ToxVal
 
       # If reset study_group, ignoring year and reference information
       hashing_cols=c("study_group", "toxval_type", "toxval_numeric", "record_source_info")
-      if(reset.study_group){
-        hashing_cols = hashing_cols[!hashing_cols %in% c("record_source_info")]
-      }
 
-      mat = toxval.source.import.dedup(mat %>%
+      mat = toxval.record.dedup(mat %>%
                                          dplyr::rename(source_hash_toxval=source_hash),
                                        hashing_cols=hashing_cols) %>%
         # Replace "|::|" in toxicological_effect with "|" delimiter
@@ -743,7 +694,7 @@ export.for.bmdh <- function(toxval.db,
     # Add current source data to running total
     res = res %>%
       dplyr::bind_rows(mat %>%
-                         dplyr::mutate(across(c("study_duration_value",
+                         dplyr::mutate(dplyr::across(c("study_duration_value",
                                                 "toxval_numeric_hed",
                                                 "exposure_route_fix"
                          ), ~as.numeric(.))))
@@ -787,7 +738,7 @@ export.for.bmdh <- function(toxval.db,
   # Store cancer records removed (ones with only cancer as a toxicological_effect_category)
   writexl::write_xlsx(res %>%
                         dplyr::filter(toxicological_effect_category_temp == "cancer"),
-                      paste0(output_dir, "results/ToxValDB for BMDh ", toxval.db, "_cancer_removed.xlsx")
+                      paste0(output_dir, "results/ToxValDB for DCAP ", toxval.db, "_cancer_removed.xlsx")
                       )
 
   res = res %>%
@@ -814,9 +765,6 @@ export.for.bmdh <- function(toxval.db,
                                                   "study_group", "study_duration_class", "qc_category",
                                                   "final_model1", "final_model2")]
 
-    if(reset.study_group){
-      eco_hash_cols = eco_hash_cols[!eco_hash_cols %in% c("record_source_info")]
-    }
     # # Ignore study_type for repeat dose and repro dev entries
     # eco_hash_cols_type = c(eco_hash_cols, "type", "study_type")
 
@@ -845,7 +793,7 @@ export.for.bmdh <- function(toxval.db,
 
     # Collapse groups
     ecotox_dedup =
-      toxval.source.import.dedup(ecotox_dedup %>%
+      toxval.record.dedup(ecotox_dedup %>%
                                    dplyr::rename(source_hash_toxval=source_hash),
                                  hashing_cols=eco_hash_cols) %>%
       # Replace "|::|" in toxicological_effect with "|" delimiter
@@ -920,7 +868,7 @@ export.for.bmdh <- function(toxval.db,
     dplyr::select(source, toxval_type) %>%
     dplyr::distinct()
 
-  file = paste0(output_dir,"results/bmdh_export_toxval_type.xlsx")
+  file = paste0(output_dir,"results/DCAP_export_toxval_type.xlsx")
   writexl::write_xlsx(unique_toxval_type, file)
 
   # Trim string size to fit Excel character limit
@@ -929,7 +877,7 @@ export.for.bmdh <- function(toxval.db,
                                   tidyr::replace_na("-")))
 
   # Write full data to file
-  file = paste0(output_dir,"results/ToxValDB for BMDh ",toxval.db,".xlsx")
+  file = paste0(output_dir,"results/ToxValDB for DCAP ",toxval.db,".xlsx")
   writexl::write_xlsx(res, file)
 
   return(res)

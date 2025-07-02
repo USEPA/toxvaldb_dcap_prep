@@ -10,18 +10,8 @@ convert_get_conversion_factor(conv_factor = 1)
 \item{conv_factor}{Conversion factor to use (such as Molecular weight, tissue Density, etc.)}
 }
 \value{
-List of conversion factors
+List of conversion factors by input units and desired units.
 }
 \description{
-A helper function to convert input values to desired units.
-}
-\details{
-DETAILS
-}
-\examples{
-\dontrun{
-if(interactive()){
- #EXAMPLE1
- }
-}
+Function to provide equations needed to convert input values to desired units.
 }
