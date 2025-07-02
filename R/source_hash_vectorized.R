@@ -10,7 +10,7 @@
 #' @importFrom dplyr distinct mutate ungroup rowwise
 #' @importFrom tidyr unite
 #' @importFrom tidyselect any_of
-#' @rdname toxval_source.hash.and.load
+#' @rdname source_hash_vectorized
 #' @export
 source_hash_vectorized <- function(res, hashing_cols){
   if(is.null(hashing_cols)){

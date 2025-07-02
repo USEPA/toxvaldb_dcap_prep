@@ -17,7 +17,7 @@
 #' }
 #' @seealso
 #'  \code{\link[openxlsx]{createStyle}}, \code{\link[openxlsx]{write.xlsx}}
-#' @rdname export.for.DCAP
+#' @rdname export.for.dcap
 #' @importFrom openxlsx createStyle write.xlsx
 #' @importFrom dplyr distinct filter mutate case_when select
 #' @importFrom tidyr replace_na
@@ -534,6 +534,16 @@ export.for.dcap <- function(toxval.db,
                                     paste0(mat$source_hash, collapse = "', '")
                                     ,"') "),
                              toxval.db)
+
+    # See README in "data/input/toxvaldb_v96_1_fixes" for details
+    if(toxval.db == "res_toxval_v96_1"){
+      missing_v96_1_db_categories = readxl::read_xlsx(paste0(Sys.getenv("datapath"),
+                                                             "data/input/toxvaldb_v96_1_fixes/missing_HESS_toxicological_effect_category_v96_1.xlsx"
+      ))
+      crit_cat_map = crit_cat_map %>%
+        dplyr::bind_rows(missing_v96_1_db_categories) %>%
+        dplyr::distinct()
+    }
 
     # List of types to overwrite as repeated dose or reprodev
     repeat_study_types = global_vars()$repeat_study_types

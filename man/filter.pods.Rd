@@ -12,7 +12,7 @@
 \item{run_name}{The desired name for the output directory, default current date.}
 }
 \value{
-None; Filtered results are recorded in Excel file.
+None, filtered results are recorded in Excel file.
 }
 \description{
 Filter values for DCAP according to specified POD rules.

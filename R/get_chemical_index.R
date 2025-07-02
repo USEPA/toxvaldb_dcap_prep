@@ -9,7 +9,7 @@
 #'  \code{\link[dplyr]{select}}, \code{\link[dplyr]{mutate-joins}}, \code{\link[dplyr]{distinct}}, \code{\link[dplyr]{c("rowwise", "rowwise")}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{group_by}}
 #'  \code{\link[purrr]{map}}
 #'  \code{\link[digest]{digest}}
-#' @rdname index_generation_script
+#' @rdname get_chemical_index
 #' @importFrom readr read_csv cols write_csv
 #' @importFrom dplyr select left_join distinct rowwise mutate ungroup
 #' @importFrom purrr map_chr

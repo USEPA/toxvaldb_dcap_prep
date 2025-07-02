@@ -7,7 +7,7 @@
 #' @return Dataframe containing deduplicated data, with duplicate records collapsed by delimiter in non-identifier fields.
 #' @seealso
 #'  \code{\link[dplyr]{select}}, \code{\link[dplyr]{group_by}}, \code{\link[dplyr]{summarise}}, \code{\link[dplyr]{context}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{across}}, \code{\link[dplyr]{reexports}}, \code{\link[dplyr]{na_if}}, \code{\link[dplyr]{distinct}}
-#' @rdname toxval.source.import.dedup
+#' @rdname toxval.record.dedup
 #' @export
 #' @importFrom dplyr select group_by summarise n filter mutate across any_of na_if ungroup distinct
 #' @importFrom tidyr replace_na

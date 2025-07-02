@@ -15,7 +15,7 @@ get_chemical_index(input_toxval_file, input_qsar_file)
 Combined chemical index dataframe. A CSV file is also written to the input subfolder.
 }
 \description{
-Generate a chemical index based on ToxVal DTXSID list and QSAR Ready Smiles.
+Generate a chemical index based on ToxVal DTXSID list and QSAR Ready Smiles. The output file is reviewed and a final version is saved in the "data/input" folder.
 }
 \seealso{
 \code{\link[readr]{read_delim}}, \code{\link[readr]{cols}}, \code{\link[readr]{write_delim}}

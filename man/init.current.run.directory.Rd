@@ -10,7 +10,7 @@ init.current.run.directory(run_name = Sys.Date())
 \item{run_name}{The desired name for the output directory, default current date.}
 }
 \value{
-None. new folder directory is created.
+None, new folder directory is created.
 }
 \description{
 Initialize output directory for current run.

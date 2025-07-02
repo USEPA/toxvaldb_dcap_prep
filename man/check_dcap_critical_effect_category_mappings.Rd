@@ -21,7 +21,7 @@ check_dcap_critical_effect_category_mappings(
 \item{output_dir}{The directory to write the output file.}
 }
 \value{
-None; output is written to Excel files for additional review.
+None, output is written to Excel files for additional review.
 }
 \description{
 Attempts to remap previously-mapped toxicological_effect_category values to DCAP entries.

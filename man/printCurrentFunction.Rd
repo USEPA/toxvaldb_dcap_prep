@@ -10,7 +10,7 @@ printCurrentFunction(comment.string = NA)
 \item{comment.string}{An optional string to be printed}
 }
 \value{
-None. Console output generated.
+None, console output generated.
 }
 \description{
 Print the name of the current function to assist with logging and debugging.

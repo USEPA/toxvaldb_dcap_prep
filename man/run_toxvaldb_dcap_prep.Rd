@@ -30,7 +30,7 @@ run_toxvaldb_dcap_prep(
 \item{include.food_add}{Flag to include food additives in output or not}
 }
 \value{
-None. Functions are run in sequence to generate output files.
+None, functions are run in sequence to generate output files.
 }
 \description{
 Run all functions to pull records from ToxValDB and prep for DCAP analysis.
