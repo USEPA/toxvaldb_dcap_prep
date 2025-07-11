@@ -7,23 +7,13 @@
 convert.fields.to.json(in_dat)
 }
 \arguments{
-\item{in_dat}{data to translate to JSON format}
+\item{in_dat}{Dataframe to use to generate the new "record" JSON field.}
 }
 \value{
-Values in JSON format
+Modified dataframe with new "record" field in JSON format.
 }
 \description{
-Combine non-ID columns from audit table into JSON format for audit storage
-}
-\details{
-DETAILS
-}
-\examples{
-\dontrun{
-if(interactive()){
- #EXAMPLE1
- }
-}
+Generate a new "record" field as a JSON key-value dictionary of row field values.
 }
 \seealso{
 \code{\link[dplyr]{summarise}}, \code{\link[dplyr]{select}}, \code{\link[dplyr]{bind}}

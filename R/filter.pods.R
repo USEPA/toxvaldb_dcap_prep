@@ -1,15 +1,14 @@
-#-----------------------------------------------------------------------------------
-#' @param toxval.db Database name
-#' @param run_name The desired name for the output directory (Default: current date)
-#' @return None; filtered results are recorded in Excel file
-#' @export
 #' @title filter.pods
-#' @description Filter values for BMDh according to specified POD rules
-#' @details Filtering steps differ between authoritative and non-authoritative sources
+#' @description Filter values for DCAP according to specified POD rules.
+#' @param toxval.db Database name.
+#' @param run_name The desired name for the output directory, default current date.
+#' @param db.type String of what kind of database connection to use, default "mysql. If "sqlite", workflow with use .Renv defined "sqlite_file" file path.
+#' @return None, filtered results are recorded in Excel file.
+#' @export
 #' @examples
 #' \dontrun{
 #' if(interactive()){
-#'  #EXAMPLE1
+#'  filter.pods(toxval.db = "res_toxval_v96_1")
 #'  }
 #' }
 #' @seealso
@@ -20,17 +19,19 @@
 #' @importFrom dplyr mutate filter case_when group_by ungroup select bind_rows
 #' @importFrom stringr str_trim str_extract
 #' @importFrom writexl write_xlsx
-#-----------------------------------------------------------------------------------
-filter.pods <- function(toxval.db, run_name=Sys.Date()) {
+#' @importFrom tidyr replace_na unite separate_rows
+#' @importFrom tidyselect contains
+#' @importFrom digest digest
+filter.pods <- function(toxval.db, run_name=Sys.Date(), db.type) {
   printCurrentFunction(toxval.db)
 
   # Read in initial export data
   dir = paste0(Sys.getenv("datapath"), "data/results/", run_name, "/")
-  file = paste0(dir,"results/ToxValDB for BMDh ",toxval.db,".xlsx")
+  file = paste0(dir,"results/ToxValDB for DCAP ",toxval.db,".xlsx")
   res0 = readxl::read_xlsx(file) %>%
     dplyr::mutate(dplyr::across(dplyr::where(is.character), ~tidyr::replace_na(., "-")))
 
-  # Additional check to remove "cancer" form toxicological_effect_category since export.for.bmdh()
+  # Additional check to remove "cancer" form toxicological_effect_category since export.for.dcap()
   res0 = res0 %>%
     dplyr::mutate(
       toxicological_effect_category = toxicological_effect_category %>%
@@ -347,8 +348,11 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
                        "toxval_subtype", "toxicological_effect_category", "multiple_flag",
                        "toxicological_effect_category_original")
   # Add model and record_source fields to non_hashing_cols
-  record_source_cols = runQuery("DESC record_source", toxval.db) %>%
-    dplyr::pull(Field)
+  record_source_cols = runQuery("SELECT * FROM record_source LIMIT 1",
+                                toxval.db,
+                                db.type = db.type) %>%
+    names()
+
   model_non_hash_cols = names(res %>% dplyr::select(tidyselect::contains("model")))
   non_hashing_cols = c(non_hashing_cols, model_non_hash_cols, record_source_cols) %>%
     unique()
@@ -411,7 +415,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
       dplyr::pull(study_group)
     message("study_groups with multiple records selected: ", length(tmp))
     message("Collapsing...")
-    res = toxval.source.import.dedup(res %>%
+    res = toxval.record.dedup(res %>%
                                        dplyr::rename(source_hash_toxval=source_hash),
                                      hashing_cols=c("study_group", "toxval_type", "toxval_numeric"),
                                      delim=" <::> ") %>%
@@ -452,7 +456,7 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
       source_hash_old = source_hash
     ) %>%
     # Recombine rows
-    toxval.source.import.dedup(dedup_fields=dedup_fields, hashing_cols=hashing_fields) %>%
+    toxval.record.dedup(dedup_fields=dedup_fields, hashing_cols=hashing_fields) %>%
     # Translate key_finding to boolean
     dplyr::mutate(key_finding = dplyr::case_when(
       !source_table %in% auth_sources ~ NA,
@@ -541,6 +545,6 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
     ))
 
   # Write results to Excel
-  writexl::write_xlsx(res, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," POD filtered.xlsx"))
-  writexl::write_xlsx(filtered_out, paste0(dir,"results/ToxValDB for BMDh ",toxval.db," removed entries.xlsx"))
+  writexl::write_xlsx(res, paste0(dir,"results/ToxValDB for DCAP ",toxval.db," POD filtered.xlsx"))
+  writexl::write_xlsx(filtered_out, paste0(dir,"results/ToxValDB for DCAP ",toxval.db," removed entries.xlsx"))
 }

@@ -4,26 +4,25 @@
 \alias{filter.pods}
 \title{filter.pods}
 \usage{
-\method{filter}{pods}(toxval.db, run_name = Sys.Date())
+\method{filter}{pods}(toxval.db, run_name = Sys.Date(), db.type)
 }
 \arguments{
-\item{toxval.db}{Database name}
+\item{toxval.db}{Database name.}
 
-\item{run_name}{The desired name for the output directory (Default: current date)}
+\item{run_name}{The desired name for the output directory, default current date.}
+
+\item{db.type}{String of what kind of database connection to use, default "mysql. If "sqlite", workflow with use .Renv defined "sqlite_file" file path.}
 }
 \value{
-None; filtered results are recorded in Excel file
+None, filtered results are recorded in Excel file.
 }
 \description{
-Filter values for BMDh according to specified POD rules
-}
-\details{
-Filtering steps differ between authoritative and non-authoritative sources
+Filter values for DCAP according to specified POD rules.
 }
 \examples{
 \dontrun{
 if(interactive()){
- #EXAMPLE1
+ filter.pods(toxval.db = "res_toxval_v96_1")
  }
 }
 }

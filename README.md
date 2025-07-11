@@ -1,4 +1,4 @@
-# toxvaldbBMDh
+# toxvaldb_dcap_prep
 
 # Background
 ToxValDB is a large compilation of in vivo toxicology data and risk assessment values. The database originated in response to the need for consistently annotated and computable toxicology data for use in the development and validation of non-animal new approach methods (NAMs). The database has two major components. The first, ToxValDB Stage contains data that closely match data from each source, in both structure and terminology. The second (the main ToxValDB database) maps all source data to a consistent structure and set of vocabularies. The current version of the database (9.6.1) contains 255,417 records covering 41,769 chemicals from 36 sources (55 source tables).
@@ -24,36 +24,49 @@ This repository contains the input files and R scripts used to generate the file
 - [toxvaldbmain](https://github.com/usepa/toxvaldbmain/)
 
 # Run Workflow to Generate Export from ToxValDB
- - Clone repository
-	 >`> git clone`
- - Set up a .Renviron file based on the "Example_Renviron.txt" file
-	> - `datapath`
-		 - Directory path to where the "data" folder is being read from/written to. Default is the repository folder itself.
-	> - `db_user`
-		 - Username to an instance of the ToxValDB database
-		 - **Note:** At this time, the ToxValDB database is only available for internal EPA users or from setting up a local copy using the SQL Database Dump file in the linked Clowder repository above.
-	> - `db_pass`
-		 - Password to an instance of the ToxValDB database
-	> - `db_server`
-		 - Host/server for an instance of the ToxValDB database
-	> - `db_port`
-		 - Port for the host/server
-	 >- `toxval.db`
-		 - Name of the ToxValDB database (default of res_toxval_v96)
+  1. Clone repository
+    >`> git clone`
+  2. Set up a .Renviron file based on the "Example_Renviron.txt" file
+    > - `datapath`
+      - Directory path to where the "data" folder is being read from/written to. Default is the repository folder itself.
+    > - `db_user`
+      - Username to an instance of the ToxValDB database
+      - **Note:** At this time, the ToxValDB database is only available for internal EPA users or from setting up a local copy using the SQL Database Dump file in the linked Clowder repository above.
+    > - `db_pass`
+      - Password to an instance of the ToxValDB database
+    > - `db_server`
+      - Host/server for an instance of the ToxValDB database
+    > - `db_port`
+      - Port for the host/server
+    >- `toxval.db`
+      - Name of the ToxValDB database (default of res_toxval_v96)
 
- 3. Open an RStudio session using the `toxvaldbBMDh.Rproj` file
- 4. Load the package using `devtools::load_all()`
-	- Install missing packages as needed. See `NAMESPACE` file
- 5. Open the `R/driver.R` script
- 6. Run the `driver()` function with desired parameters
- 7. Wait for export to run (~10-20 minutes depending on how many DTXSID values are included or filtered out)
- 8. Review `data/results/*run_name*` subfolder that is produced. Notable files are:
-	- /results/ToxValDB for BMDh res_toxval_v96.xlsx
-		- Full dataset pulled from ToxValDB as initially qualifying records
-	- /results/ToxValDB for BMDh res_toxval_v96 POD filtered.xlsx
-		- Full dataset filtered to a single POD per study_group
-	- /results/ToxValDB for BMDh res_toxval_v96 removed entries.xlsx
-		- List of records filtered out from the POD filtered file with removal reason
+  3. Select a version of ToxValDB to use.
+      - Full database
+        - *TBD instructions*
+      - SQLite database
+        - *TBD instructions*
+  4. Open an RStudio session using the `toxvaldb_dcap_prep.Rproj` file
+  5. Load the package using `devtools::load_all()`
+    - Install missing packages as needed. See `NAMESPACE` file. Users can also optionally use the included `renv`. See [renv](https://rstudio.github.io/renv/) package documentation for use.
+  6. Open the `R/run_toxvaldb_dcap_prep.R` script
+  7. Run the `run_toxvaldb_dcap_prep()` function with desired parameters
+  8. Wait for export to run (~10-20 minutes depending on how many DTXSID values are included or filtered out)
+  9. Review `data/results/*run_name*` subfolder that is produced. Notable files are:
+    - /results/DCAP_export_toxval_type.xlsx
+      - Summary of effect types by source that were exported from ToxValDB for DCAP
+	  - /results/ToxValDB for DCAP res_toxval_v96.xlsx
+		  - Full dataset pulled from ToxValDB as initially qualifying records
+	  - /results/ToxValDB for DCAP res_toxval_v96 POD filtered.xlsx
+		  - Full dataset filtered to a single POD per study_group. This is the finalized prepped file used as input for the DCAP.
+	  - /results/ToxValDB for DCAP res_toxval_v96 removed entries.xlsx
+		  - Records filtered out from the POD filtered file with removal reason
+	  - /results/ToxValDB for DCAP res_toxval_v96_1_cancer_removed.xlsx
+  	  - Records filtered out due to only having a toxicological effect category of "cancer"
+	  - results/ToxValDB for DCAP res_toxval_v96_1 ECOTOX NOEL filtered.xlsx
+	    - Records from ECOTOX filtered out due to the N(OA)EL being greater than the minimum L(OA)EL in a study group
+	  - results/DCAP_ToxVal_res_toxval_v96_1_input.xlsx
+	    - Additional processing of "POD filtered" file to remove intermediate fields and recode select fields.
 
 > Submit any questions to Taylor Wall (wall.taylor@epa.gov) or Chelsea Weitekamp (weitekamp.chelsea@epa.gov)
 

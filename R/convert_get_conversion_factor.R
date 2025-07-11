@@ -1,14 +1,7 @@
-#' @description A helper function to convert input values to desired units.
-#' @param conv_factor Conversion factor to use (such as Molecular weight, tissue Density, etc.)
 #' @title convert_get_conversion_factor
-#' @return List of conversion factors
-#' @details DETAILS
-#' @examples
-#' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
-#' }
+#' @description Function to provide equations needed to convert input values to desired units.
+#' @param conv_factor Conversion factor to use (such as Molecular weight, tissue Density, etc.)
+#' @return List of conversion factors by input units and desired units.
 #' @rdname convert_get_conversion_factor
 #' @export
 convert_get_conversion_factor <- function(conv_factor=1){

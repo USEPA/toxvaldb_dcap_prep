@@ -16,16 +16,6 @@ Returns a modified version of the input vector with unicode replacements.
 A function to check all character fields and handle unicode symbols,
 either by removing them or replacing them with alphabetic equivalents.
 }
-\details{
-DETAILS
-}
-\examples{
-\dontrun{
-if(interactive()){
- #EXAMPLE1
- }
-}
-}
 \seealso{
 [stri_escape_unicode][stringi::stri_escape_unicode]
  [str_extract][stringr::str_extract]

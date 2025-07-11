@@ -1,19 +1,12 @@
 #' @title Split species list
-#' @description Split species lists into multiple rows
-#' @param df Input dataframe with species lists to split
-#' @export
-#' @return Modified input df with split species lists into multiple rows
-#' @details DETAILS
-#' @examples
-#' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
-#' }
+#' @description Split species lists into multiple rows.
+#' @param df Input dataframe with species lists to split.
+#' @return Modified input "df" with split species lists into multiple rows.
 #' @seealso
 #'  \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{case_when}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{bind_rows}}, \code{\link[dplyr]{group_by}}, \code{\link[dplyr]{summarise}}
 #'  \code{\link[tidyr]{separate_rows}}
 #'  \code{\link[stringr]{str_trim}}, \code{\link[stringr]{case}}
+#' @export
 #' @rdname split.species.list
 #' @importFrom dplyr mutate case_when filter bind_rows group_by summarise
 #' @importFrom tidyr separate_rows
@@ -61,7 +54,7 @@ split.species.list <- function(df){
 
   # Report changes
   if(nrow(tmp)){
-    cat(paste0("...", nrow(tmp), " species lists split into ", sum(tmp$n), " records"))
+    cat(paste0("...", nrow(tmp), " species lists split into ", sum(tmp$n), " records\n"))
   }
 
   # Return changes

@@ -1,17 +1,9 @@
-#-------------------------------------------------------------------------------
-#' @param run_name The desired name for the output directory (Default: current date)
-#' @export
 #' @title init.current.run.directory
-#' @description Initialize output directory for current driver run
-#' @return None; new directory is created
-#' @details DETAILS
-#' @examples
-#' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
-#' }
-#-----------------------------------------------------------------------------------
+#' @description Initialize output directory for current run.
+#' @param run_name The desired name for the output directory, default current date.
+#' @return None, new folder directory is created.
+#' @export
+#' @rdname init.current.run.directory
 init.current.run.directory <- function(run_name=Sys.Date()) {
   printCurrentFunction()
   new_directory = paste0(Sys.getenv("datapath"), "data/results/", run_name)
@@ -25,7 +17,7 @@ init.current.run.directory <- function(run_name=Sys.Date()) {
     cat(paste0("Initializing directory: ", new_directory, "\n"))
     dir.create(new_directory, recursive = TRUE)
     dir.create(paste0(new_directory, "/results"))
-    dir.create(paste0(new_directory, "/DCAP"))
+    # dir.create(paste0(new_directory, "/DCAP"))
     dir.create(paste0(new_directory, "/missing_crit_cat"))
   }
 }

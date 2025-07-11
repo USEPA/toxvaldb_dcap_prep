@@ -10,20 +10,10 @@ printCurrentFunction(comment.string = NA)
 \item{comment.string}{An optional string to be printed}
 }
 \value{
-None
+None, console output generated.
 }
 \description{
-Print the name of the current function
-}
-\details{
-DETAILS
-}
-\examples{
-\dontrun{
-if(interactive()){
- #EXAMPLE1
- }
-}
+Print the name of the current function to assist with logging and debugging.
 }
 \seealso{
 \code{\link[utils]{flush.console}}

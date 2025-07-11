@@ -7,21 +7,11 @@
 init.current.run.directory(run_name = Sys.Date())
 }
 \arguments{
-\item{run_name}{The desired name for the output directory (Default: current date)}
+\item{run_name}{The desired name for the output directory, default current date.}
 }
 \value{
-None; new directory is created
+None, new folder directory is created.
 }
 \description{
-Initialize output directory for current driver run
-}
-\details{
-DETAILS
-}
-\examples{
-\dontrun{
-if(interactive()){
- #EXAMPLE1
- }
-}
+Initialize output directory for current run.
 }
