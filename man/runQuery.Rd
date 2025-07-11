@@ -4,7 +4,7 @@
 \alias{runQuery}
 \title{runQuery}
 \usage{
-runQuery(query = NULL, db, do.halt = TRUE, verbose = FALSE)
+runQuery(query = NULL, db, do.halt = TRUE, verbose = FALSE, db.type = "mysql")
 }
 \arguments{
 \item{query}{A properly formatted SQL query as a string.}
@@ -14,6 +14,8 @@ runQuery(query = NULL, db, do.halt = TRUE, verbose = FALSE)
 \item{do.halt}{If TRUE, halt on errors or warnings, default TRUE.}
 
 \item{verbose}{If TRUE, print diagnostic information, default FALSE.}
+
+\item{db.type}{String of what kind of database connection to use, default "mysql. If "sqlite", workflow with use .Renv defined "sqlite_file" file path.}
 }
 \value{
 Dataframe of query results.

@@ -11,7 +11,8 @@ run_toxvaldb_dcap_prep(
   include.pesticides = FALSE,
   include.drugs = FALSE,
   include.epa_dws = TRUE,
-  include.food_add = FALSE
+  include.food_add = FALSE,
+  db.type = "mysql"
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ run_toxvaldb_dcap_prep(
 \item{include.epa_dws}{Flag to include EPA DWS in output or not}
 
 \item{include.food_add}{Flag to include food additives in output or not}
+
+\item{db.type}{String of what kind of database connection to use, default "mysql. If "sqlite", workflow with use .Renv defined "sqlite_file" file path.}
 }
 \value{
 None, functions are run in sequence to generate output files.

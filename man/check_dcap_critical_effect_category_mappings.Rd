@@ -8,7 +8,8 @@ check_dcap_critical_effect_category_mappings(
   toxval.db,
   get_suggestions = TRUE,
   input_file = "",
-  output_dir = ""
+  output_dir = "",
+  db.type
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ check_dcap_critical_effect_category_mappings(
 \item{input_file}{The file to pull missing toxicological_effect_category from (typically the filtered POD output file).}
 
 \item{output_dir}{The directory to write the output file.}
+
+\item{db.type}{String of what kind of database connection to use, default "mysql. If "sqlite", workflow with use .Renv defined "sqlite_file" file path.}
 }
 \value{
 None, output is written to Excel files for additional review.

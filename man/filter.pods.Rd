@@ -4,12 +4,14 @@
 \alias{filter.pods}
 \title{filter.pods}
 \usage{
-\method{filter}{pods}(toxval.db, run_name = Sys.Date())
+\method{filter}{pods}(toxval.db, run_name = Sys.Date(), db.type)
 }
 \arguments{
 \item{toxval.db}{Database name.}
 
 \item{run_name}{The desired name for the output directory, default current date.}
+
+\item{db.type}{String of what kind of database connection to use, default "mysql. If "sqlite", workflow with use .Renv defined "sqlite_file" file path.}
 }
 \value{
 None, filtered results are recorded in Excel file.
