@@ -17,7 +17,7 @@ init.current.run.directory <- function(run_name=Sys.Date()) {
     cat(paste0("Initializing directory: ", new_directory, "\n"))
     dir.create(new_directory, recursive = TRUE)
     dir.create(paste0(new_directory, "/results"))
-    dir.create(paste0(new_directory, "/DCAP"))
+    # dir.create(paste0(new_directory, "/DCAP"))
     dir.create(paste0(new_directory, "/missing_crit_cat"))
   }
 }

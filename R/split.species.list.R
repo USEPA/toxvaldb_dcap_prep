@@ -54,7 +54,7 @@ split.species.list <- function(df){
 
   # Report changes
   if(nrow(tmp)){
-    cat(paste0("...", nrow(tmp), " species lists split into ", sum(tmp$n), " records"))
+    cat(paste0("...", nrow(tmp), " species lists split into ", sum(tmp$n), " records\n"))
   }
 
   # Return changes

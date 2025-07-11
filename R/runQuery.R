@@ -4,6 +4,7 @@
 #' @param db The name of the database.
 #' @param do.halt If TRUE, halt on errors or warnings, default TRUE.
 #' @param verbose If TRUE, print diagnostic information, default FALSE.
+#' @param db.type String of what kind of database connection to use, default "mysql. If "sqlite", workflow with use .Renv defined "sqlite_file" file path.
 #' @return Dataframe of query results.
 #' @examples
 #' \dontrun{
@@ -19,7 +20,7 @@
 #' @importFrom utils flush.console
 #' @export
 #' @rdname runQuery
-runQuery <- function(query=NULL, db, do.halt=TRUE, verbose=FALSE) {
+runQuery <- function(query=NULL, db, do.halt=TRUE, verbose=FALSE, db.type = "mysql") {
 
   if(is.null(query)){
     cat("No query provided...\n")
@@ -42,13 +43,21 @@ runQuery <- function(query=NULL, db, do.halt=TRUE, verbose=FALSE) {
   }
 
   tryCatch({
-    con <- DBI::dbConnect(drv=RMySQL::MySQL(),
-                             user=Sys.getenv("db_user"),
-                             password=Sys.getenv("db_pass"),
-                             host=Sys.getenv("db_server"),
-                             dbname=db,
-                             port=as.numeric(Sys.getenv("db_port"))
-                             )
+    if(db.type == "mysql"){
+      message("Running using MySQL database connection...")
+      con <- DBI::dbConnect(drv=RMySQL::MySQL(),
+                            user=Sys.getenv("db_user"),
+                            password=Sys.getenv("db_pass"),
+                            host=Sys.getenv("db_server"),
+                            dbname=db,
+                            port=as.numeric(Sys.getenv("db_port"))
+      )
+    } else if(db.type == "sqlite"){
+      message("Running using SQLite file...")
+      con <- DBI::dbConnect(RSQLite::SQLite(),
+                            dbname = paste0(Sys.getenv("sqlite_file")))
+    }
+
     rs <- suppressWarnings(DBI::dbSendQuery(con, query))
     d1 <- DBI::dbFetch(rs, n = -1)
     if(verbose) {
@@ -66,7 +75,7 @@ runQuery <- function(query=NULL, db, do.halt=TRUE, verbose=FALSE) {
     return(NULL)
   }, error = function(e) {
     #cat("ERROR:",query,"\n")
-    cat("Error messge: ",paste0(e, collapse=" | "), "\n")
+    cat("Error message: ",paste0(e, collapse=" | "), "\n")
     DBI::dbDisconnect(con)
     if(do.halt) browser()
     return(NULL)

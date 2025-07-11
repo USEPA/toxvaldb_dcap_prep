@@ -2,6 +2,7 @@
 #' @description Filter values for DCAP according to specified POD rules.
 #' @param toxval.db Database name.
 #' @param run_name The desired name for the output directory, default current date.
+#' @param db.type String of what kind of database connection to use, default "mysql. If "sqlite", workflow with use .Renv defined "sqlite_file" file path.
 #' @return None, filtered results are recorded in Excel file.
 #' @export
 #' @examples
@@ -21,7 +22,7 @@
 #' @importFrom tidyr replace_na unite separate_rows
 #' @importFrom tidyselect contains
 #' @importFrom digest digest
-filter.pods <- function(toxval.db, run_name=Sys.Date()) {
+filter.pods <- function(toxval.db, run_name=Sys.Date(), db.type) {
   printCurrentFunction(toxval.db)
 
   # Read in initial export data
@@ -347,8 +348,11 @@ filter.pods <- function(toxval.db, run_name=Sys.Date()) {
                        "toxval_subtype", "toxicological_effect_category", "multiple_flag",
                        "toxicological_effect_category_original")
   # Add model and record_source fields to non_hashing_cols
-  record_source_cols = runQuery("DESC record_source", toxval.db) %>%
-    dplyr::pull(Field)
+  record_source_cols = runQuery("SELECT * FROM record_source LIMIT 1",
+                                toxval.db,
+                                db.type = db.type) %>%
+    names()
+
   model_non_hash_cols = names(res %>% dplyr::select(tidyselect::contains("model")))
   non_hashing_cols = c(non_hashing_cols, model_non_hash_cols, record_source_cols) %>%
     unique()

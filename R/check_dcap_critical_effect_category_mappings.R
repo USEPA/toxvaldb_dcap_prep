@@ -4,6 +4,7 @@
 #' @param get_suggestions Whether to provide mapping suggestions (Default: TRUE).
 #' @param input_file The file to pull missing toxicological_effect_category from (typically the filtered POD output file).
 #' @param output_dir The directory to write the output file.
+#' @param db.type String of what kind of database connection to use, default "mysql. If "sqlite", workflow with use .Renv defined "sqlite_file" file path.
 #' @return None, output is written to Excel files for additional review.
 #' @details
 #' The output Excel files are as follows:
@@ -25,7 +26,7 @@
 #' @importFrom stringr str_squish str_trim
 #' @importFrom writexl write_xlsx
 check_dcap_critical_effect_category_mappings <- function(toxval.db, get_suggestions=TRUE,
-                                                         input_file="", output_dir=""){
+                                                         input_file="", output_dir="", db.type){
   # Get list of DCAP sources to check
   iuclid_dcap = global_vars()$iuclid_dcap
   dcap_sources = global_vars()$dcap_sources
@@ -34,7 +35,9 @@ check_dcap_critical_effect_category_mappings <- function(toxval.db, get_suggesti
   reprodev_study_types = global_vars()$reprodev_study_types
 
   # Get all existing toxicological_effect_terms and the source_hashes that they cover
-  toxicological_effect_terms = runQuery("SELECT * FROM toxicological_effect_terms", toxval.db) %>%
+  toxicological_effect_terms = runQuery("SELECT * FROM toxicological_effect_terms ORDER BY id",
+                                        toxval.db,
+                                        db.type = db.type) %>%
     dplyr::rename(toxicological_effect = term)
   curr_source_hash = toxicological_effect_terms %>%
     dplyr::pull(source_hash) %>%
@@ -51,8 +54,11 @@ check_dcap_critical_effect_category_mappings <- function(toxval.db, get_suggesti
   # Get IUCLID DCAP entries whose source_hashes are not accounted for in toxicological_effect_terms
   missing_query = paste0("SELECT * FROM toxval WHERE (source_table IN ('", paste0(iuclid_dcap, collapse="', '"), "')",
                          " OR source IN ('", paste0(dcap_sources, collapse="', '"), "')) ",
-                         " AND source_hash NOT IN ('", paste0(curr_source_hash, collapse="', '"), "')")
-  missing_entries = runQuery(missing_query, toxval.db) %>%
+                         " AND source_hash NOT IN ('", paste0(curr_source_hash, collapse="', '"), "') ",
+                         "ORDER BY toxval_id")
+  missing_entries = runQuery(missing_query,
+                             toxval.db,
+                             db.type = db.type) %>%
     dplyr::inner_join(dcap_hashes, by=c("source_hash"))
 
   # Perform study_type collapsing and select relevant fields
@@ -92,8 +98,8 @@ check_dcap_critical_effect_category_mappings <- function(toxval.db, get_suggesti
 
   # Get IUCLID DCAP entries that still do not have a mapping
   query = paste0("SELECT * FROM toxval WHERE source_hash IN ('",
-                 paste0(na_hashes, collapse="', '"), "')")
-  still_missing = runQuery(query, toxval.db)
+                 paste0(na_hashes, collapse="', '"), "') ORDER BY toxval_id")
+  still_missing = runQuery(query, toxval.db, db.type = db.type)
 
   # Record results
   writexl::write_xlsx(missing_mapped %>% dplyr::filter(!is.na(toxicological_effect_category)),

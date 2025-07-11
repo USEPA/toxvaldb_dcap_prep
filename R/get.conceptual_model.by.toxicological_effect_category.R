@@ -121,15 +121,15 @@ get.conceptual_model.by.toxicological_effect_category <- function(df, run_name){
     dplyr::ungroup() %>%
     dplyr::distinct()
 
-  type_remap_check = df2_dcap %>%
-    dplyr::filter(!is.na(type_remap))
-
-  # Export reassignments to check if they were correct
-  if(nrow(type_remap_check)){
-    writexl::write_xlsx(type_remap_check %>%
-                          dplyr::filter(!is.na(type_remap)),
-                        paste0(dir, "results/", run_name, "/toxicological_effect_cat_type_remap_check.xlsx"))
-  }
+  # type_remap_check = df2_dcap %>%
+  #   dplyr::filter(!is.na(type_remap))
+  #
+  # # Export reassignments to check if they were correct
+  # if(nrow(type_remap_check)){
+  #   writexl::write_xlsx(type_remap_check %>%
+  #                         dplyr::filter(!is.na(type_remap)),
+  #                       paste0(dir, "results/", run_name, "/toxicological_effect_cat_type_remap_check.xlsx"))
+  # }
 
   df2_dcap = df2_dcap %>%
     dplyr::mutate(type = dplyr::case_when(

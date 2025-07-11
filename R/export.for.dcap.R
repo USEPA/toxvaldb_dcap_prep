@@ -6,6 +6,7 @@
 #' @param include.epa_dws Flag to include EPA DWS in output or not, default TRUE.
 #' @param include.food_add Flag to include food additives in output or not, default FALSE.
 #' @param run_name The desired name for the output directory, default current date.
+#' @param db.type String of what kind of database connection to use, default "mysql. If "sqlite", workflow with use .Renv defined "sqlite_file" file path.
 #' @return Write a file with the results: ToxValDB for DCAP {toxval.db} {Sys.Date()}.xlsx
 #' @details None, exports all of the data required for the DCAP calculations as XLSX files.
 #' @export
@@ -24,11 +25,12 @@
 #' @importFrom writexl write_xlsx
 #' @importFrom readxl read_xls
 export.for.dcap <- function(toxval.db,
-                            include.pesticides=FALSE,
-                            include.drugs=FALSE,
-                            include.epa_dws=TRUE,
-                            include.food_add=FALSE,
-                            run_name=Sys.Date()) {
+                            include.pesticides = FALSE,
+                            include.drugs = FALSE,
+                            include.epa_dws = TRUE,
+                            include.food_add = FALSE,
+                            run_name = Sys.Date(),
+                            db.type = db.type) {
 
   printCurrentFunction(toxval.db)
 
@@ -113,8 +115,9 @@ export.for.dcap <- function(toxval.db,
 
   # Dictionary of critical_category suggestions already present in database
   crit_suggs_dict = runQuery(paste0('SELECT distinct term, study_type, toxicological_effect_category, CONCAT(term, study_type) as crit_key ',
-                                    'FROM toxicological_effect_terms'),
-                             toxval.db)
+                                    'FROM toxicological_effect_terms ORDER BY id'),
+                             toxval.db,
+                             db.type = db.type)
 
   # Special ToxValDB v9.6.1 dictionary of records that should have been flagged as
   # qc_status "fail" due to the deduplication hierarchy, but were not.
@@ -204,11 +207,12 @@ export.for.dcap <- function(toxval.db,
                    epa_dws_addition,
                    food_add_addition,
                    # " and f.priority='", priority, "'",
-                   iuclid_addition
+                   iuclid_addition,
+                   " ORDER BY b.toxval_id"
     )
 
     # Get unique entries using query
-    mat = runQuery(query, toxval.db)
+    mat = runQuery(query, toxval.db, db.type = db.type)
 
     # Fix known toxval_type issues (original reported as BMC, converted to BMD)
     mat$toxval_type[mat$source_hash == "ToxValhc_d12b6774a6a719ad5de87f4048e3a0b4"] = 'BMD (05)'
@@ -317,8 +321,10 @@ export.for.dcap <- function(toxval.db,
                                "document_name, ",
                                "quality ",
                                "FROM record_source ",
-                               "WHERE toxval_id in (", toString(mat$toxval_id), ")"),
-                        toxval.db)
+                               "WHERE toxval_id in (", toString(mat$toxval_id), ") ",
+                               "ORDER BY record_source_id"),
+                        toxval.db,
+                        db.type = db.type)
 
     # Filter out HPVIS "origin" PDFs while they're being re-cataloged
     if(src == "HPVIS"){
@@ -527,16 +533,28 @@ export.for.dcap <- function(toxval.db,
 
     # Map toxicological_effect_category
     # https://stackoverflow.com/questions/5629111/how-can-i-make-sql-case-sensitive-string-comparison-on-mysql
-    crit_cat_map <- runQuery(paste0("SELECT distinct source_hash, BINARY term as term, study_type, toxicological_effect_category, ",
-                                    "CONCAT(source_hash, '_', term) as crit_key ",
-                                    "FROM toxicological_effect_terms ",
-                                    "WHERE source_hash in ('",
-                                    paste0(mat$source_hash, collapse = "', '")
-                                    ,"') "),
-                             toxval.db)
+    if(db.type == "sqlite"){
+      crit_cat_map_query = paste0("SELECT distinct source_hash, term, study_type, toxicological_effect_category, ",
+                      # CONCAT equivalent in SQLite
+                      "source_hash || '_' || term as crit_key ",
+                      "FROM toxicological_effect_terms ",
+                      "WHERE source_hash in ('",
+                      paste0(mat$source_hash, collapse = "', '")
+                      ,"') ")
+    } else {
+      # Use "BINARY" casting due to case differences in term field
+      crit_cat_map_query = paste0("SELECT distinct source_hash, BINARY term as term, study_type, toxicological_effect_category, ",
+                                  "CONCAT(source_hash, '_', term) as crit_key ",
+                                  "FROM toxicological_effect_terms ",
+                                  "WHERE source_hash in ('",
+                                  paste0(mat$source_hash, collapse = "', '")
+                                  ,"') ORDER BY id")
+    }
+    # Pull critical_effect_category map
+    crit_cat_map <- runQuery(crit_cat_map_query, toxval.db, db.type = db.type)
 
     # See README in "data/input/toxvaldb_v96_1_fixes" for details
-    if(toxval.db == "res_toxval_v96_1"){
+    if(src == "HESS"){
       missing_v96_1_db_categories = readxl::read_xlsx(paste0(Sys.getenv("datapath"),
                                                              "data/input/toxvaldb_v96_1_fixes/missing_HESS_toxicological_effect_category_v96_1.xlsx"
       ))
@@ -623,8 +641,9 @@ export.for.dcap <- function(toxval.db,
       #                               'HAVING crit_key in ("', paste0(missing_crit_cat$term, # %>%
       #                                                                 # Escape "'" for query
       #                                                                 # gsub("'", "''", .),
-      #                                                               missing_crit_cat$study_type, collapse='", "'), '")'),
-      #                        toxval.db) %>%
+      #                                                               missing_crit_cat$study_type, collapse='", "'), '") ORDER BY id'),
+      #                        toxval.db,
+      #                        db.type = db.type) %>%
       #   dplyr::select(-crit_key)
 
       crit_suggs <- crit_suggs_dict %>%
